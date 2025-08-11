@@ -1,0 +1,17 @@
+/*
+Theme Name: Divi Child - AXE MUSIQUE
+Template: Divi
+Version: 2.0.0
+Description: Thème enfant personnalisé pour AXE MUSIQUE avec header custom et shortcodes
+*/
+
+@import url("../Divi/style.css");
+
+/* Imports de vos modules CSS */
+@import url("./assets/css/_variables.css");
+@import url("./assets/css/_base.css");
+@import url("./assets/css/_header.css");
+@import url("./assets/css/_logo.css");
+@import url("./assets/css/_menu.css");
+@import url("./assets/css/_hero.css");
+@import url("./assets/css/_responsive.css");

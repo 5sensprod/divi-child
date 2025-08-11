@@ -1,0 +1,17 @@
+/* ========================================= */
+/* 🎯 HEADER & NAVIGATION */
+/* ========================================= */
+
+#main-header {
+  background: rgba(10, 10, 12, 0.72) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: all 0.6s ease !important;
+}
+
+#main-header.et-fixed-header {
+  background: rgba(10, 10, 12, 0.95) !important;
+  backdrop-filter: blur(3px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.6s ease !important;
+}

@@ -1,0 +1,106 @@
+/* ========================================= */
+/* 📱 RESPONSIVE DESIGN */
+/* ========================================= */
+
+@media (max-width: 980px) {
+  :root {
+    --header-height-normal: 70px;
+    --header-height-sticky: 60px;
+  }
+
+  .logo-blobs {
+    width: 180px !important;
+    height: 65px !important;
+    filter: blur(8px) !important;
+  }
+
+  .brand-axe {
+    font-size: 1.8rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .brand-musique {
+    font-size: 1.2rem !important;
+  }
+
+  #logo {
+    margin-top: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  #main-header.et-fixed-header #logo {
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Hero responsive */
+  .axemusique-hero .hero-title {
+    font-size: 2.5rem !important;
+  }
+
+  .axemusique-hero .hero-subtitle {
+    font-size: 1.3rem !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .logo-blobs {
+    width: 120px !important;
+    height: 45px !important;
+    opacity: 0.3 !important;
+    filter: blur(6px) !important;
+  }
+
+  .brand-axe {
+    font-size: 2rem !important;
+  }
+
+  .brand-musique {
+    font-size: 1.2rem !important;
+  }
+
+  #logo {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  #main-header.et-fixed-header #logo {
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Hero mobile */
+  .axemusique-hero .hero-title {
+    font-size: 2rem !important;
+  }
+
+  .axemusique-hero .hero-subtitle {
+    font-size: 1.1rem !important;
+  }
+
+  .axemusique-hero .hero-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-blobs {
+    width: 100px !important;
+    height: 35px !important;
+    opacity: 0.2 !important;
+    filter: blur(4px) !important;
+  }
+
+  .brand-axe {
+    font-size: 1.8rem !important;
+  }
+
+  .brand-musique {
+    font-size: 1rem !important;
+  }
+
+  /* Hero très petit écran */
+  .axemusique-hero .hero-title {
+    font-size: 1.5rem !important;
+  }
+}

@@ -1,0 +1,98 @@
+/* ========================================= */
+/* 🔗 MENU NAVIGATION */
+/* ========================================= */
+
+#top-menu li a {
+  color: var(--muted) !important;
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: color 0.3s ease !important;
+  font-weight: 500 !important;
+  font-size: 15px !important;
+}
+
+#top-menu li a:hover,
+#top-menu li.current-menu-item a {
+  color: var(--text) !important;
+}
+
+/* Soulignement coloré pour items sans sous-menu */
+#top-menu li:not(.menu-item-has-children) a::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 1px !important;
+  width: 0% !important;
+  height: 2px !important;
+  background: var(--underline) !important;
+  transition: width 0.28s ease !important;
+}
+
+#top-menu li:not(.menu-item-has-children) a:hover::after,
+#top-menu li:not(.menu-item-has-children).current-menu-item a::after {
+  width: 100% !important;
+}
+
+#top-menu li.menu-item-has-children > a::after {
+  display: none !important;
+}
+
+/* ========================================= */
+/* 📋 SOUS-MENUS */
+/* ========================================= */
+
+#top-menu .sub-menu {
+  background: rgba(14, 14, 18, 0.96) !important;
+  border: 1px solid var(--border) !important;
+  border-top: 2px solid var(--blob-b) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+#top-menu .sub-menu a {
+  color: var(--muted) !important;
+  border-bottom: 1px solid var(--border) !important;
+  position: relative !important;
+}
+
+#top-menu .sub-menu a:hover {
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+#top-menu .sub-menu a::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: -2px !important;
+  width: 0% !important;
+  height: 2px !important;
+  background: var(--underline) !important;
+  transition: width 0.28s ease !important;
+}
+
+#top-menu .sub-menu a:hover::after {
+  width: 100% !important;
+}
+
+/* ========================================= */
+/* 📱 MENU MOBILE */
+/* ========================================= */
+
+#mobile_menu {
+  background: rgba(14, 14, 18, 0.96) !important;
+  border-left: 1px solid var(--border) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+#mobile_menu .mobile_nav li a {
+  color: var(--muted) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+#mobile_menu .mobile_nav li a:hover {
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}

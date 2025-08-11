@@ -1,0 +1,83 @@
+/* ========================================= */
+/* 🎨 LOGO CUSTOM */
+/* ========================================= */
+
+#logo {
+  position: relative !important;
+  z-index: 10 !important;
+  margin-top: 5px !important;
+  margin-bottom: 30px !important;
+}
+
+#main-header.et-fixed-header #logo {
+  margin-top: 8px !important;
+  margin-bottom: 15px !important;
+}
+
+.text-logo {
+  display: flex !important;
+  align-items: baseline !important;
+  text-decoration: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.brand-axe {
+  font-family: "AnticFont", Arial, sans-serif !important;
+  font-size: 3rem !important;
+  background: transparent !important;
+  line-height: 1 !important;
+  color: var(--text) !important;
+  font-weight: 400 !important;
+  transition: all 0.3s ease !important;
+}
+
+.brand-musique {
+  font-family: "MyriadProSemiExtended", Arial, sans-serif !important;
+  font-size: 1.4rem !important;
+  line-height: 1 !important;
+  color: var(--text) !important;
+  margin-left: 0.5rem !important;
+  font-weight: 400 !important;
+  transition: all 0.3s ease !important;
+}
+
+#main-header.et-fixed-header .brand-axe {
+  font-size: 1.75rem !important;
+}
+
+#main-header.et-fixed-header .brand-musique {
+  font-size: 1.15rem !important;
+}
+
+/* ========================================= */
+/* ✨ LOGO EFFECTS (Blobs & Glow) */
+/* ========================================= */
+
+.logo-blobs {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  opacity: 0.5 !important;
+  filter: blur(12px) !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+  transition: opacity 0.3s ease, filter 0.3s ease !important;
+}
+
+#logoGlow {
+  position: absolute !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+#main-header.et-fixed-header .logo-blobs {
+  opacity: 0.35 !important;
+  filter: blur(10px) !important;
+}
+
+#main-header.et-fixed-header #logoGlow {
+  opacity: 0.15 !important;
+  filter: blur(10px) !important;
+}

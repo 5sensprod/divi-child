@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="fr" data-theme="vibrant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AXE Musique — Template v8.1 (hero + carrelage + mobile)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ====== FONTS LOCALES ====== */
+    @font-face{
+      font-family: 'AnticFont';
+      src: url('./fonts/AnticFont Regular.ttf') format('truetype');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face{
+      font-family: 'MyriadProSemiExtended';
+      src: url('./fonts/Myriad Pro SemiExtended.otf') format('opentype');
+      font-weight: 600; font-style: normal; font-display: swap;
+    }
+    .font-antic { font-family: 'AnticFont', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans'; }
+    .font-myriad { font-family: 'MyriadProSemiExtended', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans'; }
+
+    /* ====== THEMES (Vibrant + Golden only) ====== */
+    :root{
+      --bg: #0a0a0b;
+      --surface: rgba(20,20,24,.55);
+      --border: rgba(255,255,255,.12);
+      --text: #e5e7eb;
+      --muted: #a3a3a3;
+      --accent: #a5b4fc;
+      --accent-2: #22d3ee;
+      --ribbon-bg: rgba(180,19,19,.35);
+      --ribbon-border: rgba(255,255,255,.18);
+      --underline: linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#06b6d4,#8b5cf6);
+      --blob-a: #ef4444; --blob-b:#f59e0b; --blob-c:#22c55e; --blob-d:#06b6d4;
+      --cta-outline: rgba(165,180,252,.5);
+      --cta-text: #c7d2fe;
+      --radials: radial-gradient(circle at 20% 20%, rgba(239,68,68,.12), transparent 40%),
+                 radial-gradient(circle at 80% 30%, rgba(245,158,11,.12), transparent 42%),
+                 radial-gradient(circle at 40% 80%, rgba(34,197,94,.12), transparent 40%),
+                 radial-gradient(circle at 80% 80%, rgba(6,182,212,.12), transparent 45%);
+      --select-bg: rgba(24,24,30,.95);
+      --select-text: #ffffff;
+      --select-border: rgba(255,255,255,.25);
+      --select-ring: rgba(165,180,252,.45);
+      --tile-overlay: rgba(8,8,10,.55);
+      --shadow-soft: 0 10px 30px rgba(0,0,0,.35);
+    }
+    html[data-theme="golden"]{
+      --bg: #0c0a0a;
+      --surface: linear-gradient(135deg, rgba(90,40,40,.30), rgba(20,15,15,.30));
+      --border: rgba(212,181,122,.22);
+      --text: #eee8dd;
+      --muted: #d6c9b1;
+      --accent: #d4b57a;
+      --accent-2: #8b5cf6;
+      --ribbon-bg: rgba(60,30,30,.55);
+      --ribbon-border: rgba(212,181,122,.25);
+      --underline: linear-gradient(90deg,#d4b57a, rgba(212,181,122,.45));
+      --blob-a: #8c2f39; --blob-b:#b45309; --blob-c:#7c2d12; --blob-d:#6b21a8;
+      --cta-outline: rgba(212,181,122,.45);
+      --cta-text: #e8d9b9;
+      --radials: radial-gradient(circle at 20% 20%, rgba(212,181,122,.10), transparent 40%),
+                 radial-gradient(circle at 80% 30%, rgba(139,92,246,.08), transparent 42%),
+                 radial-gradient(circle at 40% 80%, rgba(125,52,36,.10), transparent 40%);
+      --select-bg: rgba(44,28,28,.95);
+      --select-text: #f7efe2;
+      --select-border: rgba(212,181,122,.35);
+      --select-ring: rgba(212,181,122,.45);
+      --tile-overlay: rgba(24,18,18,.55);
+      --shadow-soft: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    body{ background: var(--bg); color: var(--text); }
+
+    /* NAV styles (bigger + taller) */
+    .nav-link{ position:relative; display:inline-flex; align-items:center; gap:.5rem; }
+    .nav-link:after{ content:""; position:absolute; left:0; bottom:-8px; width:0%; height:2px; background: var(--underline); transition:width .28s ease; }
+    .nav-link:hover:after, .nav-link.active:after{ width:100%; }
+
+    .logo-blobs{ opacity:.5; filter: blur(12px); }
+    #logoGlow{ position:absolute; pointer-events:none; left:50%; top:50%; width:200px; height:200px; transform:translate(-50%,-50%); border-radius:9999px; opacity:0; mix-blend-mode:screen; filter: blur(12px); transition:opacity .25s ease; }
+    html[data-theme="vibrant"] #logoGlow{ background: radial-gradient(circle, rgba(255,210,130,.22) 0%, rgba(255,120,120,.16) 35%, rgba(140,120,255,.12) 55%, rgba(255,255,255,0) 72%); }
+    html[data-theme="golden"]  #logoGlow{ background: radial-gradient(circle, rgba(212,181,122,.18) 0%, rgba(139,92,246,.10) 45%, rgba(255,255,255,0) 70%); }
+
+    /* SELECT (high contrast) */
+    .theme-select{
+      appearance:none; -webkit-appearance:none; -moz-appearance:none;
+      background: var(--select-bg);
+      color: var(--select-text);
+      border: 1px solid var(--select-border);
+      padding: .6rem 2.2rem .6rem .8rem;
+      border-radius: .5rem;
+      font-size: .95rem;
+      line-height: 1.25rem; outline: none;
+    }
+    .theme-select:focus{ box-shadow: 0 0 0 3px var(--select-ring); }
+    .select-wrap{ position:relative; }
+    .select-wrap:after{ content:"▾"; position:absolute; right:.65rem; top:50%; transform:translateY(-50%); color: var(--select-text); opacity:.8; pointer-events:none; }
+    select.theme-select option{ background: var(--select-bg); color: var(--select-text); }
+
+    /* Cards & tiles */
+    .card{ border:1px solid var(--border); background: var(--surface); border-radius: .6rem; }
+    .tile{ position:relative; overflow:hidden; }
+    .tile .overlay{ position:absolute; left:0; right:0; bottom:0; padding:.75rem 1rem; display:flex; align-items:center; gap:.5rem; background: var(--tile-overlay); }
+
+    /* Animations */
+    .hover-zoom:hover .tile-img{ transform: scale(1.04); }
+    .tile-img{ transition: transform .4s ease; }
+    .reveal{ opacity:0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.revealed{ opacity:1; transform: none; }
+  
+    /* ===== Shrinking header on scroll ===== */
+    #siteHeader.shrink{ background: rgba(10,10,12,.82); box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+    #siteHeader.shrink .nav-row{ height: 56px; }
+    #siteHeader.shrink .brand-axe{ font-size: 1.55rem; letter-spacing: .15em; }
+    #siteHeader.shrink .brand-musique{ font-size: 1.15rem; }
+    #siteHeader.shrink .logo-blobs{ opacity:.35; filter: blur(10px); }
+    #siteHeader.shrink #logoGlow{ opacity:.15; filter: blur(10px); }
+
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- NAV -->
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-50 backdrop-blur-md transition-[background,transform] duration-300" style="background: rgba(10,10,12,.72); border-bottom:1px solid var(--border);">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="nav-row flex items-center justify-between h-[76px] transition-[height,padding] duration-300 ease-out">
+        <div class="relative" id="logoWrap">
+          <svg class="pointer-events-none absolute -inset-6 logo-blobs" width="240" height="86" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="32" r="26" fill="var(--blob-a)"/>
+            <circle cx="100" cy="22" r="20" fill="var(--blob-b)"/>
+            <circle cx="150" cy="34" r="24" fill="var(--blob-c)"/>
+            <circle cx="190" cy="26" r="18" fill="var(--blob-d)"/>
+          </svg>
+          <div id="logoGlow" aria-hidden="true"></div>
+          <a href="#" class="relative flex items-baseline">
+            <span class="brand-axe text-[1.95rem] leading-none font-antic tracking-widest transition-all duration-300">AXE</span>
+            <span class="brand-musique ml-2 text-[1.4rem] leading-none font-myriad transition-all duration-300" style="color: var(--text);">MUSIQUE</span>
+          </a>
+        </div>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8 text-[1.05rem] font-medium">
+          <a href="#" class="nav-link" style="color:var(--text)">Instruments</a>
+          <a href="#" class="nav-link" style="color:var(--muted)">Home&nbsp;Studio</a>
+          <a href="#" class="nav-link" style="color:var(--muted)">Amplis</a>
+          <a href="#" class="nav-link" style="color:var(--muted)">Accessoires</a>
+          <a href="#" class="nav-link" style="color:var(--muted)">Partitions</a>
+        </nav>
+
+        <!-- Right controls -->
+        <div class="flex items-center gap-4">
+          <!-- toggle hero image -->
+          <div class="hidden sm:flex items-center gap-2">
+            <label for="toggleImg" class="text-xs" style="color:var(--text)">Fond image</label>
+            <label class="switch relative inline-block" style="--h: 26px; --w: 46px;">
+              <input id="toggleImg" type="checkbox"><i class="absolute"></i>
+            </label>
+          </div>
+          <!-- theme select -->
+          <div class="hidden sm:block select-wrap">
+            <label for="theme" class="sr-only">Thème</label>
+            <select id="theme" class="theme-select" aria-label="Choisir le thème">
+              <option value="vibrant">Vibrant</option>
+              <option value="golden">Golden</option>
+            </select>
+          </div>
+
+          <!-- Mobile burger -->
+          <button id="btnMobile" class="md:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-white/5" aria-label="Menu">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile drawer -->
+    <div id="mobileNav" class="fixed inset-y-0 right-0 w-72 max-w-[85%] translate-x-full transition-transform duration-300 ease-out bg-[rgba(14,14,18,.96)] border-l" style="border-color:var(--border)">
+      <div class="h-[76px] flex items-center justify-between px-4 border-b" style="border-color:var(--border)">
+        <span class="font-antic text-lg">AXE <span class="font-myriad">Musique</span></span>
+        <button id="btnClose" class="p-2 hover:bg-white/5 rounded-md" aria-label="Fermer">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <nav class="p-4 space-y-2 text-base">
+        <a href="#" class="block nav-link" style="color:var(--text)">Instruments</a>
+        <a href="#" class="block nav-link" style="color:var(--muted)">Home Studio</a>
+        <a href="#" class="block nav-link" style="color:var(--muted)">Amplis</a>
+        <a href="#" class="block nav-link" style="color:var(--muted)">Accessoires</a>
+        <a href="#" class="block nav-link" style="color:var(--muted)">Partitions</a>
+        <div class="mt-4 flex items-center justify-between">
+          <label class="text-xs" for="theme">Thème</label>
+          <select id="themeMobile" class="theme-select text-sm w-36">
+            <option value="vibrant">Vibrant</option>
+            <option value="golden">Golden</option>
+          </select>
+        </div>
+        <div class="mt-3 flex items-center justify-between">
+          <label class="text-xs" for="toggleImgMobile">Fond image</label>
+          <label class="switch">
+            <input id="toggleImgMobile" type="checkbox"><i></i>
+          </label>
+        </div>
+      </nav>
+    </div>
+    <!-- Overlay -->
+    <div id="overlayNav" class="fixed inset-0 bg-black/40 hidden"></div>
+  </header>
+
+  <!-- HERO institutionnel (plus haut ~75vh) -->
+  <section class="relative flex items-center" style="min-height:75vh; padding-top:76px;">
+    <div class="absolute inset-0" id="heroBg"></div>
+
+    <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center h-full">
+        <!-- Left content -->
+        <div class="space-y-6 reveal relative md:static bg-black/50 md:bg-transparent p-4 md:p-0 rounded-md">
+          <h1 class="text-4xl md:text-5xl font-bold" style="color:var(--text)">À votre service depuis 20 ans</h1>
+          <p class="text-lg" style="color:var(--muted)">Plus de 70 marques et 2000 références.</p>
+          <p class="text-lg" style="color:var(--muted)">L’expertise de professeurs et de professionnels, luthiers et facteurs de piano.</p>
+          <div class="flex flex-wrap gap-3 pt-2">
+            <a href="#produits" class="px-6 py-3 rounded-md border" style="border-color:var(--cta-outline); color:var(--text)">Explorer nos instruments</a>
+            <a href="#categories" class="px-6 py-3 rounded-md underline underline-offset-4" style="text-decoration-color: var(--cta-outline); color:var(--text)">Catégories</a>
+          </div>
+        </div>
+
+        <!-- Right panel -->
+        <aside class="reveal">
+          <div class="rounded-lg card p-6 backdrop-blur-sm shadow-[var(--shadow-soft)]">
+            <div class="space-y-6">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <i data-lucide="map-pin" class="w-5 h-5" style="color:var(--accent)"></i>
+                  <span class="font-semibold">Adresse</span>
+                </div>
+                <p>4 Rue Lochet<br/>51000 Châlons-en-Champagne</p>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <i data-lucide="clock" class="w-5 h-5" style="color:var(--accent-2)"></i>
+                  <span class="font-semibold">Horaires</span>
+                </div>
+                <ul class="space-y-1">
+                  <li>Lundi : 15:00–19:00</li>
+                  <li>Mardi–Vendredi : 10:00–12:00 • 14:00–19:00</li>
+                  <li>Samedi : 14:00–19:00</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- TITRE Catégories (centré verticalement dans la ligne) -->
+  <section id="categories" class="relative">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl md:text-3xl font-bold">Catégories</h2>
+      </div>
+    </div>
+    <!-- grille carrelage -->
+    <div class="bg-[var(--border)]">
+      <div class="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        <!-- Tiles -->
+        <a href="#" class="tile hover-zoom reveal">
+          <div class="tile-img h-40 md:h-48 lg:h-56 bg-center bg-cover" style="background-image: url('https://picsum.photos/seed/guit/800/800');"></div>
+          <div class="overlay">
+            <i data-lucide="guitar" class="w-5 h-5"></i>
+            <span class="font-medium">Guitares</span>
+          </div>
+        </a>
+        <a href="#" class="tile hover-zoom reveal">
+          <div class="tile-img h-40 md:h-48 lg:h-56 bg-center bg-cover" style="background-image: url('https://picsum.photos/seed/bass/800/800');"></div>
+          <div class="overlay">
+            <i data-lucide="bass-guitar" class="w-5 h-5"></i>
+            <span class="font-medium">Basses</span>
+          </div>
+        </a>
+        <a href="#" class="tile hover-zoom reveal">
+          <div class="tile-img h-40 md:h-48 lg:h-56 bg-center bg-cover" style="background-image: url('https://picsum.photos/seed/drums/800/800');"></div>
+          <div class="overlay">
+            <i data-lucide="drum" class="w-5 h-5"></i>
+            <span class="font-medium">Batteries</span>
+          </div>
+        </a>
+        <a href="#" class="tile hover-zoom reveal">
+          <div class="tile-img h-40 md:h-48 lg:h-56 bg-center bg-cover" style="background-image: url('https://picsum.photos/seed/keys/800/800');"></div>
+          <div class="overlay">
+            <i data-lucide="keyboard" class="w-5 h-5"></i>
+            <span class="font-medium">Claviers</span>
+          </div>
+        </a>
+        <a href="#" class="tile hover-zoom reveal">
+          <div class="tile-img h-40 md:h-48 lg:h-56 bg-center bg-cover" style="background-image: url('https://picsum.photos/seed/studio/800/800');"></div>
+          <div class="overlay">
+            <i data-lucide="mic" class="w-5 h-5"></i>
+            <span class="font-medium">Home Studio</span>
+          </div>
+        </a>
+        <a href="#" class="tile hover-zoom reveal">
+          <div class="tile-img h-40 md:h-48 lg:h-56 bg-center bg-cover" style="background-image: url('https://picsum.photos/seed/score/800/800');"></div>
+          <div class="overlay">
+            <i data-lucide="music" class="w-5 h-5"></i>
+            <span class="font-medium">Partitions</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TITRE Produits (centré verticalement) -->
+  <section id="produits" class="relative pt-10">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl md:text-3xl font-bold">Produits phares</h2>
+        <a href="#" class="text-sm px-3 py-2 rounded-md border" style="border-color:var(--cta-outline); color:var(--text)">Tout voir</a>
+      </div>
+    </div>
+
+    <div class="bg-[var(--border)]">
+      <div class="mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4" id="prodGrid">
+        <!-- JS injecte les tuiles produits -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Réseaux sociaux -->
+  <section class="relative py-12">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="rounded-lg card p-6 md:p-8 shadow-[var(--shadow-soft)] reveal">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+          <h3 class="text-xl font-semibold">Suivez-nous</h3>
+          <div class="flex items-center gap-6 text-xl">
+            <a href="#" aria-label="Instagram" class="hover:opacity-80"><i data-lucide="instagram" class="w-6 h-6" style="color:var(--accent)"></i></a>
+            <a href="#" aria-label="Facebook" class="hover:opacity-80"><i data-lucide="facebook" class="w-6 h-6" style="color:var(--accent)"></i></a>
+            <a href="#" aria-label="YouTube" class="hover:opacity-80"><i data-lucide="youtube" class="w-6 h-6" style="color:var(--accent)"></i></a>
+            <a href="#" aria-label="TikTok" class="hover:opacity-80"><i data-lucide="music-2" class="w-6 h-6" style="color:var(--accent)"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t" style="border-color: var(--border)">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div>
+        <p class="font-antic text-xl">AXE <span class="font-myriad">Musique</span></p>
+        <p class="mt-2" style="color:var(--muted)">4 Rue Lochet<br/>51000 Châlons-en-Champagne</p>
+      </div>
+      <div>
+        <p class="font-semibold mb-3">Boutique</p>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:underline">Guitares</a></li>
+          <li><a href="#" class="hover:underline">Batteries</a></li>
+          <li><a href="#" class="hover:underline">Claviers</a></li>
+          <li><a href="#" class="hover:underline">Home Studio</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold mb-3">Aide</p>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="hover:underline">Contact</a></li>
+          <li><a href="#" class="hover:underline">Livraison</a></li>
+          <li><a href="#" class="hover:underline">Retours</a></li>
+          <li><a href="#" class="hover:underline">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold mb-3">Newsletter</p>
+        <form class="flex gap-2">
+          <input type="email" placeholder="Votre email" class="flex-1 rounded-md px-3 py-2" style="border:1px solid var(--border); background:transparent; color:var(--text)">
+          <button class="px-4 rounded-md border" style="border-color:var(--cta-outline); color:var(--text)">OK</button>
+        </form>
+      </div>
+    </div>
+    <div class="text-center text-xs pb-8" style="color:var(--muted)">© AXE Musique — Modèle de démonstration</div>
+  </footer>
+
+  <!-- Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+
+    // Inject products as tiles
+    const products = Array.from({length:8}, (_,i)=> ({
+      title: ['Stratocaster','Les Paul','Basse Jazz','Batterie Fusion','Interface USB','Micro Statique','Casque Studio','Clavier 61'][i],
+      price: [899,1299,799,1199,149,229,99,349][i],
+      img: `https://picsum.photos/seed/prod${i}/800/800`
+    }));
+    const prodGrid = document.getElementById('prodGrid');
+    prodGrid.innerHTML = products.map(p => `
+      <a href="#" class="tile hover-zoom reveal">
+        <div class="tile-img h-56 md:h-64 bg-center bg-cover" style="background-image: url('${p.img}');"></div>
+        <div class="overlay justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="music" class="w-5 h-5"></i>
+            <span class="font-medium">${p.title}</span>
+          </div>
+          <span class="font-semibold">${p.price} €</span>
+        </div>
+      </a>
+    `).join('');
+    lucide.createIcons(); // rehydrate icons inside injected HTML
+
+    // THEME & FOND IMAGE (no light)
+    const themeSel = document.getElementById('theme');
+    const themeSelMobile = document.getElementById('themeMobile');
+    const root = document.documentElement;
+    const heroBg = document.getElementById('heroBg');
+    const toggleImg = document.getElementById('toggleImg');
+    const toggleImgMobile = document.getElementById('toggleImgMobile');
+    const heroImagePath = './assets/header1.png';
+
+    function setHeroBackground(theme, useImage){
+      const overlay = 'linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.65))';
+      const baseCss = theme==='golden'
+        ? 'radial-gradient(1200px 600px at 50% 20%, rgba(88,34,34,.55), transparent 60%), radial-gradient(900px 500px at 80% 80%, rgba(91,36,39,.55), transparent 60%), linear-gradient(180deg,#130d0d,#0b0909)'
+        : 'radial-gradient(1200px 600px at 50% 20%, rgba(0,128,128,.25), transparent 60%), radial-gradient(900px 500px at 80% 80%, rgba(180,64,64,.25), transparent 60%), linear-gradient(180deg,#0b0a0a,#0a0a0b)';
+      if(useImage){
+        heroBg.style.backgroundImage = `${overlay}, url('${heroImagePath}'), ${baseCss}`;
+        heroBg.style.backgroundSize = `cover, cover, auto`;
+        heroBg.style.backgroundPosition = `center bottom, center bottom, center`;
+        heroBg.style.backgroundRepeat = `no-repeat, no-repeat, no-repeat`;
+      }else{
+        heroBg.style.backgroundImage = baseCss;
+        heroBg.style.backgroundSize = `auto`;
+      }
+    }
+
+    function applyTheme(t){
+      root.setAttribute('data-theme', t);
+      setHeroBackground(t, (toggleImg?.checked || toggleImgMobile?.checked));
+      localStorage.setItem('axe-theme', t);
+    }
+
+    // init theme
+    const savedTheme = localStorage.getItem('axe-theme') || 'vibrant';
+    root.setAttribute('data-theme', savedTheme);
+    themeSel && (themeSel.value = savedTheme);
+    themeSelMobile && (themeSelMobile.value = savedTheme);
+
+    // init toggle image (sync desktop & mobile)
+    const savedImg = localStorage.getItem('axe-hero-image') === 'true';
+    if(toggleImg) toggleImg.checked = savedImg;
+    if(toggleImgMobile) toggleImgMobile.checked = savedImg;
+
+    applyTheme(savedTheme);
+
+    function syncImageToggles(fromMobile){
+      const val = fromMobile ? toggleImgMobile.checked : toggleImg.checked;
+      if(toggleImg) toggleImg.checked = val;
+      if(toggleImgMobile) toggleImgMobile.checked = val;
+      localStorage.setItem('axe-hero-image', val);
+      setHeroBackground((themeSel?.value || themeSelMobile?.value || savedTheme), val);
+    }
+
+    toggleImg && toggleImg.addEventListener('change', ()=> syncImageToggles(false));
+    toggleImgMobile && toggleImgMobile.addEventListener('change', ()=> syncImageToggles(true));
+
+    themeSel && themeSel.addEventListener('change', e=> {
+      applyTheme(e.target.value);
+      if(themeSelMobile) themeSelMobile.value = e.target.value;
+    });
+    themeSelMobile && themeSelMobile.addEventListener('change', e=> {
+      applyTheme(e.target.value);
+      if(themeSel) themeSel.value = e.target.value;
+    });
+
+    // Subtle cursor glow on logo
+    const wrap = document.getElementById('logoWrap');
+    const glow = document.getElementById('logoGlow');
+    let rafId = null;
+    function moveGlow(e){
+      const rect = wrap.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const base = Math.max(140, Math.min(260, rect.width * 1.05));
+      glow.style.width = base + 'px';
+      glow.style.height = base + 'px';
+      glow.style.left = x + 'px';
+      glow.style.top = y + 'px';
+      glow.style.opacity = .28;
+    }
+    wrap.addEventListener('mousemove',(e)=>{ if(rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(()=>moveGlow(e)); });
+    wrap.addEventListener('mouseenter',()=>{ glow.style.opacity = .22; });
+    wrap.addEventListener('mouseleave',()=>{ glow.style.opacity = 0; });
+
+    // Reveal on scroll (categories, products, hero panels, social card)
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el=> observer.observe(el));
+
+    // ===== Mobile drawer logic =====
+    const btnMobile = document.getElementById('btnMobile');
+    const btnClose = document.getElementById('btnClose');
+    const drawer = document.getElementById('mobileNav');
+    const overlay = document.getElementById('overlayNav');
+
+    function openDrawer(){
+      drawer.classList.remove('translate-x-full');
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer(){
+      drawer.classList.add('translate-x-full');
+      overlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    btnMobile?.addEventListener('click', openDrawer);
+    btnClose?.addEventListener('click', closeDrawer);
+    overlay?.addEventListener('click', closeDrawer);
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeDrawer(); });
+  </script>
+<script>
+
+    // ===== Shrinking header on scroll (Divi-like) =====
+    (function(){
+      const header = document.getElementById('siteHeader');
+      let last = window.scrollY || 0;
+      let ticking = false;
+      function onScroll(){
+        const y = window.scrollY || 0;
+        if(y > 10 && !header.classList.contains('shrink')) header.classList.add('shrink');
+        else if(y <= 10 && header.classList.contains('shrink')) header.classList.remove('shrink');
+        ticking = false;
+      }
+      window.addEventListener('scroll', ()=>{
+        if(!ticking){ window.requestAnimationFrame(onScroll); ticking = true; }
+      }, { passive:true });
+      // init state
+      onScroll();
+    })();
+
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>

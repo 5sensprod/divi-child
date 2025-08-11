@@ -1,0 +1,687 @@
+/* ====== FONTS ====== */
+@font-face {
+  font-family: "AnticFont";
+  src: url("/wp-content/uploads/et-fonts/AnticFont Regular.ttf")
+    format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "MyriadProSemiExtended";
+  src: url("/wp-content/uploads/et-fonts/Myriad Pro SemiExtended.otf")
+    format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ====== VARIABLES ====== */
+:root {
+  --bg: #0a0a0b;
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #e5e7eb;
+  --muted: #a3a3a3;
+  --underline: linear-gradient(
+    90deg,
+    #ef4444,
+    #f59e0b,
+    #22c55e,
+    #06b6d4,
+    #8b5cf6
+  );
+  --blob-a: #ef4444;
+  --blob-b: #f59e0b;
+  --blob-c: #22c55e;
+  --blob-d: #06b6d4;
+}
+
+/* ====== BACKGROUND IMAGE ====== */
+#axeMenuBg {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-image: url("https://axemusique.shop/wp-content/uploads/2025/04/header1.png") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  opacity: 0.3 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  display: block !important;
+}
+
+/* Fallback si l'image ne charge pas */
+#axeMenuBg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+  opacity: 0.8;
+  z-index: -1;
+}
+
+/* ====== HEADER PRINCIPAL ====== */
+.axe-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 99999 !important;
+  background: rgba(10, 10, 12, 0.72) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: background 0.3s ease, transform 0.3s ease !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Force l'affichage même si Divi interfère */
+body .axe-header {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.axe-header.axe-shrink {
+  background: rgba(10, 10, 12, 0.82) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.axe-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .axe-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .axe-container {
+    padding: 0 2rem;
+  }
+}
+
+.axe-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  transition: height 0.3s ease;
+}
+
+.axe-header.axe-shrink .axe-nav-row {
+  height: 56px;
+}
+
+/* ====== LOGO ====== */
+.axe-logo-wrap {
+  position: relative;
+  z-index: 2; /* Assurer que le logo est au-dessus des blobs */
+}
+
+.axe-logo-blobs {
+  position: absolute;
+  pointer-events: none;
+  left: -24px;
+  top: -12px;
+  opacity: 0.5;
+  filter: blur(12px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  z-index: -1; /* Mettre les blobs derrière le texte */
+}
+
+.axe-header.axe-shrink .axe-logo-blobs {
+  opacity: 0.35;
+  filter: blur(10px);
+}
+
+#axeLogoGlow {
+  position: absolute;
+  pointer-events: none;
+  left: 50%;
+  top: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  opacity: 0;
+  mix-blend-mode: screen;
+  filter: blur(12px);
+  transition: opacity 0.25s ease;
+  background: radial-gradient(
+    circle,
+    rgba(255, 210, 130, 0.22) 0%,
+    rgba(255, 120, 120, 0.16) 35%,
+    rgba(140, 120, 255, 0.12) 55%,
+    rgba(255, 255, 255, 0) 72%
+  );
+  z-index: -1; /* Mettre le glow derrière le texte */
+}
+
+.axe-header.axe-shrink #axeLogoGlow {
+  opacity: 0.15;
+  filter: blur(10px);
+}
+
+.axe-brand-link {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  text-decoration: none;
+  z-index: 2; /* Texte au-dessus des effets */
+  cursor: pointer; /* Forcer le curseur pointeur */
+}
+
+.axe-brand-link:hover {
+  cursor: pointer; /* Forcer le curseur pointeur au survol */
+}
+
+.axe-brand-axe {
+  font-family: "AnticFont", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.95rem;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  color: var(--text);
+  transition: all 0.3s ease;
+  cursor: pointer; /* Forcer le curseur pointeur */
+  user-select: none; /* Éviter la sélection du texte */
+}
+
+.axe-header.axe-shrink .axe-brand-axe {
+  font-size: 1.55rem;
+  letter-spacing: 0.15em;
+}
+
+.axe-brand-musique {
+  font-family: "MyriadProSemiExtended", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+  margin-left: 0.5rem;
+  color: var(--text);
+  transition: all 0.3s ease;
+  cursor: pointer; /* Forcer le curseur pointeur */
+  user-select: none; /* Éviter la sélection du texte */
+}
+
+.axe-header.axe-shrink .axe-brand-musique {
+  font-size: 1.15rem;
+}
+
+/* ====== NAVIGATION DESKTOP ====== */
+.axe-nav-desktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .axe-nav-desktop {
+    display: block;
+  }
+}
+
+.axe-nav-list {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.axe-nav-list li {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.axe-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+}
+
+.axe-nav-link:hover,
+.axe-nav-link.axe-active {
+  color: var(--text);
+}
+
+.axe-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 0%;
+  height: 2px;
+  background: var(--underline);
+  transition: width 0.28s ease;
+}
+
+.axe-nav-link:hover::after,
+.axe-nav-link.axe-active::after {
+  width: 100%;
+}
+
+/* ====== SOUS-MENUS DESKTOP ====== */
+.menu-item-has-children {
+  position: relative;
+}
+
+.axe-submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  background: rgba(14, 14, 18, 0.96);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  margin: 0;
+  padding: 0.5rem 0;
+  list-style: none;
+}
+
+.menu-item-has-children:hover .axe-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.axe-submenu li {
+  margin: 0;
+  padding: 0;
+}
+
+.axe-submenu .axe-nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--muted);
+  border-bottom: none;
+}
+
+.axe-submenu .axe-nav-link::after {
+  display: none;
+}
+
+.axe-submenu .axe-nav-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.axe-submenu-arrow {
+  font-size: 0.7em;
+  margin-left: 0.25rem;
+  transition: transform 0.3s ease;
+}
+
+.menu-item-has-children:hover .axe-submenu-arrow {
+  transform: rotate(180deg);
+}
+
+/* ====== BOUTON MOBILE ====== */
+.axe-mobile-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .axe-mobile-toggle {
+    display: none;
+  }
+}
+
+.axe-mobile-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.axe-hamburger {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.axe-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text);
+  transition: all 0.3s ease;
+}
+
+.axe-mobile-toggle.active .axe-hamburger span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.axe-mobile-toggle.active .axe-hamburger span:nth-child(2) {
+  opacity: 0;
+}
+
+.axe-mobile-toggle.active .axe-hamburger span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* ====== DRAWER MOBILE ====== */
+.axe-mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 288px;
+  max-width: 85%;
+  height: 100vh;
+  background: rgba(14, 14, 18, 0.96);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 10000;
+}
+
+.axe-mobile-drawer.open {
+  transform: translateX(0);
+}
+
+.axe-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.axe-mobile-logo {
+  font-family: "AnticFont", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.125rem;
+  letter-spacing: 0.1em;
+  color: var(--text);
+}
+
+.axe-mobile-logo span {
+  font-family: "MyriadProSemiExtended", ui-sans-serif, system-ui, sans-serif;
+}
+
+.axe-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.axe-close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.axe-close-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.axe-mobile-nav {
+  padding: 1rem;
+}
+
+.axe-mobile-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.axe-mobile-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.axe-mobile-link {
+  display: block;
+  padding: 0.75rem 0;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: color 0.3s ease;
+}
+
+.axe-mobile-link:hover,
+.axe-mobile-link.axe-mobile-active {
+  color: var(--text);
+}
+
+/* ====== SOUS-MENUS MOBILE ====== */
+.axe-mobile-has-submenu {
+  position: relative;
+}
+
+.axe-mobile-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.axe-mobile-submenu.open {
+  max-height: 300px;
+}
+
+.axe-mobile-submenu .axe-mobile-link {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-bottom: none;
+}
+
+.axe-mobile-arrow {
+  float: right;
+  font-size: 1.2em;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.axe-mobile-has-submenu.open .axe-mobile-arrow {
+  transform: rotate(45deg);
+}
+
+/* ====== OVERLAY ====== */
+.axe-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+.axe-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ====== COMPATIBILITÉ ADMIN BAR ====== */
+.admin-bar .axe-header {
+  top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+  .admin-bar .axe-header {
+    top: 46px;
+  }
+}
+
+/* ====== RESPONSIVE ADJUSTMENTS ====== */
+@media (max-width: 480px) {
+  .axe-container {
+    padding: 0 0.75rem;
+  }
+
+  .axe-brand-axe {
+    font-size: 1.5rem;
+  }
+
+  .axe-brand-musique {
+    font-size: 1.1rem;
+  }
+
+  .axe-mobile-drawer {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ====== ACCESSIBILITÉ ====== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles pour l'accessibilité */
+.axe-nav-link:focus,
+.axe-mobile-link:focus,
+.axe-mobile-toggle:focus,
+.axe-close-btn:focus,
+.axe-brand-link:focus {
+  outline: 2px solid #06b6d4;
+  outline-offset: 2px;
+}
+
+/* ====== ANIMATIONS AVANCÉES ====== */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.axe-logo-wrap:hover #axeLogoGlow {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ====== ÉTATS SPÉCIAUX ====== */
+.axe-nav-link.current-menu-item,
+.axe-nav-link.current-page-parent,
+.axe-nav-link.current-menu-parent {
+  color: var(--text);
+}
+
+.axe-nav-link.current-menu-item::after,
+.axe-nav-link.current-page-parent::after,
+.axe-nav-link.current-menu-parent::after {
+  width: 100%;
+}
+
+.axe-mobile-link.current-menu-item,
+.axe-mobile-link.current-page-parent,
+.axe-mobile-link.current-menu-parent {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ====== CORRECTIONS DIVI ====== */
+.axe-header .et_pb_row {
+  display: none !important;
+}
+
+.axe-header * {
+  box-sizing: border-box;
+}
+
+/* Éviter les conflits avec les styles Divi */
+.axe-header ul,
+.axe-header li,
+.axe-header a {
+  all: unset;
+}
+
+.axe-nav-list,
+.axe-mobile-list,
+.axe-submenu,
+.axe-mobile-submenu {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.axe-nav-list {
+  flex-direction: row;
+  align-items: center;
+}
+
+.axe-nav-link,
+.axe-mobile-link {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ====== PERFORMANCE OPTIMIZATIONS ====== */
+.axe-header {
+  will-change: transform, background;
+}
+
+.axe-logo-blobs,
+#axeLogoGlow {
+  will-change: opacity, filter;
+}
+
+.axe-mobile-drawer {
+  will-change: transform;
+}
+
+/* ====== PRINT STYLES ====== */
+@media print {
+  .axe-header,
+  #axeMenuBg,
+  .axe-mobile-drawer,
+  .axe-overlay {
+    display: none !important;
+  }
+}

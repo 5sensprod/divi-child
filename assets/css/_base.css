@@ -1,0 +1,39 @@
+/* ========================================= */
+/* 🌌 BACKGROUND & BASE STYLES */
+/* ========================================= */
+
+body {
+  background: var(--bg) !important;
+  background-image: url("../images/header1.png") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  color: var(--text) !important;
+}
+
+body::before {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(10, 10, 11, 0.3) !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+/* ========================================= */
+/* 🛠 UTILITAIRES */
+/* ========================================= */
+
+.axemusique-theme {
+  /* Classe ajoutée au body pour cibler spécifiquement notre thème */
+}
+
+/* Classe pour désactiver les animations si nécessaire */
+.no-animations * {
+  animation: none !important;
+  transition: none !important;
+}
