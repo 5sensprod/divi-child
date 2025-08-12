@@ -99,8 +99,8 @@ class AXE_Logo_Manager
                 glow.style.pointerEvents = 'none';
                 glow.style.left = '50%';
                 glow.style.top = '50%';
-                glow.style.width = '200px';
-                glow.style.height = '200px';
+                glow.style.width = '100px';
+                glow.style.height = '100px';
                 glow.style.transform = 'translate(-50%, -50%)';
                 glow.style.borderRadius = '50%';
                 glow.style.opacity = '0';
@@ -143,7 +143,7 @@ class AXE_Logo_Manager
                     glow.style.height = base + 'px';
                     glow.style.left = x + 'px';
                     glow.style.top = y + 'px';
-                    glow.style.opacity = '0.88';
+                    glow.style.opacity = '0.45';
                 }
 
                 wrap.addEventListener('mousemove', (e) => {

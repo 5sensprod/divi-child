@@ -1,32 +1,58 @@
 <?php
+
+/**
+ * Functions.php - Divi Child AXE MUSIQUE
+ * 
+ * @package AXE_MUSIQUE
+ * @version 2.0.0
+ */
+
+// Sécurité
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Constantes
+// ========================================
+// 🔧 CONSTANTES
+// ========================================
+
 define('AXE_THEME_VERSION', '2.0.0');
 define('AXE_THEME_DIR', get_stylesheet_directory());
 define('AXE_THEME_URL', get_stylesheet_directory_uri());
 
-// Chargement des modules
+// ========================================
+// 📁 CHARGEMENT DES MODULES
+// ========================================
+
 require_once AXE_THEME_DIR . '/includes/class-assets-manager.php';
 require_once AXE_THEME_DIR . '/includes/class-logo-manager.php';
 require_once AXE_THEME_DIR . '/includes/class-shortcodes.php';
+require_once AXE_THEME_DIR . '/includes/class-particle-card.php';
 
-// Initialisation
+// ========================================
+// 🚀 INITIALISATION
+// ========================================
+
 function axemusique_init()
 {
     new AXE_Assets_Manager();
     new AXE_Logo_Manager();
     new AXE_Shortcodes();
+    new AXE_Particle_Card();
 }
 add_action('after_setup_theme', 'axemusique_init');
 
-// Support thème (de votre functions.php original)
+// ========================================
+// 🎨 SUPPORT THÈME
+// ========================================
+
 add_theme_support('post-thumbnails');
 add_theme_support('menus');
 
-// Body classes (de votre functions.php original)
+// ========================================
+// 🏷️ BODY CLASSES
+// ========================================
+
 function axemusique_body_classes($classes)
 {
     $classes[] = 'axemusique-theme';
@@ -34,7 +60,10 @@ function axemusique_body_classes($classes)
 }
 add_filter('body_class', 'axemusique_body_classes');
 
-// Optimisations (de votre functions.php original)
+// ========================================
+// ⚡ OPTIMISATIONS
+// ========================================
+
 function axemusique_cleanup()
 {
     remove_action('wp_head', 'print_emoji_detection_script', 7);

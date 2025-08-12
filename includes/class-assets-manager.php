@@ -9,6 +9,7 @@ class AXE_Assets_Manager
     public function __construct()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'), 20);
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'), 20);
     }
 
     public function enqueue_styles()
@@ -23,6 +24,18 @@ class AXE_Assets_Manager
             array('parent-style'),
             filemtime(get_stylesheet_directory() . '/style.css'),
             'all'
+        );
+    }
+
+    public function enqueue_scripts()
+    {
+        // Script des blobs particules
+        wp_enqueue_script(
+            'axe-particle-blobs',
+            get_stylesheet_directory_uri() . '/assets/js/particle-blobs.js',
+            array(),
+            filemtime(get_stylesheet_directory() . '/assets/js/particle-blobs.js'),
+            true
         );
     }
 }

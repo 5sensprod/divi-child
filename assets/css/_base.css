@@ -4,24 +4,32 @@
 
 body {
   background: var(--bg) !important;
-  background-image: url("../images/header1.png") !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
   color: var(--text) !important;
+  position: relative !important;
 }
 
+/* Image + overlay sur le ::before, fixe au viewport */
 body::before {
   content: "" !important;
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  background: rgba(10, 10, 11, 0.3) !important;
-  z-index: -1 !important;
+  inset: 0 !important;
   pointer-events: none !important;
+  z-index: -1 !important;
+
+  /* overlay + image en couches */
+  background-image: linear-gradient(
+      rgba(10, 10, 11, 0.32),
+      rgba(10, 10, 11, 0.32)
+    ),
+    url("../images/header1.png");
+  background-size: cover, cover !important;
+  background-repeat: no-repeat, no-repeat !important;
+
+  /* <- règle ici l’offset vertical en pixels */
+  background-position: 30% 0, 70% 120px !important;
+  /*                          ^^^^^^^^ offset Y */
+
+  background-attachment: fixed, fixed !important;
 }
 
 /* ========================================= */
