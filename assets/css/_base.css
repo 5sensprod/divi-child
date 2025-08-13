@@ -36,12 +36,11 @@ body::before {
 /* 🛠 UTILITAIRES */
 /* ========================================= */
 
-.axemusique-theme {
-  /* Classe ajoutée au body pour cibler spécifiquement notre thème */
-}
+/* .axemusique-theme {} */
+/* Classe ajoutée au body pour cibler spécifiquement notre thème */
 
 /* Classe pour désactiver les animations si nécessaire */
-.no-animations * {
+/* .no-animations * {
   animation: none !important;
   transition: none !important;
-}
+} */
