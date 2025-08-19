@@ -1,0 +1,47 @@
+/* Variables CSS par défaut pour AXE SVG */
+:root {
+  --axe-bg-0: #0e0b1f;
+  --axe-bg-55: #1a1050;
+  --axe-bg-100: #2a1372;
+  --axe-pink-core: #ff7be5;
+  --axe-pink-outer: #ff3fd1;
+  --axe-cyan-core: #9beaff;
+  --axe-cyan-outer: #31d1ff;
+  --axe-violet: #7d49ff;
+}
+
+/* CSS de base pour la section avec SVG background */
+.axe-background-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.axe-background-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-image 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Le background-image sera défini par JavaScript */
+}
+
+/* S'assurer que le contenu est au-dessus du SVG */
+.axe-background-section .et_pb_row,
+.axe-background-section .et_pb_column,
+.axe-background-section .et_pb_module {
+  position: relative;
+  z-index: 1;
+}
+
+/* Styles pour le slider */
+.axe-background-section .axe-slider {
+  position: relative;
+  z-index: 2;
+}

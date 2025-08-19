@@ -5,7 +5,6 @@ if (!defined('ABSPATH')) {
 
 class AXE_Assets_Manager
 {
-
     public function __construct()
     {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'), 20);
@@ -25,6 +24,15 @@ class AXE_Assets_Manager
             filemtime(get_stylesheet_directory() . '/style.css'),
             'all'
         );
+
+        // SVG Themes CSS
+        wp_enqueue_style(
+            'axe-svg-themes',
+            get_stylesheet_directory_uri() . '/assets/css/_svg-themes.css',
+            array('child-style'),
+            filemtime(get_stylesheet_directory() . '/assets/css/_svg-themes.css'),
+            'all'
+        );
     }
 
     public function enqueue_scripts()
@@ -35,6 +43,14 @@ class AXE_Assets_Manager
             get_stylesheet_directory_uri() . '/assets/js/particle-blobs.js',
             array(),
             filemtime(get_stylesheet_directory() . '/assets/js/particle-blobs.js'),
+            true
+        );
+
+        wp_enqueue_script(
+            'axe-svg-background',
+            get_stylesheet_directory_uri() . '/assets/js/axe-svg-background.js',
+            array(),
+            filemtime(get_stylesheet_directory() . '/assets/js/axe-svg-background.js'),
             true
         );
     }
