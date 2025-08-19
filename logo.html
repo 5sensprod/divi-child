@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Composant Logo — AXE MUSIQUE</title>
+
+    <!-- Préchargement des fontes (chemins relatifs côté web => utilisez des / et non des \) -->
+    <link rel="preload" href="assets/fonts/anticfont_regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="assets/fonts/myriad_pro_semiextended-webfont.woff2" as="font" type="font/woff2"
+        crossorigin>
+
+    <style>
+        /* ---------- Fontes ---------- */
+        @font-face {
+            font-family: "AnticAXE";
+            src: url("assets/fonts/anticfont_regular-webfont.woff2") format("woff2"),
+                url("assets/fonts/anticfont_regular-webfont.woff") format("woff");
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "MyriadPro-SemiExtended";
+            src: url("assets/fonts/myriad_pro_semiextended-webfont.woff2") format("woff2"),
+                url("assets/fonts/myriad_pro_semiextended-webfont.woff") format("woff");
+            font-display: swap;
+        }
+
+        :root {
+            /* Palette métal/rouge */
+            --metal-light: #f5f5f5;
+            --metal-mid: #c8c8c8;
+            --metal-dark: #8f8f8f;
+            --ink: #0d0d0d;
+            --white: #ffffff;
+            --red: #d21f26;
+            --red-deep: #a8171c;
+            --bg: #000000;
+            /* couleur d'arrière‑plan pour créer l'espace (gap) */
+            --outer: 18px;
+            /* épaisseur totale du grand trait rouge (externe) */
+            --gap: 12px;
+            /* trait "espace" (couleur du fond) pour que le contour ne touche pas les lettres */
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: #000;
+            margin: 0;
+        }
+
+        /* Wrapper de démo, vous pouvez le retirer si vous intégrez le composant ailleurs */
+        .page {
+            min-height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        /* ---------- Composant Logo ---------- */
+        .logo-axe-musique {
+            --stroke: 6px;
+            /* liseré blanc interne */
+            display: inline-block;
+            padding: 0;
+            background: #000;
+            border-radius: 0;
+        }
+
+        /* Liseré rouge externe du bloc (approximation du cartouche) */
+
+
+        .word {
+            line-height: 0.9;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Style métal */
+        .word.metal {
+            background-image: linear-gradient(180deg, var(--metal-light) 0%, var(--metal-mid) 38%, var(--metal-dark) 60%, var(--metal-light) 88%);
+            -webkit-text-stroke: var(--stroke) var(--white);
+            text-shadow: 0 2px 0 #000;
+        }
+
+        .word-axe {
+            font-family: \"AnticAXE\", system-ui, sans-serif;
+            font-size: clamp(54px, 14vw, 180px);
+            letter-spacing: 0;
+            display: inline-flex;
+            align-items: baseline;
+            position: relative;
+        }
+
+        .word-axe .a,
+        .word-axe .xe {
+            position: relative;
+            display: inline-block;
+        }
+
+        .word-axe .a {
+            margin-right: -0.12em;
+            z-index: 2;
+        }
+
+        .word-axe .xe {
+            z-index: 1;
+        }
+
+        .word-musique {
+            font-family: "MyriadPro-SemiExtended", system-ui, sans-serif;
+            font-size: clamp(36px, 9vw, 116px);
+            letter-spacing: 0.02em;
+        }
+
+        /* Haut/bas empilé façon lockup */
+        .stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .row {
+            position: relative;
+            display: inline-block;
+            line-height: 0.9;
+        }
+
+        .row+.row {
+            margin-top: clamp(4px, 1.2vw, 12px);
+        }
+
+        .row .outline,
+        .row .fill {
+            display: block;
+            white-space: nowrap;
+        }
+
+        .row .outline {
+            position: absolute;
+            inset: 0 auto auto 0;
+            color: transparent;
+            -webkit-text-stroke: var(--outline) var(--red);
+            z-index: 0;
+        }
+
+        .row .fill {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---------- Icône haut‑parleur (SVG) ---------- */
+
+
+
+
+        /* Option: petit chevron entre AXE et MUSIQUE */
+
+
+        /* Accessibilité si background-clip non supporté */
+        .no-bgclip .word {
+            color: var(--metal-light);
+        }
+
+        @supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+            .logo-axe-musique {
+                filter: none;
+            }
+
+            .logo-axe-musique .word {
+                color: var(--metal-light);
+            }
+        }
+
+        /* ---------- Règles pour le logo en SVG (contour global) ---------- */
+        svg.logo-axe-musique {
+            width: min(92vw, 1100px);
+            height: auto;
+            display: block;
+        }
+
+        svg.logo-axe-musique text {
+            paint-order: stroke fill;
+        }
+
+        svg.logo-axe-musique text.fill {
+            fill: url(#metalGrad);
+            stroke: var(--white);
+            stroke-width: 10;
+            paint-order: stroke fill;
+            vector-effect: non-scaling-stroke;
+        }
+
+        svg.logo-axe-musique text.outline {
+            fill: none;
+            stroke: var(--red);
+            stroke-width: var(--outer);
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+
+        svg.logo-axe-musique text.spacer {
+            fill: none;
+            stroke: var(--bg);
+            stroke-width: var(--gap);
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+
+        svg.logo-axe-musique text.axe {
+            font-family: "AnticAXE", system-ui, sans-serif;
+            font-size: clamp(120px, 18vw, 260px);
+            letter-spacing: 0;
+        }
+
+        svg.logo-axe-musique text.musique {
+            font-family: "MyriadPro-SemiExtended", system-ui, sans-serif;
+            font-size: clamp(72px, 11vw, 160px);
+            letter-spacing: .02em;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+
+        <!-- Composant -->
+        <svg class="logo-axe-musique" viewBox="0 0 900 350" role="img" aria-label="Logo AXE">
+            <defs>
+                <linearGradient id="metalGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#f5f5f5" />
+                    <stop offset="45%" stop-color="#bfbfbf" />
+                    <stop offset="70%" stop-color="#8f8f8f" />
+                    <stop offset="100%" stop-color="#eaeaea" />
+                </linearGradient>
+                <!-- Filtre pour un contour FIN à distance fixe autour TOUTES les arêtes (extérieur ET contreformes) -->
+                <!-- Paramètres : GAP ≈ 10px, LINE ≈ 3px  => outer=12, inner=9 -->
+                <filter id="outerOnlyRing" x="-30%" y="-30%" width="160%" height="160%"
+                    color-interpolation-filters="sRGB">
+                    <!-- Ring complet (extérieur + intérieurs) -->
+                    <!-- gap = 10px, trait = 3px  => 13 et 10 -->
+                    <feMorphology in="SourceAlpha" operator="dilate" radius="13" result="dilWide" />
+                    <feMorphology in="SourceAlpha" operator="dilate" radius="10" result="dilNarrow" />
+                    <feComposite in="dilWide" in2="dilNarrow" operator="out" result="ringFull" />
+
+                    <!-- Silhouette SOLIDE (on ferme les trous) -->
+                    <!-- augmente ce rayon si le trou du A est très grand -->
+                    <feMorphology in="SourceAlpha" operator="dilate" radius="60" result="tmpDil" />
+                    <feMorphology in="tmpDil" operator="erode" radius="60" result="solid" />
+
+                    <!-- Partie du ring qui tombe à l’intérieur (à supprimer) -->
+                    <feComposite in="ringFull" in2="solid" operator="in" result="innerPart" />
+
+                    <!-- Ne garder que l’anneau EXTERNE -->
+                    <feComposite in="ringFull" in2="innerPart" operator="out" result="outerRing" />
+
+                    <!-- Colorisation + fusion -->
+                    <feFlood flood-color="#d21f26" result="red" />
+                    <feComposite in="red" in2="outerRing" operator="in" result="coloredRing" />
+                    <feMerge>
+                        <feMergeNode in="coloredRing" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            <!-- 1 calque avec filtre : dessine un anneau à distance fixe autour du mot (inclut les contreformes du A) -->
+            <g filter="url(#outerOnlyRing)">
+                <text class="axe fill" x="60" y="250">
+                    <tspan class="A">A</tspan>
+                    <tspan dx="-0.12em">XE</tspan>
+                </text>
+            </g>
+        </svg>
+
+    </main>
+</body>
+
+</html>
