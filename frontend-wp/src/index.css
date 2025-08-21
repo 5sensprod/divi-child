@@ -1,6 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=Coda:wght@400;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Container principal - Standard Divi */
+  .container-divi {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Container contenu - Pour le texte et articles */
+  .container-content {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Container étroit - Pour les formulaires et pages spéciales */
+  .container-narrow {
+    @apply max-w-2xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
 
 /* Styles personnalisés */
 .line-clamp-2 {

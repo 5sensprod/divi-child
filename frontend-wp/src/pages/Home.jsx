@@ -8,30 +8,23 @@ const Home = () => {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6">
-            Bienvenue sur {siteData?.site_title || "Axe Musique"}
-          </h1>
-          <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-            {siteData?.site_description || "Votre magasin de musique en ligne"}
-          </p>
-          <Link
-            to="/boutique"
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block"
-          >
-            Découvrir nos instruments
-          </Link>
-        </div>
-      </section>
+      {/* Hero Section - sera remplacée par HeroSection component */}
+      {/* Cette section sera supprimée car elle fait doublon avec HeroSection */}
 
       {/* Catégories populaires */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">
-            Nos Catégories
-          </h2>
+      <section className="py-20 bg-white">
+        <div className="container-divi">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                Nos Catégories
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Découvrez notre sélection d'instruments organisée par catégories
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -39,34 +32,64 @@ const Home = () => {
                 image:
                   "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
                 slug: "guitares",
+                description: "Acoustiques, électriques et classiques",
               },
               {
                 name: "Pianos",
                 image:
                   "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400",
                 slug: "pianos",
+                description: "Pianos droits et à queue",
               },
               {
                 name: "Batterie",
                 image:
                   "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400",
                 slug: "batterie",
+                description: "Acoustiques et électroniques",
               },
             ].map((category) => (
               <Link
                 key={category.slug}
                 to={`/categorie/${category.slug}`}
-                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
               >
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute bg-black bg-opacity-40 flex items-center justify-center">
-                  <h3 className="text-white text-2xl font-bold">
+                {/* Image avec overlay gradient */}
+                <div className="relative h-80 overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                </div>
+
+                {/* Contenu */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2 group-hover:text-pink-300 transition-colors duration-300">
                     {category.name}
                   </h3>
+                  <p className="text-white/80 text-sm">
+                    {category.description}
+                  </p>
+
+                  {/* Flèche animée */}
+                  <div className="mt-3 flex items-center text-pink-300 group-hover:text-cyan-300 transition-colors duration-300">
+                    <span className="text-sm font-medium mr-2">Explorer</span>
+                    <svg
+                      className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </Link>
             ))}
@@ -75,17 +98,38 @@ const Home = () => {
       </section>
 
       {/* Produits vedettes */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Produits Vedettes
-            </h2>
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container-divi">
+          <div className="flex items-center justify-between mb-16">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                  Produits Vedettes
+                </span>
+              </h2>
+              <p className="text-lg text-gray-600">
+                Notre sélection des meilleurs instruments
+              </p>
+            </div>
+
             <Link
               to="/boutique"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className="group hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
-              Voir tout →
+              <span>Voir tout</span>
+              <svg
+                className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
             </Link>
           </div>
 
@@ -94,24 +138,137 @@ const Home = () => {
             loading={loading.products}
             className="grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
           />
+
+          {/* Bouton mobile */}
+          <div className="md:hidden text-center mt-12">
+            <Link
+              to="/boutique"
+              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
+            >
+              <span>Voir tout le catalogue</span>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Plus de 1000 instruments disponibles
-          </h2>
-          <p className="text-xl opacity-90 mb-8">
-            Découvrez notre catalogue complet d'instruments de musique
-          </p>
-          <Link
-            to="/boutique"
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block"
-          >
-            Explorer le catalogue
-          </Link>
+      {/* Statistiques */}
+      <section className="py-20 bg-white">
+        <div className="container-divi">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="group">
+              <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-3xl font-bold text-gray-800 mb-2">1000+</h3>
+              <p className="text-gray-600">Instruments disponibles</p>
+            </div>
+
+            <div className="group">
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-3xl font-bold text-gray-800 mb-2">50+</h3>
+              <p className="text-gray-600">Marques partenaires</p>
+            </div>
+
+            <div className="group">
+              <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-3xl font-bold text-gray-800 mb-2">10k+</h3>
+              <p className="text-gray-600">Clients satisfaits</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section finale */}
+      <section className="py-20 bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white relative overflow-hidden">
+        {/* Éléments décoratifs */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 bg-pink-500 rounded-full blur-xl"></div>
+          <div className="absolute bottom-10 right-10 w-32 h-32 bg-cyan-500 rounded-full blur-xl"></div>
+          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-purple-500 rounded-full blur-xl"></div>
+        </div>
+
+        <div className="container-divi relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
+                Prêt à faire de la musique ?
+              </span>
+            </h2>
+            <p className="text-xl opacity-90 mb-10 leading-relaxed">
+              Rejoignez des milliers de musiciens qui nous font confiance pour
+              leurs instruments
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link
+                to="/boutique"
+                className="group relative px-8 py-4 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/25"
+              >
+                <span className="relative z-10">Explorer le catalogue</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-cyan-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </Link>
+
+              <Link
+                to="/contact"
+                className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full transition-all duration-300 hover:bg-white/10 hover:border-white/50 backdrop-blur-sm"
+              >
+                Nous contacter
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>
