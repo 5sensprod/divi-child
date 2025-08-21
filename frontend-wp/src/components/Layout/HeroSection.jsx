@@ -1,5 +1,4 @@
 // src/components/Layout/HeroSection.jsx
-
 import { Link } from "react-router-dom";
 
 const HeroSection = ({
@@ -11,7 +10,7 @@ const HeroSection = ({
     <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
       {/* Background SVG avec variables CSS */}
       <div
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0"
         style={{
           backgroundImage:
             "url('/assets/images/axe-musique-neon-bg-v2-variables.svg')",
@@ -29,18 +28,6 @@ const HeroSection = ({
           "--axe-violet": "#7D49FF",
         }}
       />
-
-      {/* Fallback gradient si SVG ne charge pas */}
-      <div
-        className="absolute inset-0 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900"
-        style={{
-          backgroundImage:
-            "url('/assets/images/axe-musique-neon-bg-v2-variables.svg') !== 'none' ? 'none' : 'linear-gradient(135deg, #2A1372, #1A1050, #0E0B1F)'",
-        }}
-      />
-
-      {/* Overlay pour améliorer la lisibilité */}
-      <div className="absolute inset-0 bg-black/20" />
 
       {/* Contenu */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
