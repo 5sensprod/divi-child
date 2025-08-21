@@ -5,12 +5,42 @@ import Navigation from "./Navigation";
 import HeroSection from "./HeroSection";
 
 const Header = ({ showHero = false }) => {
-  const { siteData, menus } = useWordPress();
+  const { siteData, menus, loading } = useWordPress();
 
-  if (!menus) {
+  // Vérifier si c'est un vrai menu WordPress (avec items)
+  const hasRealMenu = menus && menus.items && menus.items.length > 0;
+
+  if (!hasRealMenu || loading.menus) {
     return (
-      <div className="h-20 bg-gray-900 animate-pulse flex items-center justify-center">
-        <div className="w-32 h-6 bg-gray-700 rounded"></div>
+      <div
+        className={`h-20 ${
+          showHero ? "bg-black/80 backdrop-blur-lg" : "bg-gray-900"
+        } animate-pulse sticky top-0 z-50`}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo skeleton */}
+            <div className="flex items-center space-x-3">
+              <div className="h-12 w-12 bg-gray-700 rounded-lg"></div>
+              <div className="h-6 w-32 bg-gray-700 rounded"></div>
+            </div>
+
+            {/* Menu skeleton */}
+            <div className="hidden md:flex items-center space-x-6">
+              <div className="h-5 w-20 bg-gray-700 rounded"></div>
+              <div className="h-5 w-16 bg-gray-700 rounded"></div>
+              <div className="h-5 w-24 bg-gray-700 rounded"></div>
+              <div className="h-5 w-18 bg-gray-700 rounded"></div>
+            </div>
+
+            {/* Actions skeleton */}
+            <div className="flex items-center space-x-4">
+              <div className="h-10 w-10 bg-gray-700 rounded-full"></div>
+              <div className="h-10 w-10 bg-gray-700 rounded-full"></div>
+              <div className="md:hidden h-10 w-10 bg-gray-700 rounded-full"></div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
