@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:serif="http://www.serif.com/" viewBox="0 0 512 512">
+  <!-- Generator: Adobe Illustrator 29.7.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 8)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill-rule: evenodd;
+      }
+
+      .st0, .st1, .st2, .st3 {
+        fill: #fff;
+      }
+
+      .st1 {
+        font-family: Bauhaus, Bauhaus;
+        font-size: 59.7px;
+      }
+
+      .st1, .st4, .st3 {
+        isolation: isolate;
+      }
+
+      .st5 {
+        fill: #0e0e0e;
+        stroke: #000;
+        stroke-miterlimit: 10;
+      }
+
+      .st6 {
+        display: none;
+      }
+
+      .st2 {
+        fill-opacity: 0;
+      }
+
+      .st3 {
+        font-family: AnticFont, AnticFont;
+        font-size: 104.8px;
+      }
+    </style>
+  </defs>
+  <g id="Calque_2" class="st6">
+    <rect class="st5" width="512" height="512"/>
+  </g>
+  <g id="Calque_1">
+    <g>
+      <g id="neon-1-" serif:id="neon 1 ">
+        <path class="st2" d="M268.4,191.3l-9.8-18.9-96.6-9.2,7,19.2-25.7,88.6-16.2-4,2.1,7.3-10.5,59.5-5.8,7.6,168.6-7.9,9.2,14.6,9.7-14.6,88.7,7.2,9.7,2.3-5.9-12.3-4-54.2,4.7-9.8-12.5,3.9-15.9-88.1,7.9-19.2-94.1,9.2-10.6,18.9h0Z"/>
+        <path class="st0" d="M268.7,169.7l1.3-2.3,2.6-4.7,116.3-11.4-13.3,32.1,13.4,73.8,23.7-7.3-13.4,28.4,3.7,49.6,14.2,29.7-29.7-6.9-81.9-6.7-15,22.7-14.5-22.9-184.6,8.6,17.6-23,9.7-54.8-6.4-22,23.8,5.9,22-76-11.4-31.2,118.3,11.3,3.6,7h0ZM268.4,191.3l-9.8-18.9-96.6-9.2,7,19.2-25.7,88.6-16.2-4,2.1,7.3-10.5,59.5-5.8,7.6,168.6-7.9,9.2,14.6,9.7-14.6,88.7,7.2,9.7,2.3-5.9-12.3-4-54.2,4.7-9.8-12.5,3.9-15.9-88.1,7.9-19.2-94.1,9.2-10.6,18.9h0Z"/>
+      </g>
+      <text class="st1" transform="translate(134 323.8) scale(1.1 1)"><tspan x="0" y="0">MUSIQUE</tspan></text>
+      <g class="st4">
+        <text class="st3" transform="translate(154.3 270.4)"><tspan x="0" y="0">A</tspan></text>
+        <text class="st3" transform="translate(229.4 270.4)"><tspan x="0" y="0">X</tspan></text>
+        <text class="st3" transform="translate(302.9 270.4)"><tspan x="0" y="0">E</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

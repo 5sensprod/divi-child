@@ -1,0 +1,63 @@
+/* src/assets/fonts/fonts.css */
+
+/* Importez vos fonts personnalisées ici */
+@font-face {
+  font-family: "AxeDisplay";
+  src: url("/assets/fonts/AxeDisplay-Bold.woff2") format("woff2"),
+    url("/assets/fonts/AxeDisplay-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "AxeDisplay";
+  src: url("/assets/fonts/AxeDisplay-Regular.woff2") format("woff2"),
+    url("/assets/fonts/AxeDisplay-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Variables CSS pour les couleurs du thème */
+:root {
+  /* Couleurs Axe Musique */
+  --axe-bg-0: #0e0b1f;
+  --axe-bg-55: #1a1050;
+  --axe-bg-100: #2a1372;
+  --axe-pink-core: #ff7be5;
+  --axe-pink-outer: #ff3fd1;
+  --axe-cyan-core: #9beaff;
+  --axe-cyan-outer: #31d1ff;
+  --axe-violet: #7d49ff;
+
+  /* Classes utilitaires */
+  --font-display: "AxeDisplay", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+/* Classes utilitaires Tailwind personnalisées */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Animations personnalisées */
+@keyframes neon-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor,
+      0 0 15px currentColor;
+  }
+  50% {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor,
+      0 0 30px currentColor;
+  }
+}
+
+.animate-neon {
+  animation: neon-glow 2s ease-in-out infinite alternate;
+}
