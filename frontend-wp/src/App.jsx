@@ -8,8 +8,8 @@ const WordPressContext = createContext();
 
 // Configuration de l'API depuis les variables d'environnement
 const API_CONFIG = {
-  baseURL:
-    import.meta.env.VITE_WP_API_URL || "https://axemusique.shop/wp-json/wp/v2",
+  // ✅ Utiliser le proxy local au lieu de l'URL complète
+  baseURL: "/wp-json/wp/v2",
   siteURL: import.meta.env.VITE_WP_SITE_URL || "https://axemusique.shop",
   timeout: 30000,
   isDevMode: import.meta.env.VITE_DEV_MODE === "true",
@@ -35,20 +35,76 @@ const api = axios.create({
   },
 });
 
-// Hook personnalisé pour l'API WordPress
+// Hook personnalisé pour l'API WordPress avec chargement intelligent
 const useWordPressAPI = () => {
   const [data, setData] = useState({
     siteData: null,
-    menus: null,
+    // ✅ Menu par défaut immédiatement disponible
+    menus: {
+      main: {
+        name: "Menu Principal",
+        items: [
+          { id: 1, title: "Accueil", url: "/", parent: 0 },
+          { id: 2, title: "Instruments", url: "/instruments", parent: 0 },
+          { id: 3, title: "Accessoires", url: "/accessoires", parent: 0 },
+          { id: 4, title: "Contact", url: "/contact", parent: 0 },
+        ],
+      },
+    },
     products: [],
-    loading: true,
+    loading: {
+      initial: true,
+      menus: true, // Toujours essayer de charger depuis l'API/cache
+      products: true,
+      siteData: true,
+    },
     error: null,
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setData((prev) => ({ ...prev, loading: true, error: null }));
+        // ✅ CHARGEMENT IMMÉDIAT DES DONNÉES CACHÉES (une seule fois)
+        const loadCachedData = () => {
+          const MENU_CACHE_KEY = "axemusique_menu";
+
+          try {
+            const cached = localStorage.getItem(MENU_CACHE_KEY);
+            if (cached) {
+              const { data: menuData, timestamp } = JSON.parse(cached);
+              const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures
+              const isValid = Date.now() - timestamp < CACHE_DURATION;
+
+              if (isValid) {
+                console.log("⚡ Menu chargé instantanément depuis le cache");
+                setData((prev) => ({
+                  ...prev,
+                  menus: menuData,
+                  loading: { ...prev.loading, menus: false, initial: false },
+                }));
+                return menuData;
+              } else {
+                // Cache expiré, le supprimer
+                localStorage.removeItem(MENU_CACHE_KEY);
+                console.log("🗑️ Cache menu expiré");
+              }
+            }
+          } catch (e) {
+            console.warn("Cache menu corrompu", e);
+            localStorage.removeItem(MENU_CACHE_KEY);
+          }
+
+          // Pas de cache valide, mais on a déjà le menu par défaut
+          console.log("📋 Utilisation du menu par défaut");
+          setData((prev) => ({
+            ...prev,
+            loading: { ...prev.loading, initial: false },
+          }));
+          return null;
+        };
+
+        // ✅ Charger le cache UNE SEULE FOIS
+        const cachedMenu = loadCachedData();
 
         // Si mode développement, utiliser les données de test
         if (API_CONFIG.isDevMode) {
@@ -63,27 +119,7 @@ const useWordPressAPI = () => {
                 phone: "01 23 45 67 89",
               },
             },
-            menus: {
-              main: {
-                name: "Menu Principal",
-                items: [
-                  { id: 1, title: "Accueil", url: "/", parent: 0 },
-                  {
-                    id: 2,
-                    title: "Instruments",
-                    url: "/instruments",
-                    parent: 0,
-                  },
-                  {
-                    id: 3,
-                    title: "Accessoires",
-                    url: "/accessoires",
-                    parent: 0,
-                  },
-                  { id: 4, title: "Contact", url: "/contact", parent: 0 },
-                ],
-              },
-            },
+            menus: cachedMenu || data.menus, // Garder le menu par défaut si pas de cache
             products: [
               {
                 id: 1,
@@ -114,9 +150,17 @@ const useWordPressAPI = () => {
             ],
           };
 
-          // Simuler un délai d'API
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          setData({ ...mockData, loading: false, error: null });
+          setData((prev) => ({
+            ...mockData,
+            loading: {
+              initial: false,
+              menus: false,
+              products: false,
+              siteData: false,
+            },
+            error: null,
+          }));
         } else {
           // Utiliser la vraie API WordPress
           console.log("Connexion à l'API WordPress:", API_CONFIG.baseURL);
@@ -129,161 +173,193 @@ const useWordPressAPI = () => {
               testResponse.data.name || testResponse.data.namespace
             );
 
-            // Récupérer les données en parallèle
-            const requests = [
-              api.get("/site-data").catch((err) => {
+            // 🚀 CHARGEMENT INTELLIGENT EN PARALLÈLE
+            const loadSiteData = async () => {
+              try {
+                const response = await api.get("/site-data");
+                setData((prev) => ({
+                  ...prev,
+                  siteData: response.data,
+                  loading: { ...prev.loading, siteData: false },
+                }));
+                return response.data;
+              } catch (err) {
                 console.warn("Endpoint site-data non disponible:", err.message);
-                return {
-                  data: {
-                    site_title: "Axe Musique",
-                    site_description: "Votre magasin de musique en ligne",
-                    logo: null,
-                    contact_info: {
-                      email: "contact@axemusique.shop",
-                      phone: "",
-                    },
-                  },
+                const fallbackData = {
+                  site_title: "Axe Musique",
+                  site_description: "Votre magasin de musique en ligne",
+                  logo: null,
+                  contact_info: { email: "contact@axemusique.shop", phone: "" },
                 };
-              }),
-              api.get("/menus").catch((err) => {
-                console.warn("Endpoint menus non disponible:", err.message);
-                return {
-                  data: {
-                    main: {
-                      name: "Menu Principal",
-                      items: [
-                        { id: 1, title: "Accueil", url: "/", parent: 0 },
-                        {
-                          id: 2,
-                          title: "Boutique",
-                          url: "/boutique",
-                          parent: 0,
-                        },
-                        { id: 3, title: "Contact", url: "/contact", parent: 0 },
-                      ],
-                    },
-                  },
-                };
-              }),
-              // Utiliser le service WooCommerce
-              (async () => {
-                try {
-                  const products = await getProducts({ per_page: 20 });
-                  return { data: products };
-                } catch (wcError) {
-                  console.warn(
-                    "Service WooCommerce non disponible:",
-                    wcError.message
-                  );
+                setData((prev) => ({
+                  ...prev,
+                  siteData: fallbackData,
+                  loading: { ...prev.loading, siteData: false },
+                }));
+                return fallbackData;
+              }
+            };
 
-                  // Fallback vers des données de test spécifiques à la musique
-                  console.log("Utilisation de données de démonstration...");
-                  return {
-                    data: [
+            const loadMenu = async () => {
+              if (cachedMenu) {
+                console.log("✅ Menu déjà chargé depuis le cache");
+                setData((prev) => ({
+                  ...prev,
+                  loading: { ...prev.loading, menus: false },
+                }));
+                return cachedMenu;
+              }
+
+              try {
+                console.log("🔄 Récupération du menu depuis l'API...");
+                const response = await api.get("/menus");
+
+                // Sauvegarder en cache
+                const cacheData = {
+                  data: response.data,
+                  timestamp: Date.now(),
+                };
+                localStorage.setItem(
+                  "axemusique_menu",
+                  JSON.stringify(cacheData)
+                );
+                console.log("💾 Menu mis en cache pour 24h");
+
+                setData((prev) => ({
+                  ...prev,
+                  menus: response.data,
+                  loading: { ...prev.loading, menus: false },
+                }));
+                return response.data;
+              } catch (menuError) {
+                console.warn(
+                  "Endpoint menus non disponible:",
+                  menuError.message
+                );
+                // Garder le menu par défaut, juste arrêter le loading
+                setData((prev) => ({
+                  ...prev,
+                  loading: { ...prev.loading, menus: false },
+                }));
+                return data.menus; // Menu par défaut
+              }
+            };
+
+            const loadProducts = async () => {
+              try {
+                const products = await getProducts({ per_page: 20 });
+                setData((prev) => ({
+                  ...prev,
+                  products: products,
+                  loading: { ...prev.loading, products: false },
+                }));
+                return products;
+              } catch (wcError) {
+                console.warn(
+                  "Service WooCommerce non disponible:",
+                  wcError.message
+                );
+
+                const fallbackProducts = [
+                  {
+                    id: 1,
+                    name: "Trompette SiB Professionnelle",
+                    regular_price: "1299.99",
+                    sale_price: "999.99",
+                    on_sale: true,
+                    images: [
                       {
-                        id: 1,
-                        name: "Trompette SiB Professionnelle",
-                        regular_price: "1299.99",
-                        sale_price: "999.99",
-                        on_sale: true,
-                        images: [
-                          {
-                            src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
-                          },
-                        ],
-                        stock_status: "instock",
-                      },
-                      {
-                        id: 2,
-                        name: "Guitare Classique",
-                        regular_price: "449.99",
-                        sale_price: "",
-                        on_sale: false,
-                        images: [
-                          {
-                            src: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
-                          },
-                        ],
-                        stock_status: "instock",
-                      },
-                      {
-                        id: 3,
-                        name: "Piano Numérique 88 touches",
-                        regular_price: "2499.99",
-                        sale_price: "1999.99",
-                        on_sale: true,
-                        images: [
-                          {
-                            src: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400",
-                          },
-                        ],
-                        stock_status: "instock",
-                      },
-                      {
-                        id: 4,
-                        name: "Violon 4/4 avec archet",
-                        regular_price: "899.99",
-                        sale_price: "",
-                        on_sale: false,
-                        images: [
-                          {
-                            src: "https://images.unsplash.com/photo-1612225330812-01a9c6b355ec?w=400",
-                          },
-                        ],
-                        stock_status: "instock",
-                      },
-                      {
-                        id: 5,
-                        name: "Batterie Acoustique Complète",
-                        regular_price: "1899.99",
-                        sale_price: "1599.99",
-                        on_sale: true,
-                        images: [
-                          {
-                            src: "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400",
-                          },
-                        ],
-                        stock_status: "instock",
-                      },
-                      {
-                        id: 6,
-                        name: "Microphone Studio",
-                        regular_price: "349.99",
-                        sale_price: "",
-                        on_sale: false,
-                        images: [
-                          {
-                            src: "https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=400",
-                          },
-                        ],
-                        stock_status: "instock",
+                        src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
                       },
                     ],
-                  };
-                }
-              })(),
-            ];
+                    stock_status: "instock",
+                  },
+                  {
+                    id: 2,
+                    name: "Guitare Classique",
+                    regular_price: "449.99",
+                    sale_price: "",
+                    on_sale: false,
+                    images: [
+                      {
+                        src: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
+                      },
+                    ],
+                    stock_status: "instock",
+                  },
+                  {
+                    id: 3,
+                    name: "Piano Numérique 88 touches",
+                    regular_price: "2499.99",
+                    sale_price: "1999.99",
+                    on_sale: true,
+                    images: [
+                      {
+                        src: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400",
+                      },
+                    ],
+                    stock_status: "instock",
+                  },
+                  {
+                    id: 4,
+                    name: "Violon 4/4 avec archet",
+                    regular_price: "899.99",
+                    sale_price: "",
+                    on_sale: false,
+                    images: [
+                      {
+                        src: "https://images.unsplash.com/photo-1612225330812-01a9c6b355ec?w=400",
+                      },
+                    ],
+                    stock_status: "instock",
+                  },
+                  {
+                    id: 5,
+                    name: "Batterie Acoustique Complète",
+                    regular_price: "1899.99",
+                    sale_price: "1599.99",
+                    on_sale: true,
+                    images: [
+                      {
+                        src: "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400",
+                      },
+                    ],
+                    stock_status: "instock",
+                  },
+                  {
+                    id: 6,
+                    name: "Microphone Studio",
+                    regular_price: "349.99",
+                    sale_price: "",
+                    on_sale: false,
+                    images: [
+                      {
+                        src: "https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=400",
+                      },
+                    ],
+                    stock_status: "instock",
+                  },
+                ];
 
-            const [siteResponse, menusResponse, productsResponse] =
-              await Promise.all(requests);
+                setData((prev) => ({
+                  ...prev,
+                  products: fallbackProducts,
+                  loading: { ...prev.loading, products: false },
+                }));
+                return fallbackProducts;
+              }
+            };
 
-            setData({
-              siteData: siteResponse.data,
-              menus: menusResponse.data,
-              products: productsResponse.data,
-              loading: false,
-              error: null,
-            });
+            // Charger tout en parallèle
+            await Promise.all([loadSiteData(), loadMenu(), loadProducts()]);
 
-            console.log("Données WordPress chargées avec succès");
+            console.log("✅ Toutes les données WordPress chargées");
           } catch (apiError) {
-            console.error("Erreur détaillée API:", apiError);
+            console.error("❌ Erreur détaillée API:", apiError);
 
-            // Si même l'API de base ne fonctionne pas, utiliser des données de démonstration
-            console.log(
-              "Fallback vers les données de démonstration complètes..."
-            );
-            setData({
+            // Fallback complet - garde le menu par défaut
+            setData((prev) => ({
+              ...prev,
               siteData: {
                 site_title: "Axe Musique",
                 site_description: "Votre magasin de musique en ligne",
@@ -293,74 +369,29 @@ const useWordPressAPI = () => {
                   phone: "01 23 45 67 89",
                 },
               },
-              menus: {
-                main: {
-                  name: "Menu Principal",
-                  items: [
-                    { id: 1, title: "Accueil", url: "/", parent: 0 },
-                    {
-                      id: 2,
-                      title: "Instruments",
-                      url: "/instruments",
-                      parent: 0,
-                    },
-                    {
-                      id: 3,
-                      title: "Accessoires",
-                      url: "/accessoires",
-                      parent: 0,
-                    },
-                    { id: 4, title: "Contact", url: "/contact", parent: 0 },
-                  ],
-                },
+              // menus garde sa valeur par défaut
+              products: [],
+              loading: {
+                initial: false,
+                menus: false,
+                products: false,
+                siteData: false,
               },
-              products: [
-                {
-                  id: 1,
-                  name: "Trompette SiB Professionnelle",
-                  regular_price: "1299.99",
-                  sale_price: "999.99",
-                  on_sale: true,
-                  images: [
-                    {
-                      src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
-                    },
-                  ],
-                  stock_status: "instock",
-                },
-                {
-                  id: 2,
-                  name: "Guitare Classique",
-                  regular_price: "449.99",
-                  sale_price: "",
-                  on_sale: false,
-                  images: [
-                    {
-                      src: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
-                    },
-                  ],
-                  stock_status: "instock",
-                },
-              ],
-              loading: false,
-              error: null,
-            });
+              error: "Erreur de connexion à WordPress",
+            }));
           }
         }
       } catch (error) {
-        console.error("Erreur API WordPress:", error);
-        let errorMessage = "Erreur de connexion à WordPress.";
-
-        if (error.response) {
-          errorMessage += ` Statut: ${error.response.status}`;
-        } else if (error.request) {
-          errorMessage += " Vérifiez votre connexion réseau.";
-        }
-
+        console.error("❌ Erreur API WordPress:", error);
         setData((prev) => ({
           ...prev,
-          loading: false,
-          error: errorMessage,
+          loading: {
+            initial: false,
+            menus: false,
+            products: false,
+            siteData: false,
+          },
+          error: "Erreur de connexion à WordPress.",
         }));
       }
     };
@@ -372,11 +403,13 @@ const useWordPressAPI = () => {
 };
 
 // Composant Header avec menu WordPress
+// Composant Header avec menu WordPress
 const Header = () => {
   const { siteData, menus } = useContext(WordPressContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  if (!siteData || !menus) {
+  // ✅ Condition modifiée : afficher dès que le menu est disponible
+  if (!menus) {
     return (
       <div className="h-16 bg-gray-100 animate-pulse flex items-center justify-center">
         <div className="w-32 h-6 bg-gray-300 rounded"></div>
@@ -392,18 +425,18 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            {siteData.logo && (
+            {siteData?.logo && (
               <img src={siteData.logo} alt="Logo" className="h-8 w-auto" />
             )}
             <h1 className="text-xl font-bold text-gray-800">
-              {siteData.site_title}
+              {siteData?.site_title || "Axe Musique"}
             </h1>
           </div>
 
           {/* Navigation desktop */}
           <nav className="hidden md:flex items-center space-x-6">
             {mainMenu &&
-              mainMenu.items.map((item) => (
+              mainMenu.items?.map((item) => (
                 <a
                   key={item.id}
                   href={item.url}
@@ -440,7 +473,7 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t py-4 animate-in slide-in-from-top">
             {mainMenu &&
-              mainMenu.items.map((item) => (
+              mainMenu.items?.map((item) => (
                 <a
                   key={item.id}
                   href={item.url}
@@ -541,16 +574,17 @@ const ProductCard = ({ product }) => {
   );
 };
 
-// Composant principal
+// Composant principal avec chargement intelligent
 const App = () => {
   const wordpressData = useWordPressAPI();
 
-  if (wordpressData.loading) {
+  // Spinner global seulement au tout début
+  if (wordpressData.loading.initial) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement des données WordPress...</p>
+          <p className="text-gray-600">Initialisation...</p>
         </div>
       </div>
     );
@@ -587,33 +621,64 @@ const App = () => {
   return (
     <WordPressContext.Provider value={wordpressData}>
       <div className="min-h-screen bg-gray-50">
+        {/* Header - S'affiche immédiatement si menu en cache */}
         <Header />
 
         <main className="container mx-auto px-4 py-8">
-          {/* Hero Section */}
+          {/* Hero Section - S'affiche immédiatement */}
           <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl p-8 mb-12">
             <h2 className="text-4xl font-bold mb-4">
-              Bienvenue sur {wordpressData.siteData?.site_title}
+              Bienvenue sur{" "}
+              {wordpressData.siteData?.site_title || "Axe Musique"}
             </h2>
             <p className="text-xl opacity-90 mb-6">
-              {wordpressData.siteData?.site_description}
+              {wordpressData.siteData?.site_description ||
+                "Votre magasin de musique en ligne"}
             </p>
             <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Découvrir nos instruments
             </button>
           </section>
 
-          {/* Produits */}
+          {/* Section Produits - Spinner spécifique si en cours de chargement */}
           <section>
-            <h2 className="text-3xl font-bold text-gray-800 mb-8">
-              Nos Instruments
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {wordpressData.products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-gray-800">
+                Nos Instruments
+              </h2>
+              {wordpressData.loading.products && (
+                <div className="flex items-center text-gray-500">
+                  <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <span className="text-sm">Chargement des produits...</span>
+                </div>
+              )}
             </div>
+
+            {wordpressData.loading.products ? (
+              // Skeleton loader pour les produits
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-lg shadow-md overflow-hidden"
+                  >
+                    <div className="h-64 bg-gray-200 animate-pulse"></div>
+                    <div className="p-4">
+                      <div className="h-4 bg-gray-200 animate-pulse rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 animate-pulse rounded w-2/3 mb-3"></div>
+                      <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Vrais produits
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {wordpressData.products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
           </section>
         </main>
 
@@ -621,8 +686,8 @@ const App = () => {
         <footer className="bg-gray-800 text-white py-8 mt-12">
           <div className="container mx-auto px-4 text-center">
             <p>
-              &copy; 2025 {wordpressData.siteData?.site_title}. Tous droits
-              réservés.
+              &copy; 2025 {wordpressData.siteData?.site_title || "Axe Musique"}.
+              Tous droits réservés.
             </p>
             <p className="text-gray-400 mt-2">
               Frontend React + Backend WordPress
