@@ -5,7 +5,7 @@ const SLIDES = [
     title: "ACHETEZ ET RÉPAREZ VOTRE MATOS MUSICAL",
     description:
       "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
-    image: "/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min.png",
+    image: "/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min_1.webp",
     colors: ["#ff3fd1", "#31d1ff"],
     textGradient: ["#ff3fd1", "#31d1ff"], // Couleurs par défaut pour le texte
   },
@@ -13,7 +13,7 @@ const SLIDES = [
     title: "BIENTÔT 30 ANS D'EXPÉRIENCE À VOTRE SERVICE",
     description:
       "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
-    image: "/assets/images/foodtruck4-min.png",
+    image: "/assets/images/foodtruck4-min_1.webp",
     colors: ["#ff6b35", "#ffd23f"],
     textGradient: ["#ff4500", "#ff8c00", "#ffd700"], // Dégradé sunset pour le texte
   },
