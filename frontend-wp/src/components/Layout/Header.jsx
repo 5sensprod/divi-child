@@ -1,5 +1,4 @@
 // src/components/Layout/Header.jsx
-
 import { useWordPress } from "../../context/WordPressContext";
 import Navigation from "./Navigation";
 import HeroSection from "./HeroSection";
@@ -9,35 +8,20 @@ const Header = ({ showHero = false }) => {
 
   return (
     <header className="relative">
-      {/* Background SVG seulement si pas de hero (pour éviter la duplication) */}
-      {showHero ? (
-        // Le Hero gérera son propre background
-        <div className="relative z-[1000] sticky top-0">
-          <Navigation
-            menuItems={menus?.items || []}
-            siteTitle={siteData?.site_title || "Axe Musique"}
-            loading={loading.menus}
-            showSearch={false}
-            showCart={false}
-            cartCount={5}
-          />
-        </div>
-      ) : (
-        // Background normal pour les autres pages
-        <>
-          <HeroBackground />
-          <div className="relative z-[1000] sticky top-0">
-            <Navigation
-              menuItems={menus?.items || []}
-              siteTitle={siteData?.site_title || "Axe Musique"}
-              loading={loading.menus}
-              showSearch={false}
-              showCart={false}
-              cartCount={5}
-            />
-          </div>
-        </>
-      )}
+      {/* Background SVG pour toute la zone header+hero */}
+      <HeroBackground />
+
+      {/* Navigation toujours sticky */}
+      <div className="relative z-[1000] sticky top-0">
+        <Navigation
+          menuItems={menus?.items || []}
+          siteTitle={siteData?.site_title || "Axe Musique"}
+          loading={loading.menus}
+          showSearch={false}
+          showCart={false}
+          cartCount={5}
+        />
+      </div>
 
       {/* Section Hero */}
       {showHero && (
