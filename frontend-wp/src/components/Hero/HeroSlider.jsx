@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
-// Configuration simplifiée
 const SLIDES = [
   {
     title: "ACHETEZ ET RÉPAREZ VOTRE MATOS MUSICAL",
@@ -17,7 +16,6 @@ const SLIDES = [
     colors: ["#ff6b35", "#ffd23f"],
   },
 ];
-
 const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
   const [current, setCurrent] = useState(0);
 
@@ -43,8 +41,19 @@ const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
       className={`relative w-full overflow-hidden ${className}`}
       style={{
         height: "650px",
-        background:
-          "linear-gradient(135deg, #0E0B1F 0%, #1A1050 50%, #2A1372 100%)",
+        backgroundImage:
+          "url('/assets/images/axe-musique-neon-bg-v2-variables.svg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        "--axe-bg-0": "#0E0B1F",
+        "--axe-bg-55": "#1A1050",
+        "--axe-bg-100": "#2A1372",
+        "--axe-pink-core": "#FF7BE5",
+        "--axe-pink-outer": "#FF3FD1",
+        "--axe-cyan-core": "#9BEAFF",
+        "--axe-cyan-outer": "#31D1FF",
+        "--axe-violet": "#7D49FF",
         "--gradient-color-1": "#ff3fd1",
         "--gradient-color-2": "#31d1ff",
         "--dot-active-color": "#ff3fd1",
