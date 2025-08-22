@@ -50,6 +50,41 @@
   }
 }
 
+/* Keyframes pour le spinner */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Amélioration de la hiérarchie z-index */
+.z-navigation {
+  z-index: 1000;
+}
+
+.z-dropdown {
+  z-index: 1030;
+}
+
+.z-overlay {
+  z-index: 1020;
+}
+
+.z-mobile-menu {
+  z-index: 1050;
+}
+
+.z-hero-content {
+  z-index: 1;
+}
+
+.z-hero-background {
+  z-index: 0;
+}
+
 /* Améliorations visuelles */
 * {
   box-sizing: border-box;
@@ -78,4 +113,89 @@ a {
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
+}
+
+/* Styles pour les dropdowns */
+.dropdown-menu {
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Styles pour le menu mobile */
+.mobile-menu-overlay {
+  animation: mobileMenuSlideIn 0.3s ease-out;
+}
+
+@keyframes mobileMenuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Amélioration des transitions pour les boutons */
+.btn-gradient {
+  @apply bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+}
+
+.btn-gradient:hover {
+  box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.25);
+}
+
+/* Styles pour les overlays */
+.overlay-backdrop {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Amélioration du focus pour l'accessibilité */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #ff7be5;
+  outline-offset: 2px;
+}
+
+/* Styles pour les éléments interactifs */
+.interactive-element {
+  @apply transition-all duration-300 ease-out;
+}
+
+.interactive-element:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive breakpoints personnalisés */
+@media (max-width: 640px) {
+  .container-divi {
+    @apply px-3;
+  }
+}
+
+@media (min-width: 1400px) {
+  .container-divi {
+    max-width: 70rem; /* 1440px - équivalent à max-w-8xl */
+  }
 }
