@@ -9,26 +9,35 @@ const Header = ({ showHero = false }) => {
 
   return (
     <header className="relative">
-      {/* Background SVG pour le hero */}
-      {showHero && <HeroBackground />}
-
-      {/* Navigation sticky */}
-      <div
-        className={`relative z-[1000] ${
-          showHero
-            ? "sticky top-0" // Sticky sur Hero
-            : "bg-gray-900 shadow-lg sticky top-0" // Background normal + sticky sur autres pages
-        }`}
-      >
-        <Navigation
-          menuItems={menus?.items || []}
-          siteTitle={siteData?.site_title || "Axe Musique"}
-          loading={loading.menus}
-          showSearch={false}
-          showCart={false}
-          cartCount={5}
-        />
-      </div>
+      {/* Background SVG seulement si pas de hero (pour éviter la duplication) */}
+      {showHero ? (
+        // Le Hero gérera son propre background
+        <div className="relative z-[1000] sticky top-0">
+          <Navigation
+            menuItems={menus?.items || []}
+            siteTitle={siteData?.site_title || "Axe Musique"}
+            loading={loading.menus}
+            showSearch={false}
+            showCart={false}
+            cartCount={5}
+          />
+        </div>
+      ) : (
+        // Background normal pour les autres pages
+        <>
+          <HeroBackground />
+          <div className="relative z-[1000] sticky top-0">
+            <Navigation
+              menuItems={menus?.items || []}
+              siteTitle={siteData?.site_title || "Axe Musique"}
+              loading={loading.menus}
+              showSearch={false}
+              showCart={false}
+              cartCount={5}
+            />
+          </div>
+        </>
+      )}
 
       {/* Section Hero */}
       {showHero && (
@@ -44,7 +53,7 @@ const Header = ({ showHero = false }) => {
   );
 };
 
-// Composant pour le background du hero
+// Composant pour le background du hero (réutilisable)
 const HeroBackground = () => (
   <div
     className="absolute inset-0 z-0"

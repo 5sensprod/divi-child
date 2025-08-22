@@ -21,6 +21,61 @@
   }
 }
 
+/* Variables CSS pour le Hero Slider */
+:root {
+  /* Thème original (défaut) */
+  --hero-gradient-1: #ff3fd1;
+  --hero-gradient-2: #31d1ff;
+  --hero-dot-active: #ff3fd1;
+
+  /* Variables pour l'arrière-plan SVG */
+  --axe-bg-0: #0e0b1f;
+  --axe-bg-55: #1a1050;
+  --axe-bg-100: #2a1372;
+  --axe-pink-core: #ff7be5;
+  --axe-pink-outer: #ff3fd1;
+  --axe-cyan-core: #9beaff;
+  --axe-cyan-outer: #31d1ff;
+  --axe-violet: #7d49ff;
+}
+
+/* Styles pour le Hero Slider */
+.hero-slider-container {
+  min-height: auto;
+}
+
+@media (min-width: 768px) {
+  .hero-slider-container {
+    min-height: 600px;
+    height: 70vh;
+  }
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .hero-slide {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hero-slide-image {
+  /* Assurer que l'image prend toute la largeur disponible sur mobile */
+  width: 100%;
+  min-height: 350px;
+}
+
+@media (min-width: 768px) {
+  .hero-slide-image {
+    min-height: 100%;
+  }
+}
+
 /* Styles personnalisés */
 .line-clamp-2 {
   display: -webkit-box;
@@ -196,6 +251,6 @@ a:focus-visible {
 
 @media (min-width: 1400px) {
   .container-divi {
-    max-width: 70rem; /* 1440px - équivalent à max-w-8xl */
+    max-width: 90rem; /* 1440px - équivalent à max-w-8xl */
   }
 }

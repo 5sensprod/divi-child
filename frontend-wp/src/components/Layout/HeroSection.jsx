@@ -1,12 +1,20 @@
 // src/components/Layout/HeroSection.jsx
 import { Link } from "react-router-dom";
+import HeroSlider from "../Hero/HeroSlider";
 
 const HeroSection = ({
   title = "Bienvenue sur Axe Musique",
   subtitle = "Votre magasin de musique en ligne",
   showCTA = true,
+  useSlider = true,
   className = "",
 }) => {
+  // Si on utilise le slider, on retourne le composant slider
+  if (useSlider) {
+    return <HeroSlider className={className} />;
+  }
+
+  // Sinon, on retourne le hero classique
   return (
     <section
       className={`relative min-h-[70vh] flex items-center justify-center ${className}`}
