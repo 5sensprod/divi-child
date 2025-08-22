@@ -7,6 +7,7 @@ const SLIDES = [
       "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
     image: "/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min.png",
     colors: ["#ff3fd1", "#31d1ff"],
+    textGradient: ["#ff3fd1", "#31d1ff"], // Couleurs par défaut pour le texte
   },
   {
     title: "BIENTÔT 30 ANS D'EXPÉRIENCE À VOTRE SERVICE",
@@ -14,8 +15,10 @@ const SLIDES = [
       "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
     image: "/assets/images/foodtruck4-min.png",
     colors: ["#ff6b35", "#ffd23f"],
+    textGradient: ["#ff4500", "#ff8c00", "#ffd700"], // Dégradé sunset pour le texte
   },
 ];
+
 const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
   const [current, setCurrent] = useState(0);
 
@@ -29,11 +32,27 @@ const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
 
   // Apply theme colors
   useEffect(() => {
-    const { color1, color2 } = SLIDES[current].colors;
+    const currentSlide = SLIDES[current];
+    const { colors, textGradient } = currentSlide;
     const root = document.documentElement;
-    root.style.setProperty("--gradient-color-1", color1);
-    root.style.setProperty("--gradient-color-2", color2);
-    root.style.setProperty("--dot-active-color", color1);
+
+    // Couleurs pour les boutons et dots
+    root.style.setProperty("--gradient-color-1", colors[0]);
+    root.style.setProperty("--gradient-color-2", colors[1]);
+    root.style.setProperty("--dot-active-color", colors[0]);
+
+    // Dégradé spécifique pour le texte
+    if (textGradient && textGradient.length === 2) {
+      root.style.setProperty(
+        "--text-gradient",
+        `linear-gradient(90deg, ${textGradient[0]}, ${textGradient[1]})`
+      );
+    } else if (textGradient && textGradient.length === 3) {
+      root.style.setProperty(
+        "--text-gradient",
+        `linear-gradient(90deg, ${textGradient[0]} 0%, ${textGradient[1]} 50%, ${textGradient[2]} 100%)`
+      );
+    }
   }, [current]);
 
   return (
@@ -42,9 +61,6 @@ const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
       style={{
         height: "650px",
         background: "transparent",
-        "--gradient-color-1": "#ff3fd1",
-        "--gradient-color-2": "#31d1ff",
-        "--dot-active-color": "#ff3fd1",
       }}
     >
       {/* Slides */}
@@ -67,8 +83,7 @@ const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
               className="font-bold leading-tight mb-6"
               style={{
                 fontSize: "clamp(32px, 4vw, 56px)",
-                background:
-                  "linear-gradient(90deg, var(--gradient-color-1), var(--gradient-color-2))",
+                background: "var(--text-gradient)",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
@@ -123,13 +138,7 @@ const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
       ))}
 
       {/* Navigation Dots */}
-      <div
-        className="absolute bottom-8 flex gap-3 z-10"
-        style={{
-          left: "25%",
-          transform: "translateX(-50%)",
-        }}
-      >
+      <div className="absolute bottom-8 flex gap-3 z-10 md:left-1/4 left-1/2 transform -translate-x-1/2">
         {SLIDES.map((_, index) => (
           <button
             key={index}
@@ -148,15 +157,6 @@ const HeroSlider = ({ autoplayDelay = 5000, className = "" }) => {
           />
         ))}
       </div>
-
-      {/* Mobile: Center dots */}
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .absolute.bottom-8 {
-            left: 50% !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
