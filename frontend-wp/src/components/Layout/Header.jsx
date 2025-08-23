@@ -12,7 +12,7 @@ const Header = ({ showHero = false }) => {
       <HeroBackground />
 
       {/* Navigation toujours sticky */}
-      <div className="relative z-[1000] sticky top-0">
+      <div className="z-[1000] sticky top-0">
         <Navigation
           menuItems={menus?.items || []}
           siteTitle={siteData?.site_title || "Axe Musique"}
@@ -20,6 +20,9 @@ const Header = ({ showHero = false }) => {
           showSearch={false}
           showCart={false}
           cartCount={5}
+          scrollThreshold={100} // Déclenche à 150px de scroll
+          logoSizeReduced="120" // Logo à 120px en scroll
+          logoSizeNormal="200" // Logo à 200px normal
         />
       </div>
 

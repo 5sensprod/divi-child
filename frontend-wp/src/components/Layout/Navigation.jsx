@@ -1,5 +1,5 @@
 // src/components/Layout/Navigation.jsx
-// Version ultra-optimisée pour la performance
+// Version ultra-optimisée avec Grid et logo centré sur mobile
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -7,7 +7,6 @@ import { Menu, X, Search, ShoppingCart, ChevronDown } from "lucide-react";
 import {
   Disclosure,
   Menu as HeadlessMenu,
-  Transition,
   DisclosureButton,
   DisclosurePanel,
   MenuButton,
@@ -23,8 +22,36 @@ const Navigation = ({
   showSearch = true,
   showCart = true,
   cartCount = 0,
+  scrollThreshold = 100,
+  logoSizeReduced = "140",
+  logoSizeNormal = "200",
 }) => {
   const location = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Gestion optimisée du scroll avec throttling
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          const shouldBeScrolled = scrollY > scrollThreshold;
+
+          if (shouldBeScrolled !== isScrolled) {
+            setIsScrolled(shouldBeScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [scrollThreshold, isScrolled]);
 
   // Organiser selon la hiérarchie WordPress avec mémoisation
   const organizedMenu = useMemo(() => {
@@ -65,47 +92,93 @@ const Navigation = ({
   );
 
   return (
-    <nav className="relative z-[1000] w-full">
-      <div className="container-divi">
-        <div className="flex items-center justify-between py-4">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0 z-[1010]">
-            <img
-              src="/assets/images/Logo_Axe_full.svg"
-              alt="Axe Musique"
-              width="200"
-              className="h-auto transition-transform duration-300 hover:scale-105"
-            />
-          </Link>
+    <>
+      {/* Spacer pour compenser la hauteur du menu fixe */}
+      <div
+        className={`w-full transition-all duration-300 ${
+          isScrolled ? "h-16" : "h-20"
+        }`}
+        aria-hidden="true"
+      />
 
-          {/* Menu + Actions */}
-          <div className="flex items-center space-x-6">
-            {/* Menu desktop */}
-            <div className="hidden lg:flex items-center space-x-4">
-              {loading || !menuItems || menuItems.length === 0 ? (
-                <MenuSkeleton />
-              ) : (
-                organizedMenu.map((item) => (
-                  <DesktopMenuItem
-                    key={item.id}
-                    item={item}
-                    isActive={isActive}
-                    getRouterPath={getRouterPath}
-                  />
-                ))
-              )}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-[1000] w-full transition-all duration-300 ${
+          isScrolled
+            ? "bg-gray-900/95 backdrop-blur-md shadow-lg py-2"
+            : "bg-transparent py-4"
+        }`}
+      >
+        <div className="container-divi">
+          {/* GRID Layout - Mobile: [spacer] [LOGO] [actions] | Desktop: [LOGO] [menu] [actions] */}
+          <div
+            className={`
+              grid items-center gap-4 transition-all duration-300
+              grid-cols-[1fr_auto_1fr] lg:grid-cols-[auto_1fr_auto]
+            `}
+          >
+            {/* ZONE GAUCHE */}
+            <div className="flex justify-start">
+              {/* Logo DESKTOP uniquement */}
+              <Link to="/" className="hidden lg:block flex-shrink-0 z-[1010]">
+                <img
+                  src="/assets/images/Logo_Axe_full.svg"
+                  alt="Axe Musique"
+                  width={isScrolled ? logoSizeReduced : logoSizeNormal}
+                  className={`h-auto transition-all duration-300 ease-in-out hover:scale-105 ${
+                    isScrolled ? "transform scale-90" : "transform scale-100"
+                  }`}
+                  style={{
+                    transformOrigin: "left center",
+                  }}
+                />
+              </Link>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center space-x-3 z-[1010]">
+            {/* ZONE CENTRE */}
+            <div className="flex justify-center lg:justify-end">
+              {/* Logo MOBILE uniquement - centré */}
+              <Link to="/" className="lg:hidden flex-shrink-0 z-[1010]">
+                <img
+                  src="/assets/images/Logo_Axe_full.svg"
+                  alt="Axe Musique"
+                  width={isScrolled ? logoSizeReduced : logoSizeNormal}
+                  className={`h-auto transition-all duration-300 ease-in-out hover:scale-105 ${
+                    isScrolled ? "transform scale-90" : "transform scale-100"
+                  }`}
+                  style={{
+                    transformOrigin: "center center",
+                  }}
+                />
+              </Link>
+
+              {/* Menu DESKTOP */}
+              <div className="hidden lg:flex items-center space-x-4">
+                {loading || !menuItems || menuItems.length === 0 ? (
+                  <MenuSkeleton />
+                ) : (
+                  organizedMenu.map((item) => (
+                    <DesktopMenuItem
+                      key={item.id}
+                      item={item}
+                      isActive={isActive}
+                      getRouterPath={getRouterPath}
+                      isScrolled={isScrolled}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* ZONE DROITE - Actions toujours à droite */}
+            <div className="flex items-center justify-end space-x-3 z-[1010]">
               {showSearch && (
-                <button className="p-2 text-white/90 hover:text-pink-300 transition-colors">
+                <button className="p-2 text-white/90 hover:text-pink-300 transition-all duration-300">
                   <Search size={20} />
                 </button>
               )}
 
               {showCart && (
-                <button className="relative p-2 text-white/90 hover:text-pink-300 transition-colors">
+                <button className="relative p-2 text-white/90 hover:text-pink-300 transition-all duration-300">
                   <ShoppingCart size={20} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
@@ -115,23 +188,24 @@ const Navigation = ({
                 </button>
               )}
 
-              {/* Menu mobile ultra-rapide */}
+              {/* Menu hamburger MOBILE */}
               <MobileMenuPerformant
                 menuItems={organizedMenu}
                 loading={loading}
                 getRouterPath={getRouterPath}
                 isActive={isActive}
+                isScrolled={isScrolled}
               />
             </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 };
 
 // Composant desktop optimisé
-const DesktopMenuItem = ({ item, isActive, getRouterPath }) => {
+const DesktopMenuItem = ({ item, isActive, getRouterPath, isScrolled }) => {
   const hasChildren = item.children && item.children.length > 0;
   const path = getRouterPath(item.url);
 
@@ -139,7 +213,7 @@ const DesktopMenuItem = ({ item, isActive, getRouterPath }) => {
     return (
       <Link
         to={path}
-        className={`px-3 py-2 text-sm font-light uppercase tracking-wide transition-colors font-['Coda'] ${
+        className={`px-3 py-2 text-sm font-light uppercase tracking-wide transition-all duration-300 font-['Coda'] ${
           isActive(path) ? "text-pink-300" : "text-white/90 hover:text-pink-300"
         }`}
       >
@@ -152,7 +226,7 @@ const DesktopMenuItem = ({ item, isActive, getRouterPath }) => {
     <HeadlessMenu as="div" className="relative">
       {({ open }) => (
         <>
-          <MenuButton className="flex items-center space-x-1 px-3 py-2 text-sm font-light uppercase tracking-wide transition-colors font-['Coda'] text-white/90 hover:text-pink-300 data-[open]:text-pink-300">
+          <MenuButton className="flex items-center space-x-1 px-3 py-2 text-sm font-light uppercase tracking-wide transition-all duration-300 font-['Coda'] text-white/90 hover:text-pink-300 data-[open]:text-pink-300">
             <span>{item.title}</span>
             <ChevronDown
               size={16}
@@ -162,8 +236,7 @@ const DesktopMenuItem = ({ item, isActive, getRouterPath }) => {
             />
           </MenuButton>
 
-          {/* Menu simplifié sans Transition pour plus de performance */}
-          <MenuItems className="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 border border-white/10 rounded-lg shadow-xl overflow-hidden z-[1030] focus:outline-none">
+          <MenuItems className="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden z-[1030] focus:outline-none">
             {item.children.map((child) => (
               <MenuItem key={child.id}>
                 <Link
@@ -181,27 +254,35 @@ const DesktopMenuItem = ({ item, isActive, getRouterPath }) => {
   );
 };
 
-// Menu mobile ultra-performant
+// Menu mobile performant
 const MobileMenuPerformant = ({
   menuItems,
   loading,
   getRouterPath,
   isActive,
+  isScrolled,
 }) => {
   return (
     <Disclosure as="div" className="lg:hidden">
-      <DisclosureButton className="p-3 text-white/90 hover:text-pink-300 hover:bg-white/10 rounded-lg transition-all duration-100 active:scale-95 data-[open]:text-pink-300">
-        {({ open }) => (open ? <X size={24} /> : <Menu size={28} />)}
+      <DisclosureButton
+        className={`p-3 text-white/90 hover:text-pink-300 hover:bg-white/10 rounded-lg transition-all duration-300 active:scale-95 data-[open]:text-pink-300 ${
+          isScrolled ? "p-2" : "p-3"
+        }`}
+      >
+        {({ open }) =>
+          open ? (
+            <X size={isScrolled ? 22 : 24} />
+          ) : (
+            <Menu size={isScrolled ? 26 : 28} />
+          )
+        }
       </DisclosureButton>
 
-      {/* Menu sans transitions pour performance maximale */}
       <DisclosurePanel className="fixed top-0 left-0 right-0 z-[1050] bg-gray-900 will-change-transform">
         {({ close }) => (
           <>
-            {/* Overlay simple - pas de blur, pas d'animation */}
             <div className="fixed inset-0 bg-black/80 -z-10" onClick={close} />
 
-            {/* Header simplifié */}
             <div className="flex items-center justify-between px-4 py-4 border-b border-white/20 bg-gray-900">
               <img
                 src="/assets/images/Logo_Axe_full.svg"
@@ -217,7 +298,6 @@ const MobileMenuPerformant = ({
               </button>
             </div>
 
-            {/* Contenu optimisé */}
             <div className="px-4 py-4 max-h-[calc(100vh-80px)] overflow-y-auto bg-gray-900">
               {loading || !menuItems || menuItems.length === 0 ? (
                 <div className="space-y-3">
@@ -246,7 +326,7 @@ const MobileMenuPerformant = ({
   );
 };
 
-// Élément de menu mobile ultra-optimisé
+// Élément de menu mobile
 const MobileMenuItemPerformant = ({
   item,
   getRouterPath,
@@ -287,7 +367,6 @@ const MobileMenuItemPerformant = ({
         )}
       </DisclosureButton>
 
-      {/* Sous-menu sans transition pour performance */}
       <DisclosurePanel className="mt-1 ml-4 space-y-1">
         {item.children.map((child) => (
           <Link
