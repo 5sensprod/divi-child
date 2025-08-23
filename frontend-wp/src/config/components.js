@@ -55,7 +55,7 @@ export const HEADER_CONFIG = {
     // Layout responsive
     layout: {
       padding: {
-        desktop: "pt-24 md:pt-10",
+        desktop: "pt-24 md:pt-10 md:pt-5",
         mobile: "pt-20",
       },
       grid: "grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-8",
