@@ -4,143 +4,235 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   SYSTÈME DE DESIGN - VARIABLES CSS
+   ============================================ */
+:root {
+  /* Couleurs principales */
+  --primary: #ff3fd1;
+  --secondary: #31d1ff;
+  --accent: #7d49ff;
+
+  /* Dégradés */
+  --gradient-primary: linear-gradient(90deg, var(--primary), var(--secondary));
+  --gradient-warm: linear-gradient(90deg, #ff6b35, #ffd23f);
+  --gradient-sunset: linear-gradient(
+    90deg,
+    #ff4500 0%,
+    #ff8c00 50%,
+    #ffd700 100%
+  );
+
+  /* Layout */
+  --nav-height: 80px;
+  --nav-height-scrolled: 64px;
+  --hero-min-height: 500px;
+  --hero-min-height-md: 650px;
+
+  /* Z-index système */
+  --z-navigation: 1000;
+  --z-dropdown: 1030;
+  --z-overlay: 1020;
+  --z-mobile-menu: 1050;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease-out;
+  --transition-smooth: 0.3s ease-in-out;
+
+  /* Background SVG - Variables pour personnalisation */
+  --bg-dark-0: #0e0b1f;
+  --bg-dark-55: #1a1050;
+  --bg-dark-100: #2a1372;
+  --neon-pink-core: #ff7be5;
+  --neon-pink-outer: #ff3fd1;
+  --neon-cyan-core: #9beaff;
+  --neon-cyan-outer: #31d1ff;
+}
+
+/* ============================================
+   CONTAINERS RESPONSIFS
+   ============================================ */
 @layer components {
-  /* Container principal - Standard Divi */
   .container-divi {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Container contenu - Pour le texte et articles */
   .container-content {
     @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Container étroit - Pour les formulaires et pages spéciales */
   .container-narrow {
     @apply max-w-2xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
 
-/* Variables CSS pour le Hero Slider */
-:root {
-  /* Thème original (défaut) */
-  --hero-gradient-1: #ff3fd1;
-  --hero-gradient-2: #31d1ff;
-  --hero-dot-active: #ff3fd1;
+/* ============================================
+   COMPOSANTS RÉUTILISABLES
+   ============================================ */
+@layer components {
+  /* Boutons dégradés */
+  .btn-gradient {
+    @apply inline-flex items-center justify-center px-8 py-4 text-white font-bold uppercase rounded-full;
+    @apply transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl;
+    background: var(--gradient-primary);
+  }
 
-  /* Variables pour l'arrière-plan SVG */
-  --axe-bg-0: #0e0b1f;
-  --axe-bg-55: #1a1050;
-  --axe-bg-100: #2a1372;
-  --axe-pink-core: #ff7be5;
-  --axe-pink-outer: #ff3fd1;
-  --axe-cyan-core: #9beaff;
-  --axe-cyan-outer: #31d1ff;
-  --axe-violet: #7d49ff;
-}
+  .btn-gradient:hover {
+    box-shadow: 0 25px 50px -12px rgba(255, 63, 209, 0.25);
+  }
 
-/* Styles pour le Hero Slider */
-.hero-slider-container {
-  min-height: auto;
-}
+  /* Navigation styles */
+  .nav-link {
+    @apply px-3 py-2 text-sm font-light uppercase tracking-wide transition-colors duration-300;
+    font-family: "Coda", sans-serif;
+  }
 
-@media (min-width: 768px) {
-  .hero-slider-container {
-    min-height: 600px;
-    height: 70vh;
+  .nav-link-active {
+    @apply text-pink-300;
+  }
+
+  .nav-link-inactive {
+    @apply text-white/90 hover:text-pink-300;
+  }
+
+  /* Menu mobile */
+  .mobile-menu-item {
+    @apply block px-4 py-3 rounded-lg transition-colors duration-300 font-light uppercase text-sm tracking-wide;
+    @apply active:scale-[0.98];
+    font-family: "Coda", sans-serif;
+  }
+
+  .mobile-menu-item-active {
+    @apply text-pink-300 bg-pink-500/20;
+  }
+
+  .mobile-menu-item-inactive {
+    @apply text-white/90 hover:bg-white/10 hover:text-pink-300;
+  }
+
+  /* Hero background */
+  .hero-background {
+    background-image: url("/assets/images/axe-musique-neon-bg-v2-variables.svg");
+    @apply bg-cover bg-center bg-no-repeat;
+  }
+
+  /* Overlay système */
+  .overlay-backdrop {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+    animation: fadeIn var(--transition-fast);
   }
 }
 
-.hero-slide {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-}
+/* ============================================
+   UTILITAIRES PERSONNALISÉS
+   ============================================ */
+@layer utilities {
+  /* Text clamp responsive */
+  .text-hero {
+    font-size: clamp(28px, 4vw, 48px);
+    line-height: 1.2;
+  }
 
-@media (min-width: 768px) {
-  .hero-slide {
-    grid-template-columns: 1fr 1fr;
+  .text-hero-desc {
+    font-size: clamp(18px, 1.2vw, 22px);
+    line-height: 1.7;
+  }
+
+  /* Dégradés de texte */
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-warm {
+    background: var(--gradient-warm);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-sunset {
+    background: var(--gradient-sunset);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Line clamp */
+  .line-clamp-2 {
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Z-index système */
+  .z-navigation {
+    z-index: var(--z-navigation);
+  }
+  .z-dropdown {
+    z-index: var(--z-dropdown);
+  }
+  .z-overlay {
+    z-index: var(--z-overlay);
+  }
+  .z-mobile-menu {
+    z-index: var(--z-mobile-menu);
   }
 }
 
-.hero-slide-image {
-  /* Assurer que l'image prend toute la largeur disponible sur mobile */
-  width: 100%;
-  min-height: 350px;
-}
-
-@media (min-width: 768px) {
-  .hero-slide-image {
-    min-height: 100%;
-  }
-}
-
-/* Styles personnalisés */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Animation personnalisée pour les transitions */
-.animate-in {
-  animation-duration: 0.2s;
-  animation-fill-mode: both;
-}
-
-.slide-in-from-top {
-  animation-name: slideInFromTop;
-}
-
-@keyframes slideInFromTop {
-  0% {
-    transform: translateY(-10px);
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+  from {
     opacity: 0;
   }
-  100% {
-    transform: translateY(0);
+  to {
     opacity: 1;
   }
 }
 
-/* Keyframes pour le spinner */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
   }
-  100% {
-    transform: rotate(360deg);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Amélioration de la hiérarchie z-index */
-.z-navigation {
-  z-index: 1000;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.z-dropdown {
-  z-index: 1030;
+/* Classes d'animation */
+.animate-fade-in {
+  animation: fadeIn var(--transition-fast) ease-out;
 }
 
-.z-overlay {
-  z-index: 1020;
+.animate-slide-down {
+  animation: slideDown var(--transition-fast) ease-out;
 }
 
-.z-mobile-menu {
-  z-index: 1050;
+.animate-slide-up {
+  animation: slideUp var(--transition-fast) ease-out;
 }
 
-.z-hero-content {
-  z-index: 1;
-}
-
-.z-hero-background {
-  z-index: 0;
-}
-
-/* Améliorations visuelles */
+/* ============================================
+   BASE STYLES
+   ============================================ */
 * {
   box-sizing: border-box;
 }
@@ -157,92 +249,19 @@ body {
 /* Transitions globales */
 button,
 a {
-  transition: all 0.2s ease-in-out;
+  transition: all var(--transition-fast);
 }
 
-/* Loading spinner personnalisé */
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-
-/* Styles pour les dropdowns */
-.dropdown-menu {
-  animation: dropdownFadeIn 0.2s ease-out;
-}
-
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Styles pour le menu mobile */
-.mobile-menu-overlay {
-  animation: mobileMenuSlideIn 0.3s ease-out;
-}
-
-@keyframes mobileMenuSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Amélioration des transitions pour les boutons */
-.btn-gradient {
-  @apply bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl;
-}
-
-.btn-gradient:hover {
-  box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.25);
-}
-
-/* Styles pour les overlays */
-.overlay-backdrop {
-  @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
-  animation: overlayFadeIn 0.2s ease-out;
-}
-
-@keyframes overlayFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Amélioration du focus pour l'accessibilité */
+/* Focus accessibility */
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #ff7be5;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* Styles pour les éléments interactifs */
-.interactive-element {
-  @apply transition-all duration-300 ease-out;
-}
-
-.interactive-element:hover {
-  transform: translateY(-2px);
-}
-
-/* Responsive breakpoints personnalisés */
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
 @media (max-width: 640px) {
   .container-divi {
     @apply px-3;
@@ -251,6 +270,6 @@ a:focus-visible {
 
 @media (min-width: 1400px) {
   .container-divi {
-    max-width: 90rem; /* 1440px - équivalent à max-w-8xl */
+    max-width: 90rem; /* 1440px */
   }
 }
