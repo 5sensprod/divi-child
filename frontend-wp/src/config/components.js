@@ -112,56 +112,56 @@ export const HEADER_CONFIG = {
           "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
         image:
           "/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min_1.webp",
-        theme: "primary",
+        theme: "neon",
       },
       {
         title: "BIENTÔT 30 ANS À VOTRE SERVICE",
         description:
           "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
         image: "/assets/images/foodtruck4-min_1.webp",
-        theme: "warm",
+        theme: "sunset",
       },
     ],
   },
 
   // Configuration des thèmes
   themes: {
-    primary: {
+    neon: {
       gradient: "var(--gradient-primary)",
       textGradient: "var(--gradient-primary)",
       color: "var(--primary)",
       dotColor: "var(--primary)",
       hoverGradient: "linear-gradient(90deg, var(--secondary), var(--primary))",
 
-      // Variables pour le background SVG (noms exacts du SVG)
+      // Variables pour le background SVG - EXACTEMENT comme le SVG original
       background: {
-        "bg-0": "#0E0B1F", // --axe-bg-0
-        "bg-55": "#1A1050", // --axe-bg-55
-        "bg-100": "#2A1372", // --axe-bg-100
-        "pink-core": "#FF7BE5", // --axe-pink-core
-        "pink-outer": "#FF3FD1", // --axe-pink-outer
-        "cyan-core": "#9BEAFF", // --axe-cyan-core
-        "cyan-outer": "#31D1FF", // --axe-cyan-outer
-        violet: "#7D49FF", // --axe-violet
+        "bg-0": "#0E0B1F",
+        "bg-55": "#1A1050",
+        "bg-100": "#2A1372",
+        "pink-core": "#FF7BE5",
+        "pink-outer": "#FF3FD1",
+        "cyan-core": "#9BEAFF",
+        "cyan-outer": "#31D1FF",
+        violet: "#7D49FF",
       },
     },
-    warm: {
+    sunset: {
       gradient: "var(--gradient-warm)",
       textGradient: "var(--gradient-sunset)",
       color: "#ff6b35",
       dotColor: "#ff6b35",
       hoverGradient: "linear-gradient(90deg, #ffd23f, #ff6b35)",
 
-      // Variables pour le background SVG - thème sunset
+      // Variables pour le background SVG - Sunset adapté du SVG
       background: {
-        "bg-0": "#1F0E0B", // Dark base avec teinte chaude
-        "bg-55": "#503A1A", // Mid dark orangé
-        "bg-100": "#724A2A", // Lighter dark orangé
-        "pink-core": "#FFB347", // Orange clair
-        "pink-outer": "#FF8C00", // Orange vif
-        "cyan-core": "#FFD700", // Or/jaune
-        "cyan-outer": "#FFA500", // Orange
-        violet: "#FF4500", // Rouge-orange pour le bas
+        "bg-0": "#1a0b0b",
+        "bg-55": "#4a1730",
+        "bg-100": "#6f1d3a",
+        "pink-core": "#ffb199",
+        "pink-outer": "#ff6a3d",
+        "cyan-core": "#ffe08a",
+        "cyan-outer": "#ffb703",
+        violet: "#ff4d6d",
       },
     },
   },
@@ -199,7 +199,7 @@ export const getResponsiveClasses = (config, key) => {
 export const getThemeStyle = (theme, property) => {
   return (
     HEADER_CONFIG.themes[theme]?.[property] ||
-    HEADER_CONFIG.themes.primary[property]
+    HEADER_CONFIG.themes.neon[property]
   );
 };
 
@@ -208,12 +208,12 @@ export const getCurrentTheme = () => {
   const gradient = getComputedStyle(document.documentElement).getPropertyValue(
     "--current-gradient"
   );
-  return gradient.includes("var(--gradient-primary)") ? "primary" : "warm";
+  return gradient.includes("var(--gradient-primary)") ? "neon" : "sunset";
 };
 
 // Fonction helper pour appliquer les variables CSS du background SVG
 export const applyBackgroundTheme = (themeName) => {
-  const theme = HEADER_CONFIG.themes[themeName] || HEADER_CONFIG.themes.primary;
+  const theme = HEADER_CONFIG.themes[themeName] || HEADER_CONFIG.themes.neon;
   const root = document.documentElement;
 
   // Appliquer toutes les variables CSS pour le SVG (noms exacts)
