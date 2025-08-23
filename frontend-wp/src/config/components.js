@@ -4,7 +4,7 @@
 export const HEADER_CONFIG = {
   // Configuration Navigation
   navigation: {
-    showSearch: true,
+    showSearch: false,
     showCart: false,
     cartCount: 5,
     scrollThreshold: 100,
@@ -132,6 +132,18 @@ export const HEADER_CONFIG = {
       color: "var(--primary)",
       dotColor: "var(--primary)",
       hoverGradient: "linear-gradient(90deg, var(--secondary), var(--primary))",
+
+      // Variables pour le background SVG (noms exacts du SVG)
+      background: {
+        "bg-0": "#0E0B1F", // --axe-bg-0
+        "bg-55": "#1A1050", // --axe-bg-55
+        "bg-100": "#2A1372", // --axe-bg-100
+        "pink-core": "#FF7BE5", // --axe-pink-core
+        "pink-outer": "#FF3FD1", // --axe-pink-outer
+        "cyan-core": "#9BEAFF", // --axe-cyan-core
+        "cyan-outer": "#31D1FF", // --axe-cyan-outer
+        violet: "#7D49FF", // --axe-violet
+      },
     },
     warm: {
       gradient: "var(--gradient-warm)",
@@ -139,6 +151,18 @@ export const HEADER_CONFIG = {
       color: "#ff6b35",
       dotColor: "#ff6b35",
       hoverGradient: "linear-gradient(90deg, #ffd23f, #ff6b35)",
+
+      // Variables pour le background SVG - thème sunset
+      background: {
+        "bg-0": "#1F0E0B", // Dark base avec teinte chaude
+        "bg-55": "#503A1A", // Mid dark orangé
+        "bg-100": "#724A2A", // Lighter dark orangé
+        "pink-core": "#FFB347", // Orange clair
+        "pink-outer": "#FF8C00", // Orange vif
+        "cyan-core": "#FFD700", // Or/jaune
+        "cyan-outer": "#FFA500", // Orange
+        violet: "#FF4500", // Rouge-orange pour le bas
+      },
     },
   },
 
@@ -185,4 +209,16 @@ export const getCurrentTheme = () => {
     "--current-gradient"
   );
   return gradient.includes("var(--gradient-primary)") ? "primary" : "warm";
+};
+
+// Fonction helper pour appliquer les variables CSS du background SVG
+export const applyBackgroundTheme = (themeName) => {
+  const theme = HEADER_CONFIG.themes[themeName] || HEADER_CONFIG.themes.primary;
+  const root = document.documentElement;
+
+  // Appliquer toutes les variables CSS pour le SVG (noms exacts)
+  Object.entries(theme.background).forEach(([key, value]) => {
+    const cssVarName = `--axe-${key}`;
+    root.style.setProperty(cssVarName, value);
+  });
 };
