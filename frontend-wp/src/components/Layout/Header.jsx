@@ -1,8 +1,13 @@
 // src/components/Layout/Header.jsx
-// Version optimisée avec HeroSlider intégré directement
+// Version avec configuration centralisée avancée + micro-optimisations
 
 import { useState, useEffect } from "react";
 import { useWordPress } from "../../context/WordPressContext";
+import {
+  HEADER_CONFIG,
+  getThemeStyle,
+  getCurrentTheme,
+} from "../../config/components";
 import Navigation from "./Navigation";
 
 const Header = ({ showHero = false }) => {
@@ -10,113 +15,63 @@ const Header = ({ showHero = false }) => {
 
   return (
     <header className="relative">
-      {/* Background SVG pour toute la zone header+hero */}
       {showHero && <HeroBackground />}
 
-      {/* Navigation sticky */}
       <div className="z-navigation sticky top-0">
         <Navigation
           menuItems={menus?.items || []}
-          siteTitle={siteData?.site_title || "Axe Musique"}
+          siteTitle={siteData?.site_title || HEADER_CONFIG.defaults.siteTitle}
           loading={loading.menus}
-          showSearch={false}
-          showCart={false}
-          cartCount={5}
-          scrollThreshold={100}
-          logoSizeReduced="100"
-          logoSizeNormal="200"
+          {...HEADER_CONFIG.navigation}
         />
       </div>
 
-      {/* Hero Slider intégré */}
       {showHero && (
         <HeroSlider
-          siteTitle={siteData?.site_title || "Axe Musique"}
+          siteTitle={siteData?.site_title || HEADER_CONFIG.defaults.siteTitle}
           siteDescription={
-            siteData?.site_description || "Votre magasin de musique en ligne"
+            siteData?.site_description || HEADER_CONFIG.defaults.siteDescription
           }
-          className="relative z-[1]"
         />
       )}
     </header>
   );
 };
 
-// Background component réutilisable
 const HeroBackground = () => (
   <div
-    className="absolute inset-0 z-0 hero-background"
-    style={{
-      "--bg-dark-0": "var(--bg-dark-0)",
-      "--bg-dark-55": "var(--bg-dark-55)",
-      "--bg-dark-100": "var(--bg-dark-100)",
-      "--neon-pink-core": "var(--neon-pink-core)",
-      "--neon-pink-outer": "var(--neon-pink-outer)",
-      "--neon-cyan-core": "var(--neon-cyan-core)",
-      "--neon-cyan-outer": "var(--neon-cyan-outer)",
-      "--accent": "var(--accent)",
-    }}
+    className="absolute inset-0 hero-background"
+    style={{ zIndex: HEADER_CONFIG.zIndex.background }}
   />
 );
 
-// HeroSlider intégré directement (ex-HeroSection + HeroSlider fusionnés)
-const HeroSlider = ({
-  siteTitle,
-  siteDescription,
-  className = "",
-  autoplayDelay = 5000,
-  containerType = "divi",
-}) => {
+const HeroSlider = ({ siteTitle, siteDescription }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  const slides = [
-    {
-      title: "ACHETEZ ET RÉPAREZ VOTRE MATOS MUSICAL",
-      description:
-        "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
-      image:
-        "/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min_1.webp",
-      theme: "primary",
-    },
-    {
-      title: "BIENTÔT 30 ANS À VOTRE SERVICE",
-      description:
-        "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
-      image: "/assets/images/foodtruck4-min_1.webp",
-      theme: "warm",
-    },
-  ];
+  const { slider, themes } = HEADER_CONFIG;
 
   // Auto-advance
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, autoplayDelay);
+      setCurrentSlide((prev) => (prev + 1) % slider.slides.length);
+    }, slider.autoplayDelay);
     return () => clearInterval(timer);
-  }, [autoplayDelay, slides.length]);
+  }, [slider.slides.length, slider.autoplayDelay]);
 
-  // Apply theme dynamically
+  // Apply theme
   useEffect(() => {
-    const slide = slides[currentSlide];
+    const slide = slider.slides[currentSlide];
     const root = document.documentElement;
 
-    if (slide.theme === "primary") {
-      root.style.setProperty("--current-gradient", "var(--gradient-primary)");
-      root.style.setProperty(
-        "--current-text-gradient",
-        "var(--gradient-primary)"
-      );
-    } else if (slide.theme === "warm") {
-      root.style.setProperty("--current-gradient", "var(--gradient-warm)");
-      root.style.setProperty(
-        "--current-text-gradient",
-        "var(--gradient-sunset)"
-      );
+    if (slide?.theme) {
+      const theme = themes[slide.theme] || themes.primary;
+      root.style.setProperty("--current-gradient", theme.gradient);
+      root.style.setProperty("--current-text-gradient", theme.textGradient);
     }
-  }, [currentSlide, slides]);
+  }, [currentSlide, slider.slides, themes]);
 
+  const currentSlideData = slider.slides[currentSlide];
   const getContainerClass = () => {
-    switch (containerType) {
+    switch (slider.containerType) {
       case "content":
         return "container-content";
       case "narrow":
@@ -126,17 +81,17 @@ const HeroSlider = ({
     }
   };
 
-  const currentSlideData = slides[currentSlide];
-
   return (
-    <section className={`w-full pt-24 md:pt-10 ${className}`}>
+    <section
+      className={`w-full ${slider.layout.padding.desktop} relative z-[1]`}
+    >
       <div className={getContainerClass()}>
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-8 min-h-[var(--hero-min-height)] md:min-h-[var(--hero-min-height-md)]">
-          {/* Colonne GAUCHE - Contenu textuel */}
+        <div className={`${slider.layout.grid} ${slider.layout.minHeight}`}>
+          {/* Contenu gauche */}
           <div className="flex flex-col justify-center">
             <div className="max-w-prose mx-auto md:mx-0 w-full text-center md:text-left">
               <h1
-                className="font-bold leading-tight mb-6 text-hero transition-all duration-500"
+                className={`${slider.typography.title.classes} ${slider.typography.title.responsive}`}
                 style={{
                   background: "var(--current-text-gradient)",
                   WebkitBackgroundClip: "text",
@@ -147,44 +102,30 @@ const HeroSlider = ({
                 {currentSlideData.title}
               </h1>
 
-              <p className="text-gray-300 mb-8 text-hero-desc">
+              <p
+                className={`${slider.typography.description.classes} ${slider.typography.description.responsive}`}
+              >
                 {currentSlideData.description}
               </p>
 
-              {/* Groupe CTA + Dots centrés */}
               <div className="flex flex-col gap-6 self-center md:self-start">
-                <HeroButton />
-
-                <div className="mx-auto inline-flex gap-3 self-center md:self-start">
-                  {slides.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentSlide(index)}
-                      className={`w-3.5 h-3.5 rounded-full cursor-pointer transition-all duration-300 ${
-                        index === currentSlide ? "scale-125" : "scale-100"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          index === currentSlide
-                            ? slides[currentSlide].theme === "primary"
-                              ? "var(--primary)"
-                              : "#ff6b35"
-                            : "rgba(255, 255, 255, 0.3)",
-                      }}
-                      aria-label={`Slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                <HeroButton config={slider.button} />
+                <SlideDots
+                  slides={slider.slides}
+                  currentSlide={currentSlide}
+                  onSlideChange={setCurrentSlide}
+                  config={slider.dots}
+                />
               </div>
             </div>
           </div>
 
-          {/* Colonne DROITE - Image */}
-          <div className="relative min-h-[300px] md:min-h-0">
+          {/* Image droite */}
+          <div className={`relative ${slider.layout.imageHeight}`}>
             <img
               src={currentSlideData.image}
               alt={currentSlideData.title}
-              className="absolute inset-0 w-full h-full object-contain object-bottom transition-opacity duration-700"
+              className={`absolute inset-0 w-full h-full object-contain object-bottom ${slider.animations.slideTransition}`}
               loading="lazy"
             />
           </div>
@@ -194,32 +135,47 @@ const HeroSlider = ({
   );
 };
 
-// Bouton CTA réutilisable
-const HeroButton = () => (
+const SlideDots = ({ slides, currentSlide, onSlideChange, config }) => (
+  <div className={config.container}>
+    {slides.map((slide, index) => {
+      const isActive = index === currentSlide;
+
+      return (
+        <button
+          key={index}
+          onClick={() => onSlideChange(index)}
+          className={`${config.size} rounded-full cursor-pointer ${
+            config.dotTransition
+          } ${isActive ? config.activeScale : config.inactiveScale}`}
+          style={{
+            backgroundColor: isActive
+              ? getThemeStyle(slide.theme, "dotColor")
+              : config.inactiveColor,
+          }}
+          aria-label={`Slide ${index + 1}`}
+        />
+      );
+    })}
+  </div>
+);
+
+const HeroButton = ({ config }) => (
   <button
-    onClick={() => (window.location.href = "/boutique")}
-    className="mx-auto md:mx-0 mb-8 px-8 py-4 text-base md:text-lg font-bold text-white uppercase rounded-full transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+    onClick={() => (window.location.href = config.href)}
+    className={`${config.classes} ${config.animations}`}
     style={{
       background: "var(--current-gradient)",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+      boxShadow: config.shadow,
     }}
     onMouseEnter={(e) => {
-      // Inversion du gradient au hover
-      const current = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--current-gradient");
-      if (current.includes("var(--gradient-primary)")) {
-        e.target.style.background =
-          "linear-gradient(90deg, var(--secondary), var(--primary))";
-      } else if (current.includes("var(--gradient-warm)")) {
-        e.target.style.background = "linear-gradient(90deg, #ffd23f, #ff6b35)";
-      }
+      const currentTheme = getCurrentTheme();
+      e.target.style.background = getThemeStyle(currentTheme, "hoverGradient");
     }}
     onMouseLeave={(e) => {
       e.target.style.background = "var(--current-gradient)";
     }}
   >
-    Boutique
+    {config.text}
   </button>
 );
 

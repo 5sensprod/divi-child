@@ -1,28 +1,29 @@
 // src/components/Layout/Navigation.jsx
-// Version optimisée sans HeadlessUI - React vanilla uniquement
+// Version avec configuration centralisée depuis components.js
 
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, ChevronDown } from "lucide-react";
 import { MenuSkeleton } from "../UI/LoadingSkeleton";
+import { HEADER_CONFIG } from "../../config/components";
 
 const Navigation = ({
   menuItems = [],
-  siteTitle = "Axe Musique",
+  siteTitle = HEADER_CONFIG.defaults.siteTitle,
   loading = false,
-  showSearch = true,
-  showCart = true,
-  cartCount = 0,
-  scrollThreshold = 100,
-  logoSizeReduced = "140",
-  logoSizeNormal = "200",
+  showSearch = HEADER_CONFIG.navigation.showSearch,
+  showCart = HEADER_CONFIG.navigation.showCart,
+  cartCount = HEADER_CONFIG.navigation.cartCount,
+  scrollThreshold = HEADER_CONFIG.navigation.scrollThreshold,
 }) => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Scroll
+  const { navigation } = HEADER_CONFIG;
+
+  // Scroll detection
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
@@ -49,7 +50,7 @@ const Navigation = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [mobileMenuOpen]);
 
-  // Build menu
+  // Build menu structure
   const organizedMenu = useMemo(() => {
     if (!menuItems?.length) return [];
     const topLevel = menuItems.filter((item) => item.parent === "0");
@@ -75,32 +76,35 @@ const Navigation = ({
   const toggleDropdown = (itemId) =>
     setActiveDropdown(activeDropdown === itemId ? null : itemId);
 
+  // Classes dynamiques depuis la config
+  const navClasses = `fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${
+    isScrolled
+      ? `${navigation.styles.background.scrolled} ${navigation.styles.padding.scrolled}`
+      : `${navigation.styles.background.normal} ${navigation.styles.padding.normal}`
+  }`;
+
+  const heightClasses = isScrolled
+    ? navigation.styles.height.scrolled
+    : navigation.styles.height.normal;
+
+  const logoSize = isScrolled
+    ? navigation.logo.desktop.scrolled
+    : navigation.logo.desktop.normal;
+
+  const mobileLogoClasses = isScrolled
+    ? navigation.logo.mobile.scrolled
+    : navigation.logo.mobile.normal;
+
   return (
     <>
       {/* Spacer pour menu fixe */}
-      <div
-        className={`w-full transition-all duration-300 ${
-          isScrolled
-            ? "h-[var(--nav-height-scrolled)]"
-            : "h-[var(--nav-height)]"
-        }`}
-      />
+      <div className={`w-full transition-all duration-300 ${heightClasses}`} />
 
-      <nav
-        className={`fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${
-          isScrolled
-            ? "bg-gray-900/95 backdrop-blur-md shadow-lg py-2"
-            : "bg-transparent py-4"
-        }`}
-      >
+      <nav className={navClasses}>
         <div className="container-divi">
-          {/* NAV BAR: grid 3 colonnes = gauche / centre / droite */}
+          {/* NAV BAR: grid 3 colonnes */}
           <div
-            className={`grid items-center gap-4 ${
-              isScrolled
-                ? "min-h-[var(--nav-height-scrolled)]"
-                : "min-h-[var(--nav-height)]"
-            } grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
+            className={`grid items-center gap-4 ${heightClasses} grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
           >
             {/* GAUCHE — Burger (mobile) + Logo desktop */}
             <div className="flex items-center justify-start">
@@ -122,9 +126,9 @@ const Navigation = ({
               {/* Logo DESKTOP */}
               <Link to="/" className="hidden lg:flex flex-shrink-0">
                 <img
-                  src="/assets/images/Logo_Axe_full.svg"
-                  alt={siteTitle}
-                  width={isScrolled ? logoSizeReduced : logoSizeNormal}
+                  src={navigation.logo.path}
+                  alt={navigation.logo.alt}
+                  width={logoSize}
                   className={`h-auto transition-all duration-300 hover:scale-105 ${
                     isScrolled ? "scale-90" : "scale-100"
                   }`}
@@ -138,11 +142,9 @@ const Navigation = ({
               {/* Logo MOBILE centré */}
               <Link to="/" className="lg:hidden block" aria-label="Accueil">
                 <img
-                  src="/assets/images/Logo_Axe_full.svg"
-                  alt={siteTitle}
-                  className={`transition-all duration-300 hover:scale-105 ${
-                    isScrolled ? "h-20" : "h-24"
-                  }`}
+                  src={navigation.logo.path}
+                  alt={navigation.logo.alt}
+                  className={`transition-all duration-300 hover:scale-105 ${mobileLogoClasses}`}
                 />
               </Link>
 
@@ -167,27 +169,8 @@ const Navigation = ({
 
             {/* DROITE — Actions */}
             <div className="flex items-center justify-end space-x-3">
-              {showSearch && (
-                <button
-                  className="p-2 text-white/90 hover:text-pink-300 transition-colors"
-                  aria-label="Recherche"
-                >
-                  <Search size={20} />
-                </button>
-              )}
-              {showCart && (
-                <button
-                  className="relative p-2 text-white/90 hover:text-pink-300 transition-colors"
-                  aria-label="Panier"
-                >
-                  <ShoppingCart size={20} />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
-                </button>
-              )}
+              {showSearch && <ActionButton icon={Search} label="Recherche" />}
+              {showCart && <CartButton count={cartCount} />}
             </div>
           </div>
         </div>
@@ -202,13 +185,41 @@ const Navigation = ({
           isActive={isActive}
           onClose={closeMobileMenu}
           siteTitle={siteTitle}
+          config={navigation.mobileMenu}
+          logoConfig={navigation.logo}
         />
       )}
     </>
   );
 };
 
-// Desktop menu item
+// Action Button component
+const ActionButton = ({ icon: Icon, label, onClick }) => (
+  <button
+    onClick={onClick}
+    className="p-2 text-white/90 hover:text-pink-300 transition-colors"
+    aria-label={label}
+  >
+    <Icon size={20} />
+  </button>
+);
+
+// Cart Button component
+const CartButton = ({ count }) => (
+  <button
+    className="relative p-2 text-white/90 hover:text-pink-300 transition-colors"
+    aria-label="Panier"
+  >
+    <ShoppingCart size={20} />
+    {count > 0 && (
+      <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+        {count > 99 ? "99+" : count}
+      </span>
+    )}
+  </button>
+);
+
+// Desktop menu item component
 const DesktopMenuItem = ({
   item,
   isActive,
@@ -268,7 +279,7 @@ const DesktopMenuItem = ({
   );
 };
 
-// Mobile menu
+// Mobile menu component
 const MobileMenu = ({
   menuItems,
   loading,
@@ -276,6 +287,8 @@ const MobileMenu = ({
   isActive,
   onClose,
   siteTitle,
+  config,
+  logoConfig,
 }) => {
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const toggleSubmenu = (itemId) =>
@@ -284,13 +297,15 @@ const MobileMenu = ({
   return (
     <div className="fixed inset-0 z-mobile-menu animate-fade-in">
       <div className="fixed inset-0 bg-black/80" onClick={onClose} />
-      <div className="fixed top-0 left-0 right-0 bg-gray-900 animate-slide-down">
+      <div
+        className={`fixed top-0 left-0 right-0 ${config.background} animate-slide-down`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/20">
           <img
-            src="/assets/images/Logo_Axe_full.svg"
+            src={logoConfig.path}
             alt={siteTitle}
-            width="120"
+            width={config.logoWidth}
             className="h-auto"
           />
           <button
@@ -302,7 +317,7 @@ const MobileMenu = ({
         </div>
 
         {/* Items */}
-        <div className="px-4 py-4 max-h-[calc(100vh-80px)] overflow-y-auto">
+        <div className={`px-4 py-4 ${config.maxHeight} overflow-y-auto`}>
           {loading ? (
             <div className="space-y-3">
               {[...Array(4)].map((_, i) => (
@@ -333,6 +348,7 @@ const MobileMenu = ({
   );
 };
 
+// Mobile menu item component
 const MobileMenuItem = ({
   item,
   getRouterPath,
