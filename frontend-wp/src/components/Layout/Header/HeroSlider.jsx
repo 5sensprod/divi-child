@@ -1,5 +1,5 @@
 // src/components/Layout/Header/HeroSlider.jsx
-// Logique slider avec gestion des thèmes
+// Logique slider avec gestion des thèmes - Version mise à jour
 
 import { useState, useEffect } from "react";
 import {
@@ -63,9 +63,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
   };
 
   return (
-    <section
-      className={`w-full ${slider.layout.padding.desktop} relative z-[1]`}
-    >
+    <section className={`w-full ${slider.layout.padding} relative z-[1]`}>
       <div className={getContainerClass()}>
         <div className={`${slider.layout.grid} ${slider.layout.minHeight}`}>
           <HeroContent

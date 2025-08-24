@@ -4,7 +4,7 @@
 export const HEADER_CONFIG = {
   // Configuration Navigation
   navigation: {
-    showSearch: false,
+    showSearch: true,
     showCart: false,
     cartCount: 5,
     scrollThreshold: 100,
@@ -12,7 +12,7 @@ export const HEADER_CONFIG = {
     // Logos responsive
     logo: {
       desktop: {
-        normal: "200",
+        normal: "220",
         scrolled: "140",
       },
       mobile: {
@@ -52,16 +52,13 @@ export const HEADER_CONFIG = {
     autoplayDelay: 5000,
     containerType: "divi",
 
-    // Layout responsive
+    // Layout responsive - Simplifié avec une seule classe responsive
     layout: {
-      padding: {
-        desktop: "pt-24 md:pt-10 md:pt-5",
-        mobile: "pt-20",
-      },
+      padding: "pt-20 md:pt-0 lg:pt-20 xl:pt-20",
       grid: "grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-8",
       minHeight:
         "min-h-[var(--hero-min-height)] md:min-h-[var(--hero-min-height-md)]",
-      imageHeight: "min-h-[300px] md:min-h-0",
+      imageHeight: "h-full min-h-[300px] md:min-h-[320px]",
     },
 
     // Typography responsive
