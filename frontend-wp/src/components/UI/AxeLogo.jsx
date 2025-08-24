@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 const AxeLogo = ({
   width = "200",
-  height = "auto",
+  height,
   className = "",
   theme = "neon",
   onClick,
