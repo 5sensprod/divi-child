@@ -11,15 +11,8 @@ export const HEADER_CONFIG = {
 
     // Logos responsive
     logo: {
-      desktop: {
-        normal: "220",
-        scrolled: "140",
-      },
-      mobile: {
-        normal: "h-24", // 96px
-        scrolled: "h-20", // 80px
-      },
-      path: "/assets/images/Logo_Axe.svg",
+      desktop: { normal: 220, scrolled: 140 },
+      mobile: { normal: 150, scrolled: 100 },
       alt: "Logo Axe Musique",
     },
 
@@ -218,4 +211,20 @@ export const applyBackgroundTheme = (themeName) => {
     const cssVarName = `--axe-${key}`;
     root.style.setProperty(cssVarName, value);
   });
+};
+
+export const getLogoSizePx = ({
+  isMobile = false,
+  isScrolled = false,
+  widthOverride,
+} = {}) => {
+  const { logo } = HEADER_CONFIG.navigation;
+
+  // Si le composant reçoit un width explicite (nombre ou chaîne numérique), on le priorise
+  const w = Number(widthOverride);
+  if (Number.isFinite(w) && w > 0) return w;
+
+  const sizes = isMobile ? logo.mobile : logo.desktop;
+  const val = isScrolled ? sizes.scrolled : sizes.normal;
+  return Number(val); // sécurité
 };

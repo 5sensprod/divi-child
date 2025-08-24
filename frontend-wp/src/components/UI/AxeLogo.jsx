@@ -2,20 +2,19 @@
 // Version avec même logique responsive que Navigation
 
 import { useEffect } from "react";
+import { getLogoSizePx } from "../../config/components";
 
 const AxeLogo = ({
-  width = "200",
-  height,
+  width, // ← optionnel: si fourni, prioritaire
   className = "",
   theme = "neon",
   onClick,
   alt = "Logo Axe Musique",
-  isScrolled = false, // Nouveau prop pour défilement
-  isMobile = false, // Nouveau prop pour mobile
+  isScrolled = false,
+  isMobile = false,
 }) => {
   useEffect(() => {
     const root = document.documentElement;
-
     if (theme === "neon") {
       root.style.setProperty("--logo-primary", "#FF3FD1");
       root.style.setProperty("--logo-secondary", "#31D1FF");
@@ -27,33 +26,28 @@ const AxeLogo = ({
     }
   }, [theme]);
 
-  // Système exact comme votre navigation
-  const getLogoSize = () => {
-    if (isMobile) {
-      // Logique mobile comme dans votre config
-      return isScrolled ? "100" : "180"; // h-20 = 80px, h-24 = 96px
-    } else {
-      // Logique desktop comme dans votre config
-      return isScrolled ? "140" : width || "200";
-    }
-  };
+  // ✅ taille centralisée
+  const logoSize = getLogoSizePx({
+    isMobile,
+    isScrolled,
+    widthOverride: width,
+  });
 
-  const logoSize = parseInt(getLogoSize());
-  const scale = logoSize / 200; // Échelle basée sur 200px de référence
-
-  // VOS proportions parfaites, mais adaptées à la taille calculée
+  // Proportions texte
   const axeFontSize = Math.round(logoSize * 0.285);
   const musiqueFontSize = Math.round(logoSize * 0.16);
+  const scale = logoSize / 200;
 
   return (
     <div
       className={`logo-container ${className} relative inline-block`}
       onClick={onClick}
       style={{ cursor: onClick ? "pointer" : "default" }}
+      aria-label={alt}
+      role="img"
     >
       <svg
         width={logoSize}
-        height={height}
         viewBox="0 0 423 281"
         className="logo-svg transition-all duration-500"
         xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +94,6 @@ const AxeLogo = ({
         >
           AXE
         </div>
-
         <div
           className="absolute text-white transition-all duration-500 logo-text-musique"
           style={{

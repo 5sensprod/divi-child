@@ -124,10 +124,10 @@ const Navigation = ({
               {/* Logo DESKTOP - Nouveau composant AxeLogo */}
               <Link to="/" className="hidden lg:flex flex-shrink-0">
                 <AxeLogo
-                  width={logoSize} // 200 normal, 140 scrollé
+                  // width non nécessaire : la taille provient du helper global
                   theme={currentTheme}
-                  isScrolled={isScrolled} // ← Nouveau prop
-                  isMobile={false} // ← Desktop
+                  isScrolled={isScrolled}
+                  isMobile={false}
                   className="transition-all duration-500 hover:scale-105"
                   style={{ transformOrigin: "left center" }}
                 />
@@ -139,10 +139,9 @@ const Navigation = ({
               {/* Logo MOBILE centré - Nouveau composant AxeLogo */}
               <Link to="/" className="lg:hidden block" aria-label="Accueil">
                 <AxeLogo
-                  width="auto" // Auto pour mobile
                   theme={currentTheme}
-                  isScrolled={isScrolled} // ← Nouveau prop
-                  isMobile={true} // ← Mobile
+                  isScrolled={isScrolled}
+                  isMobile={true}
                   className="transition-all duration-500 hover:scale-105"
                 />
               </Link>
