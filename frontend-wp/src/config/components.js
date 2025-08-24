@@ -19,7 +19,7 @@ export const HEADER_CONFIG = {
         normal: "h-24", // 96px
         scrolled: "h-20", // 80px
       },
-      path: "/assets/images/Logo_Axe_full.svg",
+      path: "/assets/images/Logo_Axe.svg",
       alt: "Logo Axe Musique",
     },
 

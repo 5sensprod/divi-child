@@ -3,6 +3,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+  font-family: "AnticFont";
+  src: url("/assets/fonts/anticfont_regular-webfont.woff2") format("woff2"),
+    url("/assets/fonts/anticfont_regular-webfont.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Police Bauhaus - Pour le texte "MUSIQUE" */
+@font-face {
+  font-family: "Bauhaus";
+  src: url("/assets/fonts/Bauhaus.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Styles pour le logo avec les vraies polices */
+.logo-text-axe {
+  font-family: "AnticFont", Impact, Arial, sans-serif;
+  font-weight: normal; /* La police est déjà bold par nature */
+  letter-spacing: 0.05em;
+  text-rendering: optimizeLegibility;
+}
+
+.logo-text-musique {
+  font-family: "Bauhaus", Arial, sans-serif;
+  font-weight: normal; /* Bauhaus a son propre poids */
+  letter-spacing: 0.1em;
+  text-rendering: optimizeLegibility;
+}
 
 /* ============================================
    SYSTÈME DE DESIGN - VARIABLES CSS
@@ -47,6 +79,20 @@
   --neon-pink-outer: #ff3fd1;
   --neon-cyan-core: #9beaff;
   --neon-cyan-outer: #31d1ff;
+
+  /* Variables CSS pour le Logo - Thème par défaut (neon) */
+  --logo-primary: #ff3fd1;
+  --logo-secondary: #31d1ff;
+  --logo-accent: #7d49ff;
+  --logo-gradient: linear-gradient(
+    90deg,
+    var(--logo-primary),
+    var(--logo-secondary)
+  );
+
+  /* Variables pour les effets du logo */
+  --logo-glow-intensity: 3px;
+  --logo-transition: all 0.5s ease-in-out;
 }
 
 /* ============================================
@@ -63,6 +109,61 @@
 
   .container-narrow {
     @apply max-w-2xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Container du logo */
+  .logo-container {
+    @apply inline-flex items-center justify-center;
+    transition: var(--logo-transition);
+  }
+
+  /* SVG du logo */
+  .logo-svg {
+    transition: var(--logo-transition);
+    filter: drop-shadow(0 0 var(--logo-glow-intensity) var(--logo-primary));
+  }
+
+  /* Formes principales du logo */
+  .logo-primary-shape {
+    transition: var(--logo-transition);
+    fill: url(#logoGradient);
+  }
+
+  /* Formes d'accent du logo */
+  .logo-accent-shape {
+    transition: var(--logo-transition);
+  }
+
+  /* États hover pour le logo */
+  .logo-container:hover .logo-svg {
+    transform: scale(1.05);
+    filter: drop-shadow(
+      0 0 calc(var(--logo-glow-intensity) * 1.5) var(--logo-primary)
+    );
+  }
+
+  /* Animation de pulsation pour le logo */
+  .logo-pulse {
+    animation: logoPulse 2s ease-in-out infinite;
+  }
+
+  /* États responsifs du logo */
+  .logo-mobile {
+    @apply w-auto;
+    height: var(--logo-mobile-height, 4rem);
+  }
+
+  .logo-desktop {
+    @apply w-auto;
+    height: var(--logo-desktop-height, 3rem);
+  }
+
+  /* Logo scrollé */
+  .logo-scrolled {
+    transform: scale(0.9);
+    filter: drop-shadow(
+      0 0 calc(var(--logo-glow-intensity) * 0.7) var(--logo-primary)
+    );
   }
 }
 
@@ -228,6 +329,128 @@
 
 .animate-slide-up {
   animation: slideUp var(--transition-fast) ease-out;
+}
+
+/* ============================================
+   ANIMATIONS POUR LE LOGO
+   ============================================ */
+@keyframes logoPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 var(--logo-glow-intensity) var(--logo-primary));
+  }
+  50% {
+    filter: drop-shadow(
+      0 0 calc(var(--logo-glow-intensity) * 1.8) var(--logo-primary)
+    );
+  }
+}
+
+@keyframes logoSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation d'entrée pour le logo */
+.logo-slide-in {
+  animation: logoSlideIn var(--transition-smooth) ease-out;
+}
+
+/* ============================================
+   VARIANTES DE TAILLE POUR LE LOGO
+   ============================================ */
+@layer utilities {
+  /* Tailles prédéfinies */
+  .logo-xs {
+    width: 80px;
+  }
+
+  .logo-sm {
+    width: 120px;
+  }
+
+  .logo-md {
+    width: 160px;
+  }
+
+  .logo-lg {
+    width: 200px;
+  }
+
+  .logo-xl {
+    width: 280px;
+  }
+
+  /* Styles pour différents contextes */
+  .logo-header {
+    @apply logo-lg md:logo-xl;
+    transition: var(--logo-transition);
+  }
+
+  .logo-footer {
+    @apply logo-sm md:logo-md;
+    opacity: 0.8;
+  }
+
+  .logo-mobile-menu {
+    @apply logo-md;
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADAPTATIONS
+   ============================================ */
+@media (max-width: 640px) {
+  :root {
+    --logo-glow-intensity: 2px; /* Réduction de l'effet glow sur mobile */
+  }
+
+  .logo-container {
+    max-width: 200px; /* Limite la taille max sur mobile */
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --logo-glow-intensity: 4px; /* Augmentation de l'effet glow sur desktop */
+  }
+}
+
+/* ============================================
+   THÈMES SPÉCIFIQUES POUR LE LOGO
+   ============================================ */
+
+/* Thème neon (par défaut) */
+.theme-neon {
+  --logo-primary: #ff3fd1;
+  --logo-secondary: #31d1ff;
+  --logo-accent: #7d49ff;
+}
+
+/* Thème sunset */
+.theme-sunset {
+  --logo-primary: #ff6b35;
+  --logo-secondary: #ffd23f;
+  --logo-accent: #ff4d6d;
+}
+
+/* Classes utilitaires pour forcer un thème */
+.logo-neon {
+  --logo-primary: #ff3fd1;
+  --logo-secondary: #31d1ff;
+  --logo-accent: #7d49ff;
+}
+
+.logo-sunset {
+  --logo-primary: #ff6b35;
+  --logo-secondary: #ffd23f;
+  --logo-accent: #ff4d6d;
 }
 
 /* ============================================

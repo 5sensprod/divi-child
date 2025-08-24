@@ -1,5 +1,5 @@
 // src/components/Layout/Header/HeroSlider.jsx
-// Logique slider avec gestion des thèmes - Version mise à jour
+// Logique slider avec gestion des thèmes pour Background + Logo
 
 import { useState, useEffect } from "react";
 import {
@@ -28,14 +28,14 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
     setCurrentSlide(index);
   };
 
-  // Apply theme - Optimisé avec getThemeStyle + Background SVG
+  // Apply theme - Optimisé avec getThemeStyle + Background SVG + Logo
   useEffect(() => {
     const slide = slider.slides[currentSlide];
     if (!slide?.theme) return;
 
     const root = document.documentElement;
 
-    // Appliquer les thèmes gradient/texte
+    // Appliquer les thèmes gradient/texte pour le contenu
     root.style.setProperty(
       "--current-gradient",
       getThemeStyle(slide.theme, "gradient")
@@ -47,7 +47,35 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
 
     // Appliquer les variables CSS pour le background SVG
     applyBackgroundTheme(slide.theme);
+
+    // Appliquer les variables CSS pour le logo
+    applyLogoTheme(slide.theme);
   }, [currentSlide, slider.slides]);
+
+  // Fonction pour appliquer les thèmes au logo
+  const applyLogoTheme = (themeName) => {
+    const root = document.documentElement;
+
+    if (themeName === "neon") {
+      // Thème neon - couleurs électriques
+      root.style.setProperty("--logo-primary", "#FF3FD1");
+      root.style.setProperty("--logo-secondary", "#31D1FF");
+      root.style.setProperty("--logo-accent", "#7D49FF");
+      root.style.setProperty(
+        "--logo-gradient",
+        "linear-gradient(90deg, #FF3FD1, #31D1FF)"
+      );
+    } else if (themeName === "sunset") {
+      // Thème sunset - couleurs chaudes
+      root.style.setProperty("--logo-primary", "#ff6b35");
+      root.style.setProperty("--logo-secondary", "#ffd23f");
+      root.style.setProperty("--logo-accent", "#ff4d6d");
+      root.style.setProperty(
+        "--logo-gradient",
+        "linear-gradient(90deg, #ff6b35, #ffd23f)"
+      );
+    }
+  };
 
   const currentSlideData = slider.slides[currentSlide];
 
@@ -72,6 +100,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
             currentSlide={currentSlide}
             onSlideChange={goToSlide}
             config={slider}
+            currentTheme={currentSlideData.theme} // Passer le thème actuel
           />
           <HeroImage slide={currentSlideData} config={slider} />
         </div>

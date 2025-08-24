@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="646px" height="519px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,111.364,118.743)">
+        <g transform="matrix(1.76743,0,0,1.76743,-355.755,-122.769)">
+            <g id="neon-1-" serif:id="neon 1 " transform="matrix(0.906335,0,0,0.903945,184.699,-38.0939)">
+                <path d="M160.158,155.993L152.475,141.059L76.361,133.795L81.861,148.942L61.63,218.938L48.873,215.761L50.529,221.514L42.241,268.542L37.676,274.524L170.466,268.318L177.73,279.832L185.335,268.318L255.186,274.01L262.838,275.789L258.212,266.108L255.043,223.282L258.716,215.504L248.866,218.551L236.307,148.942L242.554,133.795L168.475,141.059L160.158,155.993Z" style="fill:white;fill-opacity:0;fill-rule:nonzero;"/>
+                <path d="M160.439,138.936L161.448,137.124L163.501,133.438L255.115,124.455L244.648,149.836L255.169,208.156L273.813,202.388L263.227,224.809L266.126,263.994L277.33,287.442L253.944,282.005L189.421,276.747L177.576,294.681L166.166,276.597L20.774,283.393L34.657,265.201L42.278,221.953L37.271,204.557L56.055,209.234L73.399,149.226L64.439,124.551L157.613,133.443L160.439,138.936ZM160.158,155.993L152.475,141.059L76.361,133.795L81.861,148.942L61.63,218.938L48.873,215.761L50.529,221.514L42.241,268.542L37.676,274.524L170.466,268.318L177.73,279.832L185.335,268.318L255.186,274.01L262.838,275.789L258.212,266.108L255.043,223.282L258.716,215.504L248.866,218.551L236.307,148.942L242.554,133.795L168.475,141.059L160.158,155.993Z" style="fill:white;"/>
+            </g>
+        </g>
+        <g transform="matrix(1.76743,0,0,1.76743,-355.755,-122.769)">
+            <g transform="matrix(0.426095,0,0,0.426095,188.931,34.091)">
+                <g transform="matrix(1.06,0,0,1,-6.33578,0)">
+                    <g transform="matrix(100,0,0,100,496.196,383.556)">
+                    </g>
+                    <text x="105.596px" y="383.556px" style="font-family:'Bauhaus';font-weight:5;font-size:100px;fill:white;">MUSIQUE</text>
+                </g>
+            </g>
+        </g>
+        <g transform="matrix(1.76743,0,0,1.76743,-355.755,-122.769)">
+            <g transform="matrix(0.968043,0,0,0.968043,42.5692,-83.3865)">
+                <g transform="matrix(77.3146,0,0,77.3146,362.412,250.786)">
+                </g>
+                <text x="212.678px" y="250.786px" style="font-family:'AnticFont';font-weight:5;font-size:77.315px;fill:white;">A<tspan x="268.044px 322.236px " y="250.786px 250.786px ">XE</tspan></text>
+            </g>
+        </g>
+    </g>
+</svg>

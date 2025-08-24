@@ -1,11 +1,12 @@
 // src/components/Layout/Navigation.jsx
-// Version avec configuration centralisée depuis components.js
+// Version mise à jour avec le composant AxeLogo
 
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, ChevronDown } from "lucide-react";
 import { MenuSkeleton } from "../UI/LoadingSkeleton";
 import { HEADER_CONFIG } from "../../config/components";
+import AxeLogo from "../UI/AxeLogo";
 
 const Navigation = ({
   menuItems = [],
@@ -15,6 +16,7 @@ const Navigation = ({
   showCart = HEADER_CONFIG.navigation.showCart,
   cartCount = HEADER_CONFIG.navigation.cartCount,
   scrollThreshold = HEADER_CONFIG.navigation.scrollThreshold,
+  currentTheme = "neon", // Nouveau prop pour le thème
 }) => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -91,10 +93,6 @@ const Navigation = ({
     ? navigation.logo.desktop.scrolled
     : navigation.logo.desktop.normal;
 
-  const mobileLogoClasses = isScrolled
-    ? navigation.logo.mobile.scrolled
-    : navigation.logo.mobile.normal;
-
   return (
     <>
       {/* Spacer pour menu fixe */}
@@ -123,15 +121,14 @@ const Navigation = ({
                 )}
               </button>
 
-              {/* Logo DESKTOP */}
+              {/* Logo DESKTOP - Nouveau composant AxeLogo */}
               <Link to="/" className="hidden lg:flex flex-shrink-0">
-                <img
-                  src={navigation.logo.path}
-                  alt={navigation.logo.alt}
-                  width={logoSize}
-                  className={`h-auto transition-all duration-300 hover:scale-105 ${
-                    isScrolled ? "scale-90" : "scale-100"
-                  }`}
+                <AxeLogo
+                  width={logoSize} // 200 normal, 140 scrollé
+                  theme={currentTheme}
+                  isScrolled={isScrolled} // ← Nouveau prop
+                  isMobile={false} // ← Desktop
+                  className="transition-all duration-500 hover:scale-105"
                   style={{ transformOrigin: "left center" }}
                 />
               </Link>
@@ -139,12 +136,14 @@ const Navigation = ({
 
             {/* CENTRE — Logo mobile (centré) / Menu desktop */}
             <div className="justify-self-center lg:justify-self-stretch flex items-center">
-              {/* Logo MOBILE centré */}
+              {/* Logo MOBILE centré - Nouveau composant AxeLogo */}
               <Link to="/" className="lg:hidden block" aria-label="Accueil">
-                <img
-                  src={navigation.logo.path}
-                  alt={navigation.logo.alt}
-                  className={`transition-all duration-300 hover:scale-105 ${mobileLogoClasses}`}
+                <AxeLogo
+                  width="auto" // Auto pour mobile
+                  theme={currentTheme}
+                  isScrolled={isScrolled} // ← Nouveau prop
+                  isMobile={true} // ← Mobile
+                  className="transition-all duration-500 hover:scale-105"
                 />
               </Link>
 
@@ -186,7 +185,7 @@ const Navigation = ({
           onClose={closeMobileMenu}
           siteTitle={siteTitle}
           config={navigation.mobileMenu}
-          logoConfig={navigation.logo}
+          currentTheme={currentTheme} // Passer le thème au menu mobile
         />
       )}
     </>
@@ -279,7 +278,7 @@ const DesktopMenuItem = ({
   );
 };
 
-// Mobile menu component
+// Menu mobile mis à jour avec le nouveau composant AxeLogo
 const MobileMenu = ({
   menuItems,
   loading,
@@ -288,7 +287,7 @@ const MobileMenu = ({
   onClose,
   siteTitle,
   config,
-  logoConfig,
+  currentTheme, // Nouveau prop
 }) => {
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const toggleSubmenu = (itemId) =>
@@ -300,13 +299,14 @@ const MobileMenu = ({
       <div
         className={`fixed top-0 left-0 right-0 ${config.background} animate-slide-down`}
       >
-        {/* Header */}
+        {/* Header avec nouveau logo */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/20">
-          <img
-            src={logoConfig.path}
+          <AxeLogo
+            width="120" // Taille fixe menu mobile
+            theme={currentTheme}
+            isScrolled={false} // Toujours normal en menu mobile
+            isMobile={true} // Mode mobile
             alt={siteTitle}
-            width={config.logoWidth}
-            className="h-auto"
           />
           <button
             onClick={onClose}
