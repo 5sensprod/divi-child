@@ -100,15 +100,14 @@ export const HEADER_CONFIG = {
         title: "ACHETEZ ET RÉPAREZ VOTRE MATOS MUSICAL",
         description:
           "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
-        image:
-          "/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min_1.webp",
+        image: "/assets/images/slider1-min.webp",
         theme: "neon",
       },
       {
         title: "BIENTÔT 30 ANS À VOTRE SERVICE",
         description:
           "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
-        image: "/assets/images/foodtruck4-min_1.webp",
+        image: "/assets/images/foodtruck4-min50-min.webp",
         theme: "sunset",
       },
     ],
