@@ -7,16 +7,21 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --mode development",
+    "build": "vite build --mode production",
+    "build:analyze": "vite build --mode production && npm run analyze",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "analyze": "npx vite-bundle-analyzer dist/stats.html",
+    "clean": "rm -rf dist",
+    "build:clean": "npm run clean && npm run build",
+    "typecheck": "tsc --noEmit",
+    "size": "npm run build && ls -la dist/ && du -sh dist/*"
   },
   "dependencies": {
     "@woocommerce/woocommerce-rest-api": "^1.0.2",
     "axios": "^1.11.0",
     "buffer": "^6.0.3",
-    "framer-motion": "^12.23.12",
     "lucide-react": "^0.540.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -33,12 +38,16 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "postcss": "^8.4.47",
+    "rollup-plugin-visualizer": "^5.12.0",
     "tailwindcss": "^3.4.13",
-    "vite": "^5.4.10"
+    "vite": "^5.4.10",
+    "vite-bundle-analyzer": "^0.18.0",
+    "vite-plugin-pwa": "^0.21.1"
   },
   "browserslist": [
-    "defaults",
-    "not IE 11",
-    "maintained node versions"
+    "last 2 versions",
+    "> 1%",
+    "not dead",
+    "not IE 11"
   ]
 }
