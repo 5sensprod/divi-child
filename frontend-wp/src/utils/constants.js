@@ -1,6 +1,7 @@
 // Configuration de l'API
 export const API_CONFIG = {
-  baseURL: "/wp-json/wp/v2",
+  baseURL:
+    import.meta.env.VITE_WP_API_URL || "https://axemusique.shop/wp-json/wp/v2",
   siteURL: import.meta.env.VITE_WP_SITE_URL || "https://axemusique.shop",
   timeout: 30000,
   isDevMode: import.meta.env.VITE_DEV_MODE === "true",
