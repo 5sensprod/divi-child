@@ -1,5 +1,5 @@
 // src/components/Layout/Header/HeroBackground.jsx
-// Version optimisée pour performances mobile
+// Version optimisée pour performances mobile - CSS fidèle au SVG
 
 import { useState, useEffect } from "react";
 import { HEADER_CONFIG } from "../../../config/components";
@@ -25,7 +25,7 @@ const HeroBackground = () => {
     return () => window.removeEventListener("resize", checkDevice);
   }, []);
 
-  // Version mobile ultra-simplifiée (CSS pur)
+  // Version mobile ultra-simplifiée mais fidèle (CSS pur)
   if (isMobile) {
     return (
       <div
@@ -33,10 +33,17 @@ const HeroBackground = () => {
         style={{
           zIndex: HEADER_CONFIG.zIndex.background,
           background: `
-            radial-gradient(ellipse at 18% 14%, var(--axe-pink-outer, #FF3FD1) 0%, transparent 45%),
-            radial-gradient(ellipse at 82% 12%, var(--axe-cyan-outer, #31D1FF) 0%, transparent 45%),
-            radial-gradient(ellipse at 70% 90%, var(--axe-violet, #7D49FF) 0%, transparent 60%),
-            linear-gradient(135deg, var(--axe-bg-0, #0E0B1F) 0%, var(--axe-bg-55, #1A1050) 55%, var(--axe-bg-100, #2A1372) 100%)
+            radial-gradient(ellipse 60% 60% at 70% 90%, 
+              rgba(125, 73, 255, 0.3) 0%, 
+              rgba(125, 73, 255, 0.1) 55%, 
+              transparent 100%),
+            radial-gradient(ellipse 70% 70% at 50% 50%, 
+              transparent 70%, 
+              rgba(0, 0, 0, 0.15) 100%),
+            linear-gradient(135deg, 
+              var(--axe-bg-0, #0E0B1F) 0%, 
+              var(--axe-bg-55, #1A1050) 55%, 
+              var(--axe-bg-100, #2A1372) 100%)
           `,
         }}
       />
@@ -140,34 +147,34 @@ const HeroBackground = () => {
           {!reduceAnimations && (
             <filter
               id="smoke"
-              x="-10%"
-              y="-10%"
-              width="120%"
-              height="120%"
+              x="-15%"
+              y="-15%"
+              width="130%"
+              height="130%"
               colorInterpolationFilters="sRGB"
             >
               <feTurbulence
                 type="fractalNoise"
-                baseFrequency="0.006 0.008"
-                numOctaves="2"
+                baseFrequency="0.008 0.012"
+                numOctaves="3"
                 seed="17"
                 result="noise"
               >
                 <animate
                   attributeName="baseFrequency"
-                  values="0.006 0.008; 0.004 0.006; 0.006 0.008"
-                  dur="30s"
+                  values="0.008 0.012; 0.005 0.008; 0.008 0.012"
+                  dur="25s"
                   repeatCount="indefinite"
                 />
               </feTurbulence>
-              <feGaussianBlur in="noise" stdDeviation="8" result="blur" />
+              <feGaussianBlur in="noise" stdDeviation="6" result="blur" />
               <feColorMatrix
                 in="blur"
                 type="matrix"
                 values="0 0 0 0 1
                         0 0 0 0 1
                         0 0 0 0 1
-                        0 0 0 0.15 0"
+                        0 0 0 0.25 0"
                 result="smokeField"
               />
             </filter>
@@ -205,7 +212,7 @@ const HeroBackground = () => {
             height="100%"
             filter="url(#smoke)"
             className="softLight"
-            opacity=".4"
+            opacity=".6"
           />
         )}
 
