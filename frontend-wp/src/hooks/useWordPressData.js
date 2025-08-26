@@ -50,6 +50,7 @@ export const useWordPressData = () => {
             wordpressService.loadMenu(),
             getProducts({ per_page: 20 }),
           ]);
+        console.log("Menu structure:", menuDataResult.value);
 
         // Mise à jour du state avec les résultats
         setData((prev) => ({

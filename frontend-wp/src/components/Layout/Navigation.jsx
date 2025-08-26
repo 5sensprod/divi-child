@@ -1,5 +1,5 @@
 // src/components/Layout/Navigation.jsx
-// Version mise à jour avec le composant AxeLogo
+// Version corrigée avec redirection vers pages WordPress
 
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -16,12 +16,12 @@ const Navigation = ({
   showCart = HEADER_CONFIG.navigation.showCart,
   cartCount = HEADER_CONFIG.navigation.cartCount,
   scrollThreshold = HEADER_CONFIG.navigation.scrollThreshold,
-  currentTheme = "neon", // Nouveau prop pour le thème
+  currentTheme = "neon",
 }) => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [openDropdowns, setOpenDropdowns] = useState(new Set());
 
   const { navigation } = HEADER_CONFIG;
 
@@ -52,31 +52,40 @@ const Navigation = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [mobileMenuOpen]);
 
-  // Build menu structure
+  // Build menu structure - Version récursive pour tous les niveaux
   const organizedMenu = useMemo(() => {
     if (!menuItems?.length) return [];
-    const topLevel = menuItems.filter((item) => item.parent === "0");
-    const getChildren = (parentId) =>
-      menuItems.filter((item) => item.parent === parentId.toString());
-    return topLevel.map((parent) => ({
-      ...parent,
-      children: getChildren(parent.id),
-    }));
+
+    const buildMenuTree = (parentId = "0") => {
+      return menuItems
+        .filter((item) => item.parent === parentId.toString())
+        .map((item) => ({
+          ...item,
+          children: buildMenuTree(item.id),
+        }));
+    };
+
+    return buildMenuTree();
   }, [menuItems]);
 
-  const getRouterPath = (wpUrl) => {
-    if (wpUrl === "#" || wpUrl === "/") return wpUrl;
-    if (wpUrl.includes("categorie-produit/")) {
-      const slug = wpUrl.split("categorie-produit/")[1].replace("/", "");
-      return `/categorie/${slug}`;
-    }
-    return wpUrl;
+  // Déterminer si c'est une route React ou WordPress
+  const isReactRoute = (url) => {
+    return url === "/" || url === "" || url === "#";
   };
 
   const isActive = (path) => location.pathname === path;
   const closeMobileMenu = () => setMobileMenuOpen(false);
-  const toggleDropdown = (itemId) =>
-    setActiveDropdown(activeDropdown === itemId ? null : itemId);
+  const toggleDropdown = (itemId) => {
+    setOpenDropdowns((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
 
   // Classes dynamiques depuis la config
   const navClasses = `fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${
@@ -89,10 +98,6 @@ const Navigation = ({
     ? navigation.styles.height.scrolled
     : navigation.styles.height.normal;
 
-  const logoSize = isScrolled
-    ? navigation.logo.desktop.scrolled
-    : navigation.logo.desktop.normal;
-
   return (
     <>
       {/* Spacer pour menu fixe */}
@@ -104,7 +109,7 @@ const Navigation = ({
           <div
             className={`grid items-center gap-4 ${heightClasses} grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
           >
-            {/* GAUCHE — Burger (mobile) + Logo desktop */}
+            {/* GAUCHE – Burger (mobile) + Logo desktop */}
             <div className="flex items-center justify-start">
               {/* Burger MOBILE */}
               <button
@@ -121,10 +126,9 @@ const Navigation = ({
                 )}
               </button>
 
-              {/* Logo DESKTOP - Nouveau composant AxeLogo */}
+              {/* Logo DESKTOP */}
               <Link to="/" className="hidden lg:flex flex-shrink-0">
                 <AxeLogo
-                  // width non nécessaire : la taille provient du helper global
                   theme={currentTheme}
                   isScrolled={isScrolled}
                   isMobile={false}
@@ -134,9 +138,9 @@ const Navigation = ({
               </Link>
             </div>
 
-            {/* CENTRE — Logo mobile (centré) / Menu desktop */}
+            {/* CENTRE – Logo mobile (centré) / Menu desktop */}
             <div className="justify-self-center lg:justify-self-stretch flex items-center">
-              {/* Logo MOBILE centré - Nouveau composant AxeLogo */}
+              {/* Logo MOBILE centré */}
               <Link to="/" className="lg:hidden block" aria-label="Accueil">
                 <AxeLogo
                   theme={currentTheme}
@@ -156,8 +160,8 @@ const Navigation = ({
                       key={item.id}
                       item={item}
                       isActive={isActive}
-                      getRouterPath={getRouterPath}
-                      activeDropdown={activeDropdown}
+                      isReactRoute={isReactRoute}
+                      openDropdowns={openDropdowns}
                       toggleDropdown={toggleDropdown}
                     />
                   ))
@@ -165,7 +169,7 @@ const Navigation = ({
               </div>
             </div>
 
-            {/* DROITE — Actions */}
+            {/* DROITE – Actions */}
             <div className="flex items-center justify-end space-x-3">
               {showSearch && <ActionButton icon={Search} label="Recherche" />}
               {showCart && <CartButton count={cartCount} />}
@@ -179,12 +183,12 @@ const Navigation = ({
         <MobileMenu
           menuItems={organizedMenu}
           loading={loading}
-          getRouterPath={getRouterPath}
+          isReactRoute={isReactRoute}
           isActive={isActive}
           onClose={closeMobileMenu}
           siteTitle={siteTitle}
           config={navigation.mobileMenu}
-          currentTheme={currentTheme} // Passer le thème au menu mobile
+          currentTheme={currentTheme}
         />
       )}
     </>
@@ -217,31 +221,46 @@ const CartButton = ({ count }) => (
   </button>
 );
 
-// Desktop menu item component
+// Desktop menu item component - VERSION RÉCURSIVE
 const DesktopMenuItem = ({
   item,
   isActive,
-  getRouterPath,
-  activeDropdown,
+  isReactRoute,
+  openDropdowns,
   toggleDropdown,
+  level = 1, // Niveau de profondeur
 }) => {
   const hasChildren = item.children?.length > 0;
-  const path = getRouterPath(item.url);
-  const isDropdownOpen = activeDropdown === item.id;
+  const isDropdownOpen = openDropdowns.has(item.id);
 
+  // Item sans enfants
   if (!hasChildren) {
+    if (isReactRoute(item.url)) {
+      const path = item.url === "#" ? "/" : item.url;
+      return (
+        <Link
+          to={path}
+          className={`nav-link ${
+            isActive(path) ? "nav-link-active" : "nav-link-inactive"
+          }`}
+        >
+          {item.title}
+        </Link>
+      );
+    }
+
     return (
-      <Link
-        to={path}
-        className={`nav-link ${
-          isActive(path) ? "nav-link-active" : "nav-link-inactive"
-        }`}
+      <a
+        href={item.url}
+        className="nav-link nav-link-inactive"
+        target={item.target || "_self"}
       >
         {item.title}
-      </Link>
+      </a>
     );
   }
 
+  // Item avec enfants - gérer différents niveaux
   return (
     <div className="relative">
       <button
@@ -260,16 +279,22 @@ const DesktopMenuItem = ({
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden z-dropdown animate-slide-down">
+        <div
+          className={`absolute top-full left-0 mt-2 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden z-dropdown animate-slide-down ${
+            level === 1 ? "w-64" : "w-56"
+          }`}
+        >
           {item.children.map((child) => (
-            <Link
+            <DropdownChildItem
               key={child.id}
-              to={getRouterPath(child.url)}
-              className="block px-4 py-3 text-sm text-white/90 hover:bg-white/10 hover:text-pink-300 transition-colors border-b border-white/5 last:border-b-0"
-              onClick={() => toggleDropdown(null)}
-            >
-              {child.title}
-            </Link>
+              item={child}
+              isReactRoute={isReactRoute}
+              isActive={isActive}
+              openDropdowns={openDropdowns}
+              toggleDropdown={toggleDropdown}
+              onClose={() => toggleDropdown(null)}
+              level={level + 1}
+            />
           ))}
         </div>
       )}
@@ -277,16 +302,91 @@ const DesktopMenuItem = ({
   );
 };
 
-// Menu mobile mis à jour avec le nouveau composant AxeLogo
+// Composant pour les items enfants du dropdown - VERSION RÉCURSIVE
+const DropdownChildItem = ({
+  item,
+  isReactRoute,
+  isActive,
+  openDropdowns,
+  toggleDropdown,
+  onClose,
+  level = 2,
+}) => {
+  const hasChildren = item.children?.length > 0;
+  const isSubmenuOpen = openDropdowns.has(item.id);
+  const commonClasses =
+    "block px-4 py-3 text-sm text-white/90 hover:bg-white/10 hover:text-pink-300 transition-colors border-b border-white/5 last:border-b-0";
+
+  // Item sans enfants
+  if (!hasChildren) {
+    if (isReactRoute(item.url)) {
+      const path = item.url === "#" ? "/" : item.url;
+      return (
+        <Link to={path} className={commonClasses} onClick={onClose}>
+          <span className={level > 2 ? "ml-4" : ""}>{item.title}</span>
+        </Link>
+      );
+    }
+
+    return (
+      <a
+        href={item.url}
+        className={commonClasses}
+        target={item.target || "_self"}
+      >
+        <span className={level > 2 ? "ml-4" : ""}>{item.title}</span>
+      </a>
+    );
+  }
+
+  // Item avec enfants - créer un sous-menu
+  return (
+    <div className="relative">
+      <button
+        onClick={() => toggleDropdown(item.id)}
+        className={`w-full text-left ${commonClasses} flex items-center justify-between ${
+          isSubmenuOpen ? "text-pink-300 bg-white/5" : ""
+        }`}
+      >
+        <span className={level > 2 ? "ml-4" : ""}>{item.title}</span>
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-200 ${
+            isSubmenuOpen ? "rotate-180 text-pink-300" : ""
+          }`}
+        />
+      </button>
+
+      {isSubmenuOpen && (
+        <div className="ml-4 border-l border-white/10">
+          {item.children.map((child) => (
+            <DropdownChildItem
+              key={child.id}
+              item={child}
+              isReactRoute={isReactRoute}
+              isActive={isActive}
+              openDropdowns={openDropdowns}
+              toggleDropdown={toggleDropdown}
+              onClose={onClose}
+              level={level + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Menu mobile corrigé
 const MobileMenu = ({
   menuItems,
   loading,
-  getRouterPath,
+  isReactRoute,
   isActive,
   onClose,
   siteTitle,
   config,
-  currentTheme, // Nouveau prop
+  currentTheme,
 }) => {
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const toggleSubmenu = (itemId) =>
@@ -298,13 +398,13 @@ const MobileMenu = ({
       <div
         className={`fixed top-0 left-0 right-0 ${config.background} animate-slide-down`}
       >
-        {/* Header avec nouveau logo */}
+        {/* Header avec logo */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/20">
           <AxeLogo
-            width="120" // Taille fixe menu mobile
+            width="120"
             theme={currentTheme}
-            isScrolled={false} // Toujours normal en menu mobile
-            isMobile={true} // Mode mobile
+            isScrolled={false}
+            isMobile={true}
             alt={siteTitle}
           />
           <button
@@ -332,7 +432,7 @@ const MobileMenu = ({
                 <MobileMenuItem
                   key={item.id}
                   item={item}
-                  getRouterPath={getRouterPath}
+                  isReactRoute={isReactRoute}
                   isActive={isActive}
                   onClose={onClose}
                   openSubmenu={openSubmenu}
@@ -347,40 +447,58 @@ const MobileMenu = ({
   );
 };
 
-// Mobile menu item component
+// Mobile menu item component - VERSION RÉCURSIVE
 const MobileMenuItem = ({
   item,
-  getRouterPath,
+  isReactRoute,
   isActive,
   onClose,
   openSubmenu,
   toggleSubmenu,
+  level = 1,
 }) => {
   const hasChildren = item.children?.length > 0;
-  const path = getRouterPath(item.url);
   const isSubmenuOpen = openSubmenu === item.id;
+  const indentClass = level > 1 ? `ml-${level * 2}` : "";
 
+  // Item sans enfants
   if (!hasChildren) {
+    const commonClasses = `mobile-menu-item ${indentClass}`;
+
+    if (isReactRoute(item.url)) {
+      const path = item.url === "#" ? "/" : item.url;
+      return (
+        <Link
+          to={path}
+          className={`${commonClasses} ${
+            isActive(path)
+              ? "mobile-menu-item-active"
+              : "mobile-menu-item-inactive"
+          }`}
+          onClick={onClose}
+        >
+          {item.title}
+        </Link>
+      );
+    }
+
     return (
-      <Link
-        to={path}
-        className={`mobile-menu-item ${
-          isActive(path)
-            ? "mobile-menu-item-active"
-            : "mobile-menu-item-inactive"
-        }`}
-        onClick={onClose}
+      <a
+        href={item.url}
+        className={`${commonClasses} mobile-menu-item-inactive`}
+        target={item.target || "_self"}
       >
         {item.title}
-      </Link>
+      </a>
     );
   }
 
+  // Item avec enfants
   return (
     <div className="mb-1">
       <button
         onClick={() => toggleSubmenu(item.id)}
-        className={`mobile-menu-item mobile-menu-item-inactive w-full flex items-center justify-between ${
+        className={`mobile-menu-item mobile-menu-item-inactive w-full flex items-center justify-between ${indentClass} ${
           isSubmenuOpen ? "text-pink-300 bg-white/5" : ""
         }`}
       >
@@ -394,20 +512,18 @@ const MobileMenuItem = ({
       </button>
 
       {isSubmenuOpen && (
-        <div className="mt-1 ml-4 space-y-1 animate-slide-down">
+        <div className="mt-1 space-y-1 animate-slide-down">
           {item.children.map((child) => (
-            <Link
+            <MobileMenuItem
               key={child.id}
-              to={getRouterPath(child.url)}
-              className={`block px-4 py-2 rounded-lg text-sm transition-colors active:scale-[0.98] ${
-                isActive(getRouterPath(child.url))
-                  ? "text-pink-300 bg-pink-500/10 border-l-2 border-pink-300"
-                  : "text-white/70 hover:bg-white/10 hover:text-pink-300"
-              }`}
-              onClick={onClose}
-            >
-              {child.title}
-            </Link>
+              item={child}
+              isReactRoute={isReactRoute}
+              isActive={isActive}
+              onClose={onClose}
+              openSubmenu={openSubmenu}
+              toggleSubmenu={toggleSubmenu}
+              level={level + 1}
+            />
           ))}
         </div>
       )}

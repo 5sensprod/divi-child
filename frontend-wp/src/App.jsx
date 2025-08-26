@@ -1,11 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { WordPressProvider } from "./context/WordPressContext";
 import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
-import Shop from "./pages/Shop";
-import Category from "./pages/Category";
-import Product from "./pages/Product";
+
+// Composant de redirection
+const RedirectToWordPress = () => {
+  useEffect(() => {
+    // Rediriger automatiquement vers la page WordPress correspondante
+    window.location.href = window.location.href;
+  }, []);
+
+  return <div>Redirection vers WordPress...</div>;
+};
 
 const App = () => {
   return (
@@ -14,17 +21,8 @@ const App = () => {
         <Layout>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/boutique" element={<Shop />} />
-            <Route path="/categorie/:slug" element={<Category />} />
-            <Route path="/produit/:id" element={<Product />} />
-            <Route
-              path="*"
-              element={
-                <div className="text-center py-12">
-                  <h1 className="text-2xl">Page non trouvée</h1>
-                </div>
-              }
-            />
+            {/* Toutes les autres routes redirigent vers WordPress */}
+            <Route path="*" element={<RedirectToWordPress />} />
           </Routes>
         </Layout>
       </Router>
