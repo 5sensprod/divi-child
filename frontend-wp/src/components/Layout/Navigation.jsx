@@ -52,6 +52,22 @@ const Navigation = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [mobileMenuOpen]);
 
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      // Si on clique en dehors du menu de navigation
+      if (!event.target.closest(".nav-dropdown-container")) {
+        setOpenDropdowns(new Set());
+      }
+    };
+
+    // Ajouter l'écouteur seulement si des dropdowns sont ouverts
+    if (openDropdowns.size > 0) {
+      document.addEventListener("click", handleOutsideClick);
+      return () => document.removeEventListener("click", handleOutsideClick);
+    }
+  }, [openDropdowns]);
+
   // Build menu structure - Version récursive pour tous les niveaux
   const organizedMenu = useMemo(() => {
     if (!menuItems?.length) return [];
@@ -151,7 +167,7 @@ const Navigation = ({
               </Link>
 
               {/* Menu DESKTOP */}
-              <div className="hidden lg:flex items-center justify-center flex-1 space-x-4">
+              <div className="hidden lg:flex items-center justify-center flex-1 space-x-4 nav-dropdown-container">
                 {loading ? (
                   <MenuSkeleton />
                 ) : (
