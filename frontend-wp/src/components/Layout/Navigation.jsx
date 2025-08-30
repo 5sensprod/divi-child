@@ -94,11 +94,38 @@ const Navigation = ({
   const toggleDropdown = (itemId) => {
     setOpenDropdowns((prev) => {
       const newSet = new Set(prev);
+
+      // Trouver l'item correspondant
+      const findItem = (items, id) => {
+        for (const item of items) {
+          if (item.id === id) return item;
+          if (item.children?.length > 0) {
+            const found = findItem(item.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const clickedItem = findItem(organizedMenu, itemId);
+      if (!clickedItem) return newSet;
+
+      // Si c'est un item de niveau 1 (parent = "0")
+      if (clickedItem.parent === "0") {
+        // Fermer tous les autres dropdowns de niveau 1
+        const level1Items = organizedMenu.map((item) => item.id);
+        level1Items.forEach((id) => {
+          if (id !== itemId) newSet.delete(id);
+        });
+      }
+
+      // Toggle l'item cliqué
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
       } else {
         newSet.add(itemId);
       }
+
       return newSet;
     });
   };

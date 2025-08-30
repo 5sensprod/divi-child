@@ -70,6 +70,7 @@ const AxeLogo = ({
     },
     "aria-label": alt,
     role: "img",
+    translate: "no",
   };
 
   // Version mobile optimisée avec WebP
