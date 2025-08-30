@@ -47,7 +47,7 @@ export const HEADER_CONFIG = {
 
     // Layout responsive - Simplifié avec une seule classe responsive
     layout: {
-      padding: "pt-20 md:pt-0 lg:pt-20 xl:pt-20",
+      padding: "pt-20 md:pt-20 lg:pt-40 xl:pt-40",
       grid: "grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-8",
       minHeight:
         "min-h-[var(--hero-min-height)] md:min-h-[var(--hero-min-height-md)]",

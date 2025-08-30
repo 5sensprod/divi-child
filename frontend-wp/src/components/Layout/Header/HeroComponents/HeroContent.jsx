@@ -32,12 +32,12 @@ const HeroContent = ({
 
         <div className="flex flex-col gap-6 self-center md:self-start">
           <HeroButton config={config.button} />
-          <SlideDots
+          {/* <SlideDots
             slides={slides}
             currentSlide={currentSlide}
             onSlideChange={onSlideChange}
             config={config.dots}
-          />
+          /> */}
         </div>
       </div>
     </div>

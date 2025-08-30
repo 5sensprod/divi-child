@@ -58,8 +58,8 @@
   /* Layout */
   --nav-height: 80px;
   --nav-height-scrolled: 64px;
-  --hero-min-height: 500px;
-  --hero-min-height-md: 650px;
+  --hero-min-height: 650px;
+  --hero-min-height-md: 550px;
 
   /* Z-index système */
   --z-navigation: 1000;
