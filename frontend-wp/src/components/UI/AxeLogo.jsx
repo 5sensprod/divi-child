@@ -1,5 +1,5 @@
 // src/components/UI/AxeLogo.jsx
-// Version optimisée avec WebP sur mobile + effet membrane haut-parleur
+// Version optimisée : Mobile = effet haut-parleur, Desktop = effet néon
 
 import { useEffect, useState, useMemo } from "react";
 import { getLogoSizePx } from "../../config/components";
@@ -100,11 +100,11 @@ const AxeLogo = ({
           className="speaker-membrane relative"
           style={{
             animation:
-              "speakerBeat var(--speaker-duration, 5s) ease-in-out infinite",
+              "speakerBeat var(--speaker-duration, 3s) ease-in-out infinite",
             transformOrigin: "center center",
-            "--speaker-duration": "1.8s",
-            "--speaker-beat-end": "45%",
-            "--speaker-hover-duration": "0.5s",
+            "--speaker-duration": "3s",
+            "--speaker-beat-end": "24%",
+            "--speaker-hover-duration": "1.5s",
           }}
         >
           <img
@@ -161,10 +161,9 @@ const AxeLogo = ({
           </div>
         )}
 
-        {/* Styles CSS pour les animations */}
+        {/* Styles CSS pour l'effet haut-parleur mobile */}
         <style jsx>{`
           @keyframes speakerBeat {
-            /* Beat rapide au début */
             0% {
               transform: scale(1);
             }
@@ -186,8 +185,6 @@ const AxeLogo = ({
             24% {
               transform: scale(1);
             }
-
-            /* PAUSE LONGUE - 76% du temps */
             24%,
             100% {
               transform: scale(1);
@@ -195,7 +192,8 @@ const AxeLogo = ({
           }
 
           .speaker-membrane:hover {
-            animation: speakerBeat 1.5s ease-in-out infinite;
+            animation: speakerBeat var(--speaker-hover-duration) ease-in-out
+              infinite;
           }
 
           .speaker-membrane:active {
@@ -207,85 +205,184 @@ const AxeLogo = ({
     );
   }
 
-  // Version desktop avec SVG (votre version existante optimisée)
+  // Version desktop avec SVG + effet grésillement néon UNIQUEMENT
   return (
     <div {...containerProps}>
-      <svg
-        width={logoSize}
-        viewBox="0 0 423 281"
-        className="logo-svg transition-transform duration-300"
-        xmlns="http://www.w3.org/2000/svg"
+      <div
+        className="neon-flicker relative"
         style={{
-          filter: isScrolled
-            ? "none"
-            : "drop-shadow(0 0 3px var(--logo-primary, #FF3FD1))",
-          willChange: "auto",
+          animation:
+            "neonFlicker var(--neon-duration, 4s) ease-in-out infinite",
+          "--neon-duration": "4s",
+          "--neon-hover-duration": "2s",
         }}
       >
-        <defs>
-          <linearGradient
-            id={`logoGradient-${theme}-${logoSize}`}
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="0%"
-          >
-            <stop
-              offset="0%"
-              style={{ stopColor: "var(--logo-primary, #FF3FD1)" }}
-            />
-            <stop
-              offset="100%"
-              style={{ stopColor: "var(--logo-secondary, #31D1FF)" }}
-            />
-          </linearGradient>
-        </defs>
-
-        {/* Forme du badge */}
-        <g transform="matrix(0.989355,0,0,1.04873,-39.0155,-125.719)">
-          <g transform="matrix(1.78644,0,0,1.6853,-320.147,2.81323)">
-            <g transform="matrix(0.906335,0,0,0.903945,184.699,-38.0939)">
-              <path
-                d="M160.439,138.936L161.448,137.124L163.501,133.438L255.115,124.455L244.648,149.836L255.169,208.156L273.813,202.388L263.227,224.809L266.126,263.994L277.33,287.442L253.944,282.005L189.421,276.747L177.576,294.681L166.166,276.597L20.774,283.393L34.657,265.201L42.278,221.953L37.271,204.557L56.055,209.234L73.399,149.226L64.439,124.551L157.613,133.443L160.439,138.936ZM160.158,155.993L152.475,141.059L76.361,133.795L81.861,148.942L61.63,218.938L48.873,215.761L50.529,221.514L42.241,268.542L37.676,274.524L170.466,268.318L177.73,279.832L185.335,268.318L255.186,274.01L262.838,275.789L258.212,266.108L255.043,223.282L258.716,215.504L248.866,218.551L236.307,148.942L242.554,133.795L168.475,141.059L160.158,155.993Z"
-                fill="white"
-                fillRule="evenodd"
-                stroke={`url(#logoGradient-${theme}-${logoSize})`}
-                strokeWidth="2"
-                className="transition-all duration-300"
+        <svg
+          width={logoSize}
+          viewBox="0 0 423 281"
+          className="logo-svg transition-all duration-300"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            filter: `
+              drop-shadow(0 0 8px var(--logo-primary, #FF3FD1)) 
+              drop-shadow(0 0 15px var(--logo-primary, #FF3FD1)) 
+              drop-shadow(0 0 25px var(--logo-primary, #FF3FD1))
+            `,
+            willChange: "filter, opacity",
+          }}
+        >
+          <defs>
+            <linearGradient
+              id={`logoGradient-${theme}-${logoSize}`}
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop
+                offset="0%"
+                style={{ stopColor: "var(--logo-primary, #FF3FD1)" }}
               />
+              <stop
+                offset="100%"
+                style={{ stopColor: "var(--logo-secondary, #31D1FF)" }}
+              />
+            </linearGradient>
+          </defs>
+
+          {/* Forme du badge */}
+          <g transform="matrix(0.989355,0,0,1.04873,-39.0155,-125.719)">
+            <g transform="matrix(1.78644,0,0,1.6853,-320.147,2.81323)">
+              <g transform="matrix(0.906335,0,0,0.903945,184.699,-38.0939)">
+                <path
+                  d="M160.439,138.936L161.448,137.124L163.501,133.438L255.115,124.455L244.648,149.836L255.169,208.156L273.813,202.388L263.227,224.809L266.126,263.994L277.33,287.442L253.944,282.005L189.421,276.747L177.576,294.681L166.166,276.597L20.774,283.393L34.657,265.201L42.278,221.953L37.271,204.557L56.055,209.234L73.399,149.226L64.439,124.551L157.613,133.443L160.439,138.936ZM160.158,155.993L152.475,141.059L76.361,133.795L81.861,148.942L61.63,218.938L48.873,215.761L50.529,221.514L42.241,268.542L37.676,274.524L170.466,268.318L177.73,279.832L185.335,268.318L255.186,274.01L262.838,275.789L258.212,266.108L255.043,223.282L258.716,215.504L248.866,218.551L236.307,148.942L242.554,133.795L168.475,141.059L160.158,155.993Z"
+                  fill="white"
+                  fillRule="evenodd"
+                  stroke={`url(#logoGradient-${theme}-${logoSize})`}
+                  strokeWidth="2"
+                  className="transition-all duration-300"
+                />
+              </g>
             </g>
           </g>
-        </g>
-      </svg>
+        </svg>
 
-      {/* Texte SVG */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute text-white logo-text-axe"
-          style={{
-            fontSize: `${textSizes.axe}px`,
-            left: "51%",
-            top: "32%",
-            transform: "translate(-50%, -50%)",
-            lineHeight: "1",
-            letterSpacing: `${textSizes.scale * 0.05}em`,
-          }}
-        >
-          AXE
+        {/* Texte SVG avec glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute text-white logo-text-axe"
+            style={{
+              fontSize: `${textSizes.axe}px`,
+              left: "51%",
+              top: "32%",
+              transform: "translate(-50%, -50%)",
+              lineHeight: "1",
+              letterSpacing: `${textSizes.scale * 0.05}em`,
+              textShadow: `
+                0 0 5px var(--logo-primary, #FF3FD1),
+                0 0 10px var(--logo-primary, #FF3FD1),
+                0 0 15px var(--logo-primary, #FF3FD1)
+              `,
+            }}
+          >
+            AXE
+          </div>
+          <div
+            className="absolute text-white logo-text-musique"
+            style={{
+              fontSize: `${textSizes.musique}px`,
+              left: "51%",
+              top: "70%",
+              transform: "translate(-50%, -50%)",
+              lineHeight: "1",
+              letterSpacing: `${textSizes.scale * 0.1}em`,
+              textShadow: `
+                0 0 3px var(--logo-primary, #FF3FD1),
+                0 0 6px var(--logo-primary, #FF3FD1),
+                0 0 10px var(--logo-primary, #FF3FD1)
+              `,
+            }}
+          >
+            MUSIQUE
+          </div>
         </div>
-        <div
-          className="absolute text-white logo-text-musique"
-          style={{
-            fontSize: `${textSizes.musique}px`,
-            left: "51%",
-            top: "70%",
-            transform: "translate(-50%, -50%)",
-            lineHeight: "1",
-            letterSpacing: `${textSizes.scale * 0.1}em`,
-          }}
-        >
-          MUSIQUE
-        </div>
+
+        {/* Styles CSS pour l'effet grésillement néon desktop */}
+        <style jsx>{`
+          @keyframes neonFlicker {
+            0% {
+              opacity: 1;
+              filter: brightness(1) saturate(1) contrast(1);
+            }
+            3% {
+              opacity: 0.92;
+              filter: brightness(1.15) saturate(1.08) contrast(1.05);
+            }
+            6% {
+              opacity: 1;
+              filter: brightness(0.88) saturate(0.95) contrast(0.98);
+            }
+            9% {
+              opacity: 0.96;
+              filter: brightness(1.12) saturate(1.06) contrast(1.03);
+            }
+            12% {
+              opacity: 1;
+              filter: brightness(1) saturate(1) contrast(1);
+            }
+            18% {
+              opacity: 0.94;
+              filter: brightness(1.18) saturate(1.1) contrast(1.06);
+            }
+            21% {
+              opacity: 1;
+              filter: brightness(0.91) saturate(0.97) contrast(0.99);
+            }
+            25% {
+              opacity: 0.98;
+              filter: brightness(1.08) saturate(1.04) contrast(1.02);
+            }
+            30% {
+              opacity: 1;
+              filter: brightness(1) saturate(1) contrast(1);
+            }
+            45% {
+              opacity: 0.99;
+              filter: brightness(1.02) saturate(1.01) contrast(1);
+            }
+            48% {
+              opacity: 1;
+              filter: brightness(0.98) saturate(0.99) contrast(1);
+            }
+            65% {
+              opacity: 0.97;
+              filter: brightness(1.05) saturate(1.03) contrast(1.01);
+            }
+            68% {
+              opacity: 1;
+              filter: brightness(1) saturate(1) contrast(1);
+            }
+            85% {
+              opacity: 0.995;
+              filter: brightness(1.01) saturate(1.005) contrast(1);
+            }
+            100% {
+              opacity: 1;
+              filter: brightness(1) saturate(1) contrast(1);
+            }
+          }
+
+          .neon-flicker:hover {
+            animation: neonFlicker var(--neon-hover-duration) ease-in-out
+              infinite;
+          }
+
+          .neon-flicker:active {
+            opacity: 0.85;
+            filter: brightness(1.3) saturate(1.2) contrast(1.1);
+            transition: all 0.15s ease-out;
+          }
+        `}</style>
       </div>
     </div>
   );
