@@ -4,6 +4,7 @@ import { useWordPress } from "../context/WordPressContext";
 import ProductGrid from "../components/Product/ProductGrid";
 import CategoryGrid from "../components/categorie/CategoryGrid";
 import CategoryAccordion from "../components/categorie/CategoryAccordion";
+import Title from "../components/UI/Title"; // Import du nouveau composant
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
@@ -17,21 +18,24 @@ const Home = () => {
       <section className="py-20 bg-white">
         <div className="container-divi">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-                Nos Catégories
-              </span>
-            </h2>
+            <Title
+              tag="h2"
+              className="mb-6"
+              animationType="equalizer"
+              gradient="default"
+            >
+              Nos Catégories
+            </Title>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Découvrez notre sélection d'instruments organisée par catégories
             </p>
           </div>
 
           {/* Utilisation du composant CategoryGrid */}
-          <CategoryAccordion
-            categories={categories}
+          <CategoryGrid
+            categories={categories.slice(0, 6)} // Limiter à 6 catégories sur la home
             loading={loading.categories}
-            className="max-w-4xl mx-auto"
+            className="grid-cols-1 md:grid-cols-3 gap-8"
           />
 
           {/* Bouton pour voir toutes les catégories */}
@@ -64,37 +68,18 @@ const Home = () => {
       {/* Produits vedettes */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
-          <div className="flex items-center justify-between mb-16">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-                  Produits Vedettes
-                </span>
-              </h2>
-              <p className="text-lg text-gray-600">
-                Notre sélection des meilleurs instruments
-              </p>
-            </div>
-
-            <Link
-              to="/boutique"
-              className="group hidden md:flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
+          <div className="text-center mb-16">
+            <Title
+              tag="h2"
+              className="mb-4"
+              animationType="equalizer"
+              gradient="sunset"
             >
-              <span>Voir tout</span>
-              <svg
-                className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
+              Produits Vedettes
+            </Title>
+            <p className="text-lg text-gray-600">
+              Notre sélection des meilleurs instruments
+            </p>
           </div>
 
           <ProductGrid
@@ -103,13 +88,14 @@ const Home = () => {
             className="grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
           />
 
-          {/* Bouton mobile */}
-          <div className="md:hidden text-center mt-12">
+          {/* Bouton centré sous les produits */}
+          <div className="text-center mt-12">
             <Link
               to="/boutique"
               className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
             >
-              <span>Voir tout le catalogue</span>
+              <span className="hidden md:inline">Voir tout le catalogue</span>
+              <span className="md:hidden">Voir tout</span>
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -208,11 +194,14 @@ const Home = () => {
 
         <div className="container-divi relative z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
-                Prêt à faire de la musique ?
-              </span>
-            </h2>
+            <Title
+              tag="h2"
+              className="mb-6"
+              animationType="equalizer"
+              gradient="ocean"
+            >
+              Prêt à faire de la musique ?
+            </Title>
             <p className="text-xl opacity-90 mb-10 leading-relaxed">
               Rejoignez des milliers de musiciens qui nous font confiance pour
               leurs instruments
