@@ -14,24 +14,43 @@
   gap: 12px; /* Espacement entre l'animation et le titre */
 }
 
-/* Style de base pour le texte du titre - Fix pour la coupure */
+/* Conteneur principal du titre avec animation */
+.title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centrer le contenu */
+  gap: 12px; /* Espacement entre l'animation et le titre */
+}
+
+/* Transition sur l'élément racine pour les variables CSS */
+:root {
+  transition: --logo-primary 0.8s ease-in-out, --logo-secondary 0.8s ease-in-out,
+    --logo-accent 0.8s ease-in-out;
+}
+
+/* Style de base pour le texte du titre - utilise les variables de thème */
 .title-gradient-text {
-  background: linear-gradient(to right, #db2777, #9333ea, #0891b2);
+  background: linear-gradient(
+    to right,
+    var(--logo-primary, #db2777),
+    var(--logo-secondary, #9333ea),
+    var(--logo-accent, #0891b2)
+  );
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
   color: transparent !important;
   /* Fix complet pour éviter la coupure du texte */
-  padding: 6px 2px 12px 2px !important; /* Padding important pour les lettres descendantes */
+  padding: 6px 2px 12px 2px !important;
   line-height: 1.3 !important;
   display: inline-block !important;
-  /* Assurer que le texte ne soit pas coupé */
   overflow: visible !important;
-  /* Réinitialiser les styles de Tailwind qui peuvent interférer */
   box-sizing: content-box !important;
+  /* Animation des propriétés qui peuvent changer */
+  transition: background-image 0.8s ease-in-out !important;
 }
 
-/* Animation equalizer (basée sur votre wave.html) */
+/* Animation equalizer (basée sur votre wave.html) - utilise les variables de thème */
 .title-animation.equalizer .soundbar {
   display: flex;
   gap: 3px;
@@ -43,9 +62,15 @@
 .title-animation.equalizer .bar {
   width: 4px;
   border-radius: 3px;
-  background: linear-gradient(180deg, #ff6ea8, #9b5cff);
-  box-shadow: 0 3px 10px rgba(155, 92, 255, 0.4);
+  background: linear-gradient(
+    180deg,
+    var(--logo-primary, #ff6ea8),
+    var(--logo-secondary, #9b5cff)
+  );
+  box-shadow: 0 3px 10px rgba(var(--logo-secondary-rgb, 155, 92, 255), 0.4);
   animation: equalize 1.2s ease-in-out infinite;
+  /* Transition douce pour les changements de couleurs des barres */
+  transition: background-image 0.8s ease-in-out, box-shadow 0.8s ease-in-out;
 }
 
 .title-animation.equalizer .bar:nth-child(1) {

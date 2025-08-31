@@ -11,11 +11,8 @@ const Home = () => {
 
   return (
     <div>
-      {/* Hero Section - sera remplacée par HeroSection component */}
-      {/* Cette section sera supprimée car elle fait doublon avec HeroSection */}
-
       {/* Catégories populaires - Utilisation des vraies catégories WooCommerce */}
-      <section className="py-20 bg-white">
+      <section className="py-10 bg-white">
         <div className="container-divi">
           <div className="text-center mb-16">
             <Title
@@ -66,7 +63,7 @@ const Home = () => {
       </section>
 
       {/* Produits vedettes */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="text-center mb-16">
             <Title
