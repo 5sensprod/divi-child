@@ -1,5 +1,5 @@
 // src/components/UI/AxeLogo.jsx
-// Version optimisée avec WebP sur mobile + SVG desktop
+// Version optimisée avec WebP sur mobile + effet membrane haut-parleur
 
 import { useEffect, useState, useMemo } from "react";
 import { getLogoSizePx } from "../../config/components";
@@ -73,7 +73,7 @@ const AxeLogo = ({
     translate: "no",
   };
 
-  // Version mobile optimisée avec WebP
+  // Version mobile optimisée avec WebP + effet membrane
   if (!isClient) {
     // Skeleton pendant l'hydration
     return (
@@ -95,25 +95,39 @@ const AxeLogo = ({
   if (isMobile) {
     return (
       <div {...containerProps}>
-        <img
-          src="/assets/images/Logo_Axe_neon_crop-min.webp"
-          alt={alt}
-          width={logoSize}
-          height="auto"
-          loading={isScrolled ? "eager" : "lazy"} // Priorité si scrolled (donc critique)
-          decoding="async"
-          onLoad={() => setImageLoaded(true)}
-          className={`w-full h-auto transition-opacity duration-300 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          }`}
+        {/* Container avec effet de membrane rythmé */}
+        <div
+          className="speaker-membrane relative"
           style={{
-            maxWidth: logoSize,
-            filter:
-              theme === "sunset"
-                ? "hue-rotate(25deg) saturate(1.1)" // Adaptation thème sunset
-                : "none",
+            animation:
+              "speakerBeat var(--speaker-duration, 5s) ease-in-out infinite",
+            transformOrigin: "center center",
+            "--speaker-duration": "1.8s",
+            "--speaker-beat-end": "45%",
+            "--speaker-hover-duration": "0.5s",
           }}
-        />
+        >
+          <img
+            src="/assets/images/Logo_Axe_neon_crop-min.webp"
+            alt={alt}
+            width={logoSize}
+            height="auto"
+            loading={isScrolled ? "eager" : "lazy"}
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
+            className={`w-full h-auto transition-all duration-300 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            style={{
+              maxWidth: logoSize,
+              filter:
+                theme === "sunset"
+                  ? "hue-rotate(25deg) saturate(1.1) drop-shadow(0 0 12px #ff6b3580)"
+                  : "drop-shadow(0 0 12px #FF3FD180)",
+              transform: "translateZ(0)", // Force GPU
+            }}
+          />
+        </div>
 
         {/* Fallback pendant chargement */}
         {!imageLoaded && (
@@ -146,6 +160,49 @@ const AxeLogo = ({
             </div>
           </div>
         )}
+
+        {/* Styles CSS pour les animations */}
+        <style jsx>{`
+          @keyframes speakerBeat {
+            /* Beat rapide au début */
+            0% {
+              transform: scale(1);
+            }
+            4% {
+              transform: scale(1.08);
+            }
+            8% {
+              transform: scale(0.92);
+            }
+            12% {
+              transform: scale(1.05);
+            }
+            16% {
+              transform: scale(0.96);
+            }
+            20% {
+              transform: scale(1.02);
+            }
+            24% {
+              transform: scale(1);
+            }
+
+            /* PAUSE LONGUE - 76% du temps */
+            24%,
+            100% {
+              transform: scale(1);
+            }
+          }
+
+          .speaker-membrane:hover {
+            animation: speakerBeat 1.5s ease-in-out infinite;
+          }
+
+          .speaker-membrane:active {
+            transform: scale(0.92);
+            transition: transform 0.15s ease-out;
+          }
+        `}</style>
       </div>
     );
   }
