@@ -2,16 +2,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
 import ProductGrid from "../components/Product/ProductGrid";
+import CategoryGrid from "../components/categorie/CategoryGrid";
+import CategoryAccordion from "../components/categorie/CategoryAccordion";
 
 const Home = () => {
-  const { siteData, products, loading } = useWordPress();
+  const { siteData, products, categories, loading } = useWordPress();
 
   return (
     <div>
       {/* Hero Section - sera remplacée par HeroSection component */}
       {/* Cette section sera supprimée car elle fait doublon avec HeroSection */}
 
-      {/* Catégories populaires */}
+      {/* Catégories populaires - Utilisation des vraies catégories WooCommerce */}
       <section className="py-20 bg-white">
         <div className="container-divi">
           <div className="text-center mb-16">
@@ -25,75 +27,37 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Guitares",
-                image:
-                  "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400",
-                slug: "guitares",
-                description: "Acoustiques, électriques et classiques",
-              },
-              {
-                name: "Pianos",
-                image:
-                  "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400",
-                slug: "pianos",
-                description: "Pianos droits et à queue",
-              },
-              {
-                name: "Batterie",
-                image:
-                  "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400",
-                slug: "batterie",
-                description: "Acoustiques et électroniques",
-              },
-            ].map((category) => (
+          {/* Utilisation du composant CategoryGrid */}
+          <CategoryAccordion
+            categories={categories}
+            loading={loading.categories}
+            className="max-w-4xl mx-auto"
+          />
+
+          {/* Bouton pour voir toutes les catégories */}
+          {categories.length > 6 && (
+            <div className="text-center mt-12">
               <Link
-                key={category.slug}
-                to={`/categorie/${category.slug}`}
-                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+                to="/categories"
+                className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
               >
-                {/* Image avec overlay gradient */}
-                <div className="relative h-80 overflow-hidden">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                <span>Voir toutes les catégories</span>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                </div>
-
-                {/* Contenu */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h3 className="text-2xl font-bold mb-2 group-hover:text-pink-300 transition-colors duration-300">
-                    {category.name}
-                  </h3>
-                  <p className="text-white/80 text-sm">
-                    {category.description}
-                  </p>
-
-                  {/* Flèche animée */}
-                  <div className="mt-3 flex items-center text-pink-300 group-hover:text-cyan-300 transition-colors duration-300">
-                    <span className="text-sm font-medium mr-2">Explorer</span>
-                    <svg
-                      className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
+                </svg>
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -184,7 +148,9 @@ const Home = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-3xl font-bold text-gray-800 mb-2">1000+</h3>
+              <h3 className="text-3xl font-bold text-gray-800 mb-2">
+                {products.length || "1000+"}
+              </h3>
               <p className="text-gray-600">Instruments disponibles</p>
             </div>
 

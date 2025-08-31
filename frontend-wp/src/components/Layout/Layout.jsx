@@ -12,8 +12,8 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header showHero={showHero} />
-      {/* <main className="flex-1">{children}</main>
-      <Footer /> */}
+      <main className="flex-1">{children}</main>
+      <Footer />
     </div>
   );
 };

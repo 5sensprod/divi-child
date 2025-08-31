@@ -43,7 +43,7 @@ export const getProducts = async (params = {}) => {
   }
 };
 
-// Service pour récupérer les catégories
+// Service pour récupérer TOUTES les catégories
 export const getCategories = async () => {
   try {
     const WooCommerce = createWooCommerceAPI();
@@ -52,11 +52,86 @@ export const getCategories = async () => {
       hide_empty: true,
     });
 
+    // Console.log pour voir les catégories récupérées
+    console.log("=== TOUTES LES CATÉGORIES ===");
+    console.log("Nombre de catégories:", response.data.length);
+    console.log("Données complètes:", response.data);
+
+    // Affichage simplifié des catégories
+    console.log("Liste des catégories:");
+    response.data.forEach((category) => {
+      console.log(
+        `- ID: ${category.id}, Nom: ${category.name}, Slug: ${category.slug}, Parent: ${category.parent}`
+      );
+    });
+
     return response.data;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur catégories:",
+        error.response?.data || error.message
+      );
+    }
+    throw error;
+  }
+};
+
+// Service pour récupérer UNIQUEMENT les catégories PARENTES
+export const getParentCategories = async () => {
+  try {
+    const WooCommerce = createWooCommerceAPI();
+    const response = await WooCommerce.get("products/categories", {
+      per_page: 100,
+      hide_empty: true,
+      parent: 0, // ← Paramètre API pour récupérer uniquement les catégories parentes
+    });
+
+    // Console.log pour voir les catégories parentes
+    console.log("=== CATÉGORIES PARENTES UNIQUEMENT ===");
+    console.log("Nombre de catégories parentes:", response.data.length);
+    console.log("Données complètes:", response.data);
+
+    // Affichage simplifié des catégories parentes
+    console.log("Liste des catégories parentes:");
+    response.data.forEach((category) => {
+      console.log(
+        `- ID: ${category.id}, Nom: ${category.name}, Slug: ${category.slug}`
+      );
+    });
+
+    return response.data;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(
+        "Erreur catégories parentes:",
+        error.response?.data || error.message
+      );
+    }
+    throw error;
+  }
+};
+
+// Alternative : Filtrer côté client (si l'API ne supporte pas parent: 0)
+export const getParentCategoriesFiltered = async () => {
+  try {
+    const allCategories = await getCategories();
+
+    // Filtrer les catégories parentes (parent === 0)
+    const parentCategories = allCategories.filter(
+      (category) => category.parent === 0
+    );
+
+    console.log("=== CATÉGORIES PARENTES (FILTRÉES) ===");
+    console.log("Nombre total de catégories:", allCategories.length);
+    console.log("Nombre de catégories parentes:", parentCategories.length);
+    console.log("Catégories parentes:", parentCategories);
+
+    return parentCategories;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(
+        "Erreur filtrage catégories parentes:",
         error.response?.data || error.message
       );
     }
@@ -122,6 +197,8 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
 export default {
   getProducts,
   getCategories,
+  getParentCategories,
+  getParentCategoriesFiltered,
   getProduct,
   searchProducts,
   getProductsByCategory,

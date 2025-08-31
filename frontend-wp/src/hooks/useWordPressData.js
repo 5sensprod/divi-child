@@ -1,7 +1,7 @@
 // src/hooks/useWordPressData.js
 
 import { useState, useEffect } from "react";
-import { getProducts } from "../services/woocommerce";
+import { getProducts, getParentCategories } from "../services/woocommerce";
 import { wordpressService } from "../services/wordpress";
 import { DEFAULT_DATA, FALLBACK_PRODUCTS } from "../utils/constants";
 import { cacheUtils, CACHE_KEYS } from "../utils/cache";
@@ -11,6 +11,7 @@ export const useWordPressData = () => {
   const [data, setData] = useState({
     ...DEFAULT_DATA,
     products: [],
+    categories: [], // ← Ajout des catégories dans le state initial
     error: null,
   });
 
@@ -43,14 +44,21 @@ export const useWordPressData = () => {
         // Tester la connexion WordPress
         await wordpressService.testConnection();
 
-        // Charger toutes les données en parallèle
-        const [siteDataResult, menuDataResult, productsResult] =
-          await Promise.allSettled([
-            wordpressService.loadSiteData(),
-            wordpressService.loadMenu(),
-            getProducts({ per_page: 20 }),
-          ]);
+        // Charger toutes les données en parallèle - AJOUT DES CATÉGORIES PARENTES
+        const [
+          siteDataResult,
+          menuDataResult,
+          productsResult,
+          categoriesResult,
+        ] = await Promise.allSettled([
+          wordpressService.loadSiteData(),
+          wordpressService.loadMenu(),
+          getProducts({ per_page: 20 }),
+          getParentCategories(), // ← Utilisation des catégories parentes uniquement
+        ]);
+
         console.log("Menu structure:", menuDataResult.value);
+        console.log("Categories loaded:", categoriesResult.value); // ← Log pour vérifier
 
         // Mise à jour du state avec les résultats
         setData((prev) => ({
@@ -67,6 +75,10 @@ export const useWordPressData = () => {
             productsResult.status === "fulfilled"
               ? productsResult.value
               : FALLBACK_PRODUCTS,
+          categories:
+            categoriesResult.status === "fulfilled"
+              ? categoriesResult.value
+              : [], // ← Mise à jour des catégories
           loading: {
             initial: false,
             menus: false,
@@ -81,6 +93,7 @@ export const useWordPressData = () => {
         setData((prev) => ({
           ...prev,
           products: FALLBACK_PRODUCTS,
+          categories: [], // ← Fallback pour les catégories
           loading: {
             initial: false,
             menus: false,
@@ -135,6 +148,29 @@ export const useWordPressData = () => {
           ...prev,
           products: FALLBACK_PRODUCTS,
           loading: { ...prev.loading, products: false },
+        }));
+      }
+    },
+
+    // Recharger les catégories
+    reloadCategories: async () => {
+      setData((prev) => ({
+        ...prev,
+        loading: { ...prev.loading, categories: true },
+      }));
+
+      try {
+        const categories = await getParentCategories();
+        setData((prev) => ({
+          ...prev,
+          categories,
+          loading: { ...prev.loading, categories: false },
+        }));
+      } catch (error) {
+        setData((prev) => ({
+          ...prev,
+          categories: [],
+          loading: { ...prev.loading, categories: false },
         }));
       }
     },
