@@ -1,28 +1,40 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./Title.css";
+
+const PALETTES = {
+  neon: ["#ff3fd1", "#31d1ff", "#7d49ff"],
+  sunset: ["#ff6b35", "#ffd23f", "#ff4d6d"],
+};
 
 const Title = ({
   children,
   tag = "h2",
   className = "",
   showAnimation = true,
-  animationType = "equalizer", // Par défaut equalizer pour tous
-  gradient = "default",
+  animationType = "equalizer",
+  mode = "auto", // "neon" | "sunset" | "auto"
+  intervalMs = 5000, // switch toutes les 2 s
+  useCssOnly = false, // true => utilise l'animation CSS .theme-auto (pas de JS)
 }) => {
-  // Définir les différents gradients disponibles
-  const gradients = {
-    default: "from-pink-600 via-purple-600 to-cyan-600",
-    pink: "from-pink-500 to-pink-700",
-    purple: "from-purple-500 to-purple-700",
-    cyan: "from-cyan-500 to-cyan-700",
-    sunset: "from-orange-500 via-pink-500 to-purple-600",
-    ocean: "from-blue-500 via-cyan-500 to-teal-600",
-  };
-
-  // Créer le composant avec la balise dynamique
   const TagName = tag;
 
-  // Classes CSS de base pour le titre (sans les styles de gradient qui sont dans le CSS)
+  // gestion JS (désactivée si useCssOnly=true ou mode !== "auto")
+  const [isNeon, setIsNeon] = useState(true);
+  useEffect(() => {
+    if (useCssOnly || mode !== "auto") return;
+    const t = setInterval(
+      () => setIsNeon((v) => !v),
+      Math.max(500, intervalMs)
+    );
+    return () => clearInterval(t);
+  }, [mode, intervalMs, useCssOnly]);
+
+  const activePalette = useMemo(() => {
+    if (mode === "neon") return PALETTES.neon;
+    if (mode === "sunset") return PALETTES.sunset;
+    return isNeon ? PALETTES.neon : PALETTES.sunset;
+  }, [mode, isNeon]);
+
   const titleClasses = `
     title-gradient-text font-bold
     ${tag === "h1" ? "text-5xl md:text-6xl" : ""}
@@ -33,34 +45,32 @@ const Title = ({
     ${tag === "h6" ? "text-lg md:text-xl" : ""}
   `.trim();
 
+  const [c1, c2, c3] = activePalette;
+
   return (
-    <div className={`title-container ${className}`}>
+    <div
+      className={`title-root ${
+        useCssOnly && mode === "auto" ? "theme-auto" : ""
+      } ${className}`}
+      style={
+        useCssOnly && mode === "auto"
+          ? undefined
+          : { ["--c1"]: c1, ["--c2"]: c2, ["--c3"]: c3 }
+      }
+    >
       {showAnimation && (
-        <div className={`title-animation ${animationType}`}>
+        <div className={`title-animation ${animationType}`} aria-hidden="true">
           {animationType === "equalizer" && (
             <div className="soundbar">
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-            </div>
-          )}
-          {animationType === "pulse" && (
-            <div className="pulse-animation">
-              <div className="pulse-circle"></div>
-            </div>
-          )}
-          {animationType === "wave" && (
-            <div className="wave-animation">
-              <div className="wave"></div>
-              <div className="wave"></div>
-              <div className="wave"></div>
+              <span className="bar" />
+              <span className="bar" />
+              <span className="bar" />
+              <span className="bar" />
+              <span className="bar" />
             </div>
           )}
         </div>
       )}
-
       <TagName className={titleClasses}>{children}</TagName>
     </div>
   );
