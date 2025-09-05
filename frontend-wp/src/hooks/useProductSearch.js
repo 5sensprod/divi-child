@@ -10,17 +10,20 @@ export const useProductSearch = () => {
     loading: false,
     error: null,
     hasSearched: false,
+    filters: {},
   });
 
   // Générer la clé de cache pour une recherche
-  const getSearchCacheKey = useCallback((query) => {
-    return `${CACHE_KEYS.SEARCH_PREFIX}${query.toLowerCase().trim()}`;
+  const getSearchCacheKey = useCallback((query, filters = {}) => {
+    const queryKey = query ? query.toLowerCase().trim() : "no-query";
+    const filtersKey = JSON.stringify(filters);
+    return `${CACHE_KEYS.SEARCH_PREFIX}${queryKey}_${filtersKey}`;
   }, []);
 
   // Récupérer les résultats depuis le cache
   const getCachedResults = useCallback(
-    (query) => {
-      const cacheKey = getSearchCacheKey(query);
+    (query, filters) => {
+      const cacheKey = getSearchCacheKey(query, filters);
       return cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.SEARCH);
     },
     [getSearchCacheKey]
@@ -28,8 +31,8 @@ export const useProductSearch = () => {
 
   // Sauvegarder les résultats en cache
   const setCachedResults = useCallback(
-    (query, results) => {
-      const cacheKey = getSearchCacheKey(query);
+    (query, filters, results) => {
+      const cacheKey = getSearchCacheKey(query, filters);
       cacheUtils.setWithTTL(cacheKey, results, CACHE_DURATIONS.SEARCH);
     },
     [getSearchCacheKey]
@@ -37,7 +40,7 @@ export const useProductSearch = () => {
 
   // Sauvegarder dans l'historique des recherches récentes
   const saveToRecentSearches = useCallback((query) => {
-    if (!query.trim()) return;
+    if (!query || !query.trim()) return;
 
     const recentSearches =
       cacheUtils.getWithTTL(
@@ -60,24 +63,40 @@ export const useProductSearch = () => {
     );
   }, []);
 
-  // Recherche principale
+  // Vérifier si des filtres sont actifs
+  const hasActiveFilters = useCallback((filters) => {
+    if (!filters) return false;
+
+    return (
+      (filters.category && filters.category !== "") ||
+      (filters.priceRange && filters.priceRange !== "all") ||
+      (filters.availability && filters.availability !== "all") ||
+      (filters.sortBy && filters.sortBy !== "relevance")
+    );
+  }, []);
+
+  // Recherche avec filtres
   const performSearch = useCallback(
-    async (query) => {
-      if (!query.trim()) {
+    async (query = "", searchFilters = {}) => {
+      const trimmedQuery = query.trim();
+      const hasFilters = hasActiveFilters(searchFilters);
+
+      // Si pas de query ET pas de filtres, réinitialiser
+      if (!trimmedQuery && !hasFilters) {
         setSearchState((prev) => ({
           ...prev,
           query: "",
           results: [],
           hasSearched: false,
           error: null,
+          filters: searchFilters,
+          loading: false,
         }));
         return;
       }
 
-      const trimmedQuery = query.trim();
-
-      // Vérifier le cache d'abord
-      const cachedResults = getCachedResults(trimmedQuery);
+      // Vérifier le cache
+      const cachedResults = getCachedResults(trimmedQuery, searchFilters);
       if (cachedResults) {
         setSearchState((prev) => ({
           ...prev,
@@ -86,32 +105,99 @@ export const useProductSearch = () => {
           loading: false,
           hasSearched: true,
           error: null,
+          filters: searchFilters,
         }));
         return;
       }
 
-      // Commencer la recherche
       setSearchState((prev) => ({
         ...prev,
         loading: true,
         query: trimmedQuery,
         error: null,
+        filters: searchFilters,
       }));
 
       try {
-        // Import dynamique pour éviter de charger le service avant utilisation
         const { searchProducts } = await import("../services/woocommerce");
 
-        const results = await searchProducts(trimmedQuery, {
+        // Construire les paramètres de recherche
+        const searchParams = {
           per_page: 20,
           search_fields: ["name", "description", "sku"],
-        });
+        };
 
-        // Mise en cache des résultats
-        setCachedResults(trimmedQuery, results);
+        // Ajouter les filtres aux paramètres
+        if (searchFilters.category && searchFilters.category !== "") {
+          searchParams.category = searchFilters.category;
+        }
 
-        // Sauvegarder dans les recherches récentes
-        saveToRecentSearches(trimmedQuery);
+        if (searchFilters.priceRange && searchFilters.priceRange !== "all") {
+          // Gérer les prix selon les valeurs définies dans SearchFilters
+          switch (searchFilters.priceRange) {
+            case "0-50":
+              searchParams.min_price = 0;
+              searchParams.max_price = 50;
+              break;
+            case "50-100":
+              searchParams.min_price = 50;
+              searchParams.max_price = 100;
+              break;
+            case "100-300":
+              searchParams.min_price = 100;
+              searchParams.max_price = 300;
+              break;
+            case "300-500":
+              searchParams.min_price = 300;
+              searchParams.max_price = 500;
+              break;
+            case "500+":
+              searchParams.min_price = 500;
+              break;
+          }
+        }
+
+        if (
+          searchFilters.availability &&
+          searchFilters.availability !== "all"
+        ) {
+          searchParams.stock_status =
+            searchFilters.availability === "in-stock"
+              ? "instock"
+              : searchFilters.availability;
+        }
+
+        if (searchFilters.sortBy && searchFilters.sortBy !== "relevance") {
+          switch (searchFilters.sortBy) {
+            case "price-asc":
+              searchParams.orderby = "price";
+              searchParams.order = "asc";
+              break;
+            case "price-desc":
+              searchParams.orderby = "price";
+              searchParams.order = "desc";
+              break;
+            case "name-asc":
+              searchParams.orderby = "title";
+              searchParams.order = "asc";
+              break;
+            case "date-desc":
+              searchParams.orderby = "date";
+              searchParams.order = "desc";
+              break;
+          }
+        }
+
+        // Effectuer la recherche
+        const results = await searchProducts(trimmedQuery, searchParams);
+
+        // Sauvegarder en cache
+        setCachedResults(trimmedQuery, searchFilters, results);
+
+        // Sauvegarder dans les recherches récentes seulement si on a une query
+        if (trimmedQuery) {
+          saveToRecentSearches(trimmedQuery);
+        }
 
         setSearchState((prev) => ({
           ...prev,
@@ -132,7 +218,7 @@ export const useProductSearch = () => {
         }));
       }
     },
-    [getCachedResults, setCachedResults, saveToRecentSearches]
+    [getCachedResults, setCachedResults, saveToRecentSearches, hasActiveFilters]
   );
 
   // Debouncing pour éviter trop de requêtes
@@ -149,6 +235,7 @@ export const useProductSearch = () => {
       loading: false,
       error: null,
       hasSearched: false,
+      filters: {},
     });
   }, []);
 
@@ -175,5 +262,6 @@ export const useProductSearch = () => {
     performSearch, // Pour recherche immédiate si besoin
     getRecentSearches,
     clearSearchCache,
+    hasActiveFilters,
   };
 };

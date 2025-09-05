@@ -153,19 +153,44 @@ export const getProduct = async (productId) => {
   }
 };
 
-// Service pour rechercher des produits
-export const searchProducts = async (searchTerm) => {
+// SERVICE CORRIGÉ : Recherche avec filtres
+export const searchProducts = async (searchTerm = "", searchParams = {}) => {
   try {
     const WooCommerce = createWooCommerceAPI();
-    const response = await WooCommerce.get("products", {
-      search: searchTerm,
+
+    // Construire les paramètres de base
+    const params = {
       per_page: 20,
-    });
+      status: "publish",
+      ...searchParams,
+    };
+
+    // Ajouter le terme de recherche s'il existe
+    if (searchTerm && searchTerm.trim()) {
+      params.search = searchTerm.trim();
+    }
+
+    let response = await WooCommerce.get("products", params);
+
+    // Si pas de résultats avec recherche + catégorie, essayer juste la catégorie
+    if (response.data.length === 0 && searchTerm && searchParams.category) {
+      const categoryOnlyParams = { ...params };
+      delete categoryOnlyParams.search;
+
+      const fallbackResponse = await WooCommerce.get(
+        "products",
+        categoryOnlyParams
+      );
+      return fallbackResponse.data;
+    }
 
     return response.data;
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error("Erreur recherche:", error.response?.data || error.message);
+      console.error(
+        "Erreur searchProducts:",
+        error.response?.data || error.message
+      );
     }
     throw error;
   }

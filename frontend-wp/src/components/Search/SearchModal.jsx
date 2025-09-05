@@ -1,11 +1,16 @@
 // src/components/Search/SearchModal.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Search, ShoppingBag, Clock, TrendingUp } from "lucide-react";
 import { useProductSearch } from "../../hooks/useProductSearch";
+import { useWordPress } from "../../context/WordPressContext";
+import SearchFilters from "./SearchFilters";
 
 const SearchModal = ({ isOpen, onClose }) => {
   const [inputValue, setInputValue] = useState("");
+  const [currentFilters, setCurrentFilters] = useState({});
   const inputRef = useRef(null);
+  const { categories } = useWordPress();
+
   const {
     query,
     results,
@@ -24,14 +29,51 @@ const SearchModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Déclencher la recherche quand l'input change
+  // Fonction de recherche stable avec useCallback
+  const performSearchWithFilters = useCallback(() => {
+    // Ne pas rechercher si pas de query ET pas de filtres actifs
+    if (!inputValue.trim() && !hasActiveFilters(currentFilters)) {
+      return;
+    }
+
+    // Rechercher même avec une query vide si des filtres sont appliqués
+    search(inputValue, currentFilters);
+  }, [inputValue, currentFilters, search]);
+
+  // Déclencher la recherche quand les paramètres changent
   useEffect(() => {
-    search(inputValue);
-  }, [inputValue, search]);
+    performSearchWithFilters();
+  }, [performSearchWithFilters]);
+
+  // Vérifier si des filtres sont actifs
+  const hasActiveFilters = (filters) => {
+    return (
+      filters.category !== "" ||
+      filters.priceRange !== "all" ||
+      filters.availability !== "all" ||
+      filters.sortBy !== "relevance"
+    );
+  };
+
+  // Gestionnaire des filtres
+  const handleFiltersChange = (newFilters) => {
+    setCurrentFilters(newFilters);
+  };
+
+  // Gestionnaire de changement de texte
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
 
   // Nettoyer à la fermeture
   const handleClose = () => {
     setInputValue("");
+    setCurrentFilters({
+      category: "",
+      priceRange: "all",
+      availability: "all",
+      sortBy: "relevance",
+    });
     clearSearch();
     onClose();
   };
@@ -68,7 +110,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                   ref={inputRef}
                   type="text"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder="Rechercher des instruments, accessoires..."
                   className="flex-1 text-lg outline-none bg-transparent placeholder-gray-500"
                 />
@@ -93,8 +135,15 @@ const SearchModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
+        {/* Filtres */}
+        <SearchFilters
+          categories={categories || []}
+          onFiltersChange={handleFiltersChange}
+          initialFilters={currentFilters}
+        />
+
         {/* Contenu des résultats */}
-        <div className="max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[60vh] overflow-y-auto">
           <div className="container mx-auto px-4 lg:px-6 py-6">
             {/* État de chargement */}
             {loading && (
@@ -112,11 +161,31 @@ const SearchModal = ({ isOpen, onClose }) => {
                 <div className="text-red-500 text-5xl mb-4">⚠️</div>
                 <p className="text-red-600 text-lg">{error}</p>
                 <button
-                  onClick={() => search(inputValue)}
+                  onClick={performSearchWithFilters}
                   className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Réessayer
                 </button>
+              </div>
+            )}
+
+            {/* Indicateur des filtres actifs */}
+            {hasActiveFilters(currentFilters) && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  🔍 Filtres appliqués :
+                  {currentFilters.category &&
+                    ` Catégorie: ${
+                      categories?.find((c) => c.id == currentFilters.category)
+                        ?.name
+                    }`}
+                  {currentFilters.priceRange !== "all" &&
+                    ` Prix: ${currentFilters.priceRange}`}
+                  {currentFilters.availability !== "all" &&
+                    ` Disponibilité: ${currentFilters.availability}`}
+                  {currentFilters.sortBy !== "relevance" &&
+                    ` Tri: ${currentFilters.sortBy}`}
+                </p>
               </div>
             )}
 
@@ -125,7 +194,7 @@ const SearchModal = ({ isOpen, onClose }) => {
               !loading &&
               !error &&
               results.length === 0 &&
-              inputValue.trim() && (
+              (inputValue.trim() || hasActiveFilters(currentFilters)) && (
                 <div className="text-center py-12">
                   <ShoppingBag
                     size={64}
@@ -135,8 +204,14 @@ const SearchModal = ({ isOpen, onClose }) => {
                     Aucun produit trouvé
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Aucun résultat pour "
-                    <span className="font-medium">{query}</span>"
+                    {inputValue.trim() ? (
+                      <>
+                        Aucun résultat pour "
+                        <span className="font-medium">{query}</span>"
+                      </>
+                    ) : (
+                      "Aucun produit ne correspond aux filtres sélectionnés"
+                    )}
                   </p>
                   <div className="text-sm text-gray-500">
                     <p>Suggestions :</p>
@@ -144,36 +219,39 @@ const SearchModal = ({ isOpen, onClose }) => {
                       <li>• Vérifiez l'orthographe</li>
                       <li>• Essayez des mots-clés différents</li>
                       <li>• Utilisez des termes plus généraux</li>
+                      <li>• Modifiez les filtres</li>
                     </ul>
                   </div>
                 </div>
               )}
 
             {/* Recherches récentes (quand pas de recherche active) */}
-            {!inputValue.trim() && recentSearches.length > 0 && (
-              <div className="mb-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <Clock size={18} className="text-gray-400" />
-                  <h3 className="font-medium text-gray-800">
-                    Recherches récentes
-                  </h3>
+            {!inputValue.trim() &&
+              !hasActiveFilters(currentFilters) &&
+              recentSearches.length > 0 && (
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock size={18} className="text-gray-400" />
+                    <h3 className="font-medium text-gray-800">
+                      Recherches récentes
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.slice(0, 6).map((searchTerm, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setInputValue(searchTerm)}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition-colors"
+                      >
+                        {searchTerm}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {recentSearches.slice(0, 6).map((search, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setInputValue(search)}
-                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm text-gray-700 transition-colors"
-                    >
-                      {search}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
             {/* Suggestions populaires (quand pas de recherche) */}
-            {!inputValue.trim() && (
+            {!inputValue.trim() && !hasActiveFilters(currentFilters) && (
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp size={18} className="text-gray-400" />
@@ -207,11 +285,19 @@ const SearchModal = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">
                     <span className="font-medium">{results.length}</span>{" "}
-                    résultat{results.length > 1 ? "s" : ""} pour
-                    <span className="font-medium text-gray-800">
-                      {" "}
-                      "{query}"
-                    </span>
+                    résultat{results.length > 1 ? "s" : ""}
+                    {inputValue.trim() && (
+                      <>
+                        {" "}
+                        pour{" "}
+                        <span className="font-medium text-gray-800">
+                          "{query}"
+                        </span>
+                      </>
+                    )}
+                    {hasActiveFilters(currentFilters) && (
+                      <span className="text-blue-600"> (avec filtres)</span>
+                    )}
                   </p>
                 </div>
 
@@ -238,7 +324,6 @@ const SearchModal = ({ isOpen, onClose }) => {
                 Échap
               </kbd>{" "}
               pour fermer
-              {/* ou <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-xs">↑↓</kbd> pour naviguer */}
             </p>
           </div>
         </div>
