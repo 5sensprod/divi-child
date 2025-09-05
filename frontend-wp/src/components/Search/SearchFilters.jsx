@@ -131,23 +131,40 @@ const SearchFilters = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-indigo-50/30 border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40">
+      {/* Éléments décoratifs simplifiés pour mobile */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100/30 sm:from-indigo-100/40 to-transparent rounded-full blur-3xl -translate-y-16 translate-x-16 hidden sm:block"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/20 sm:from-emerald-100/30 to-transparent rounded-full blur-2xl translate-y-8 -translate-x-8 hidden sm:block"></div>
+
       {/* Header des filtres */}
       <div
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="relative flex items-center justify-between p-6 sm:p-5 cursor-pointer group transition-colors duration-200 hover:bg-slate-50/80 min-h-[80px] sm:min-h-[64px]"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-2 flex-1">
-          <Filter size={18} className="text-gray-600" />
-          <h3 className="font-medium text-gray-800">Filtres</h3>
+        <div className="flex items-center gap-4 sm:gap-3 flex-1">
+          <div className="p-3 sm:p-2 rounded-xl sm:rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm group-hover:shadow-md transition-shadow duration-200">
+            <Filter size={20} className="text-white sm:w-4 sm:h-4" />
+          </div>
+          <h3 className="text-xl sm:text-base font-bold sm:font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors duration-200">
+            Filtres
+          </h3>
 
-          {/* Affichage des filtres actifs à droite du titre */}
+          {/* Badge du nombre de filtres actifs */}
           {hasActiveFilters && (
-            <div className="flex items-center gap-2 ml-4 flex-wrap">
-              {activeFilters.map((filter) => (
+            <div className="flex items-center ml-3 sm:ml-2">
+              <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[20px] h-7 sm:h-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm sm:text-xs font-bold sm:font-medium px-3 sm:px-2 rounded-full shadow-sm">
+                {activeFilters.length}
+              </span>
+            </div>
+          )}
+
+          {/* Affichage des filtres actifs */}
+          {hasActiveFilters && (
+            <div className="hidden sm:flex items-center gap-2 ml-4 flex-wrap">
+              {activeFilters.slice(0, 3).map((filter) => (
                 <span
                   key={filter.key}
-                  className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
+                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-200/50 shadow-sm hover:shadow-md transition-shadow duration-200"
                 >
                   {filter.label}
                   <button
@@ -155,115 +172,108 @@ const SearchFilters = ({
                       e.stopPropagation();
                       removeFilter(filter.key);
                     }}
-                    className="hover:text-blue-900"
+                    className="p-0.5 rounded-full hover:bg-indigo-200/60 transition-colors duration-200"
                   >
-                    <X size={12} />
+                    <X size={10} />
                   </button>
                 </span>
               ))}
+              {activeFilters.length > 3 && (
+                <span className="text-xs text-slate-500 font-medium">
+                  +{activeFilters.length - 3} autres
+                </span>
+              )}
             </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 sm:gap-3">
           {hasActiveFilters && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 resetFilters();
               }}
-              className="text-sm text-blue-600 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50"
+              className="text-base sm:text-sm font-semibold sm:font-medium text-slate-600 hover:text-emerald-600 px-5 sm:px-3 py-3 sm:py-1.5 rounded-xl sm:rounded-lg bg-slate-100/60 hover:bg-emerald-50 border border-slate-200/60 hover:border-emerald-200 transition-colors duration-200 min-h-[48px] sm:min-h-[32px]"
             >
               Tout effacer
             </button>
           )}
 
           <ChevronDown
-            size={16}
-            className={`text-gray-400 transition-transform ${
+            size={20}
+            className={`text-slate-400 transition-transform duration-300 group-hover:text-indigo-500 sm:w-4 sm:h-4 ${
               isExpanded ? "rotate-180" : ""
             }`}
           />
         </div>
       </div>
 
-      {/* Contenu des filtres */}
-      {isExpanded && (
-        <div className="border-t border-gray-100 p-4 bg-gray-50">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Contenu des filtres avec animation */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          isExpanded
+            ? "max-h-[600px] sm:max-h-96 opacity-100"
+            : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="border-t border-slate-200/60 p-6 sm:p-5 bg-slate-50/40">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-4">
             {/* Tri */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Trier par
-              </label>
-              <select
-                value={filters.sortBy}
-                onChange={(e) => updateFilter("sortBy", e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={filters.sortBy}
+              onChange={(e) => updateFilter("sortBy", e.target.value)}
+              className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-emerald-200 hover:border-emerald-300 focus:border-emerald-400 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
+            >
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
 
             {/* Catégorie */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Catégorie
-              </label>
-              <select
-                value={filters.category}
-                onChange={(e) => updateFilter("category", e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              >
-                <option value="">Toutes les catégories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={filters.category}
+              onChange={(e) => updateFilter("category", e.target.value)}
+              className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-blue-200 hover:border-blue-300 focus:border-blue-400 rounded-xl focus:ring-2 focus:ring-blue-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
+            >
+              <option value="">Toutes les catégories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
 
             {/* Prix */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Prix</label>
-              <select
-                value={filters.priceRange}
-                onChange={(e) => updateFilter("priceRange", e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              >
-                {priceRanges.map((range) => (
-                  <option key={range.value} value={range.value}>
-                    {range.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={filters.priceRange}
+              onChange={(e) => updateFilter("priceRange", e.target.value)}
+              className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-amber-200 hover:border-amber-300 focus:border-amber-400 rounded-xl focus:ring-2 focus:ring-amber-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
+            >
+              {priceRanges.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
+              ))}
+            </select>
 
             {/* Disponibilité */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Disponibilité
-              </label>
-              <select
-                value={filters.availability}
-                onChange={(e) => updateFilter("availability", e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
-              >
-                {availabilityOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={filters.availability}
+              onChange={(e) => updateFilter("availability", e.target.value)}
+              className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-purple-200 hover:border-purple-300 focus:border-purple-400 rounded-xl focus:ring-2 focus:ring-purple-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
+            >
+              {availabilityOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

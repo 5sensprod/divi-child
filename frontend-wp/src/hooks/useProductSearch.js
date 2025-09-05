@@ -223,7 +223,7 @@ export const useProductSearch = () => {
 
   // Debouncing pour éviter trop de requêtes
   const debouncedSearch = useMemo(
-    () => debounce(performSearch, 300),
+    () => debounce(performSearch, 500),
     [performSearch]
   );
 

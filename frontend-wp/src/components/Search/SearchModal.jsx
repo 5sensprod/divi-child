@@ -318,7 +318,7 @@ const SearchModal = ({ isOpen, onClose }) => {
         {/* Footer avec raccourci */}
         <div className="border-t border-gray-100 px-4 lg:px-6 py-3 bg-gray-50">
           <div className="container mx-auto">
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-gray-500 text-center hidden sm:block">
               Appuyez sur{" "}
               <kbd className="px-2 py-1 bg-white border border-gray-200 rounded text-xs">
                 Échap
