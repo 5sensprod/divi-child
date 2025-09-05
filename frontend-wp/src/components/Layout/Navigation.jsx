@@ -17,6 +17,7 @@ const Navigation = ({
   cartCount = HEADER_CONFIG.navigation.cartCount,
   scrollThreshold = HEADER_CONFIG.navigation.scrollThreshold,
   currentTheme = "neon",
+  onSearchClick, // ← AJOUTER CETTE LIGNE
 }) => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -214,7 +215,13 @@ const Navigation = ({
 
             {/* DROITE – Actions */}
             <div className="flex items-center justify-end space-x-3">
-              {showSearch && <ActionButton icon={Search} label="Recherche" />}
+              {showSearch && (
+                <ActionButton
+                  icon={Search}
+                  label="Recherche"
+                  onClick={onSearchClick}
+                />
+              )}
               {showCart && <CartButton count={cartCount} />}
             </div>
           </div>
@@ -232,6 +239,8 @@ const Navigation = ({
           siteTitle={siteTitle}
           config={navigation.mobileMenu}
           currentTheme={currentTheme}
+          onSearchClick={onSearchClick} // ← AJOUTER CETTE LIGNE
+          showSearch={showSearch} // ← AJOUTER CETTE LIGNE
         />
       )}
     </>
@@ -241,7 +250,7 @@ const Navigation = ({
 // Action Button component
 const ActionButton = ({ icon: Icon, label, onClick }) => (
   <button
-    onClick={onClick}
+    onClick={onClick} // ← AJOUTER CETTE LIGNE
     className="p-2 text-white/90 hover:text-pink-300 transition-colors"
     aria-label={label}
   >
@@ -430,6 +439,8 @@ const MobileMenu = ({
   siteTitle,
   config,
   currentTheme,
+  onSearchClick, // ← AJOUTER
+  showSearch, // ← AJOUTER
 }) => {
   // CHANGEMENT PRINCIPAL: utiliser un Set au lieu d'un simple state
   const [openMobileMenus, setOpenMobileMenus] = useState(new Set());
