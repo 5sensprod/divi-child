@@ -48,10 +48,10 @@ const SearchModal = ({ isOpen, onClose }) => {
   // Vérifier si des filtres sont actifs
   const hasActiveFilters = (filters) => {
     return (
-      filters.category !== "" ||
-      filters.priceRange !== "all" ||
-      filters.availability !== "all" ||
-      filters.sortBy !== "relevance"
+      (filters.category && filters.category !== "") ||
+      (filters.priceRange && filters.priceRange !== "all") ||
+      (filters.availability && filters.availability !== "all") ||
+      (filters.sortBy && filters.sortBy !== "relevance")
     );
   };
 

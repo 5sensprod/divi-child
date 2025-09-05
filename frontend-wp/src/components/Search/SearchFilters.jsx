@@ -15,9 +15,7 @@ const SearchFilters = ({
     ...initialFilters,
   });
 
-  const [expandedSections, setExpandedSections] = useState(
-    new Set(["category"])
-  );
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Prix prédéfinis
   const priceRanges = [
@@ -62,157 +60,208 @@ const SearchFilters = ({
     onFiltersChange?.(defaultFilters);
   };
 
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(section)) {
-        newSet.delete(section);
-      } else {
-        newSet.add(section);
+  const getActiveFilters = () => {
+    const activeFilters = [];
+
+    if (filters.category && filters.category !== "") {
+      const category = categories.find(
+        (c) => String(c.id) === String(filters.category)
+      );
+      const categoryName = category ? category.name : filters.category;
+      activeFilters.push({
+        key: "category",
+        label: categoryName,
+        value: filters.category,
+      });
+    }
+
+    if (filters.priceRange && filters.priceRange !== "all") {
+      const priceLabel = priceRanges.find(
+        (p) => p.value === filters.priceRange
+      )?.label;
+      if (priceLabel) {
+        activeFilters.push({
+          key: "priceRange",
+          label: priceLabel,
+          value: filters.priceRange,
+        });
       }
-      return newSet;
-    });
+    }
+
+    if (filters.availability && filters.availability !== "all") {
+      const availabilityLabel = availabilityOptions.find(
+        (a) => a.value === filters.availability
+      )?.label;
+      if (availabilityLabel) {
+        activeFilters.push({
+          key: "availability",
+          label: availabilityLabel,
+          value: filters.availability,
+        });
+      }
+    }
+
+    if (filters.sortBy && filters.sortBy !== "relevance") {
+      const sortLabel = sortOptions.find(
+        (s) => s.value === filters.sortBy
+      )?.label;
+      if (sortLabel) {
+        activeFilters.push({
+          key: "sortBy",
+          label: `Tri: ${sortLabel}`,
+          value: filters.sortBy,
+        });
+      }
+    }
+
+    return activeFilters;
   };
 
-  const hasActiveFilters = () => {
-    return (
-      filters.category !== "" ||
-      filters.priceRange !== "all" ||
-      filters.availability !== "all" ||
-      filters.sortBy !== "relevance"
-    );
+  const activeFilters = getActiveFilters();
+  const hasActiveFilters = activeFilters.length > 0;
+
+  const removeFilter = (filterKey) => {
+    const defaultValues = {
+      category: "",
+      priceRange: "all",
+      availability: "all",
+      sortBy: "relevance",
+    };
+    updateFilter(filterKey, defaultValues[filterKey]);
   };
 
   return (
-    <div className="bg-gray-50 border-t border-gray-200">
-      <div className="container mx-auto px-4 lg:px-6 py-4">
-        {/* Header des filtres */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Filter size={18} className="text-gray-600" />
-            <h3 className="font-medium text-gray-800">Filtres</h3>
-            {hasActiveFilters() && (
-              <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-                Actifs
-              </span>
-            )}
-          </div>
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      {/* Header des filtres */}
+      <div
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-2 flex-1">
+          <Filter size={18} className="text-gray-600" />
+          <h3 className="font-medium text-gray-800">Filtres</h3>
 
-          {hasActiveFilters() && (
-            <button
-              onClick={resetFilters}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
-            >
-              <X size={14} />
-              Réinitialiser
-            </button>
+          {/* Affichage des filtres actifs à droite du titre */}
+          {hasActiveFilters && (
+            <div className="flex items-center gap-2 ml-4 flex-wrap">
+              {activeFilters.map((filter) => (
+                <span
+                  key={filter.key}
+                  className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
+                >
+                  {filter.label}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFilter(filter.key);
+                    }}
+                    className="hover:text-blue-900"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Grid des filtres */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Tri */}
-          <FilterSection
-            title="Trier par"
-            isExpanded={expandedSections.has("sort")}
-            onToggle={() => toggleSection("sort")}
-          >
-            <select
-              value={filters.sortBy}
-              onChange={(e) => updateFilter("sortBy", e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+        <div className="flex items-center gap-2">
+          {hasActiveFilters && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                resetFilters();
+              }}
+              className="text-sm text-blue-600 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50"
             >
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </FilterSection>
+              Tout effacer
+            </button>
+          )}
 
-          {/* Catégories - CORRECTION ICI */}
-          <FilterSection
-            title="Catégorie"
-            isExpanded={expandedSections.has("category")}
-            onToggle={() => toggleSection("category")}
-          >
-            <select
-              value={filters.category}
-              onChange={(e) => updateFilter("category", e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-            >
-              <option value="">Toutes les catégories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </FilterSection>
-
-          {/* Prix */}
-          <FilterSection
-            title="Prix"
-            isExpanded={expandedSections.has("price")}
-            onToggle={() => toggleSection("price")}
-          >
-            <select
-              value={filters.priceRange}
-              onChange={(e) => updateFilter("priceRange", e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-            >
-              {priceRanges.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </select>
-          </FilterSection>
-
-          {/* Disponibilité */}
-          <FilterSection
-            title="Disponibilité"
-            isExpanded={expandedSections.has("availability")}
-            onToggle={() => toggleSection("availability")}
-          >
-            <select
-              value={filters.availability}
-              onChange={(e) => updateFilter("availability", e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-            >
-              {availabilityOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </FilterSection>
+          <ChevronDown
+            size={16}
+            className={`text-gray-400 transition-transform ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          />
         </div>
       </div>
-    </div>
-  );
-};
 
-// Composant pour une section de filtre
-const FilterSection = ({ title, children, isExpanded, onToggle }) => {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
-      >
-        <span className="font-medium text-gray-700">{title}</span>
-        <ChevronDown
-          size={16}
-          className={`text-gray-400 transition-transform ${
-            isExpanded ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
+      {/* Contenu des filtres */}
       {isExpanded && (
-        <div className="p-3 border-t border-gray-100 bg-gray-50">
-          {children}
+        <div className="border-t border-gray-100 p-4 bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Tri */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Trier par
+              </label>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => updateFilter("sortBy", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Catégorie */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Catégorie
+              </label>
+              <select
+                value={filters.category}
+                onChange={(e) => updateFilter("category", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+              >
+                <option value="">Toutes les catégories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Prix */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Prix</label>
+              <select
+                value={filters.priceRange}
+                onChange={(e) => updateFilter("priceRange", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+              >
+                {priceRanges.map((range) => (
+                  <option key={range.value} value={range.value}>
+                    {range.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Disponibilité */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Disponibilité
+              </label>
+              <select
+                value={filters.availability}
+                onChange={(e) => updateFilter("availability", e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-sm"
+              >
+                {availabilityOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       )}
     </div>
