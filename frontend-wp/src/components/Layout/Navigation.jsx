@@ -420,7 +420,7 @@ const DropdownChildItem = ({
   );
 };
 
-// Menu mobile corrigé
+// Menu mobile corrigé - UTILISE MAINTENANT LE MÊME SYSTÈME QUE LE DESKTOP
 const MobileMenu = ({
   menuItems,
   loading,
@@ -431,9 +431,22 @@ const MobileMenu = ({
   config,
   currentTheme,
 }) => {
-  const [openSubmenu, setOpenSubmenu] = useState(null);
-  const toggleSubmenu = (itemId) =>
-    setOpenSubmenu(openSubmenu === itemId ? null : itemId);
+  // CHANGEMENT PRINCIPAL: utiliser un Set au lieu d'un simple state
+  const [openMobileMenus, setOpenMobileMenus] = useState(new Set());
+
+  const toggleMobileSubmenu = (itemId) => {
+    setOpenMobileMenus((prev) => {
+      const newSet = new Set(prev);
+
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+
+      return newSet;
+    });
+  };
 
   return (
     <div className="fixed inset-0 z-mobile-menu animate-fade-in">
@@ -478,8 +491,8 @@ const MobileMenu = ({
                   isReactRoute={isReactRoute}
                   isActive={isActive}
                   onClose={onClose}
-                  openSubmenu={openSubmenu}
-                  toggleSubmenu={toggleSubmenu}
+                  openMobileMenus={openMobileMenus}
+                  toggleMobileSubmenu={toggleMobileSubmenu}
                 />
               ))}
             </div>
@@ -490,18 +503,18 @@ const MobileMenu = ({
   );
 };
 
-// Mobile menu item component - VERSION RÉCURSIVE
+// Mobile menu item component - VERSION CORRIGÉE AVEC SET
 const MobileMenuItem = ({
   item,
   isReactRoute,
   isActive,
   onClose,
-  openSubmenu,
-  toggleSubmenu,
+  openMobileMenus,
+  toggleMobileSubmenu,
   level = 1,
 }) => {
   const hasChildren = item.children?.length > 0;
-  const isSubmenuOpen = openSubmenu === item.id;
+  const isSubmenuOpen = openMobileMenus.has(item.id);
   const indentClass = level > 1 ? `ml-${level * 2}` : "";
 
   // Item sans enfants
@@ -540,7 +553,7 @@ const MobileMenuItem = ({
   return (
     <div className="mb-1">
       <button
-        onClick={() => toggleSubmenu(item.id)}
+        onClick={() => toggleMobileSubmenu(item.id)}
         className={`mobile-menu-item mobile-menu-item-inactive w-full flex items-center justify-between ${indentClass} ${
           isSubmenuOpen ? "text-pink-300 bg-white/5" : ""
         }`}
@@ -563,8 +576,8 @@ const MobileMenuItem = ({
               isReactRoute={isReactRoute}
               isActive={isActive}
               onClose={onClose}
-              openSubmenu={openSubmenu}
-              toggleSubmenu={toggleSubmenu}
+              openMobileMenus={openMobileMenus}
+              toggleMobileSubmenu={toggleMobileSubmenu}
               level={level + 1}
             />
           ))}
