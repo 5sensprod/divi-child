@@ -1,23 +1,17 @@
 // src/components/Search/SearchFilters.jsx
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronDown, X, Filter } from "lucide-react";
 
 const SearchFilters = ({
   categories = [],
+  filters = {},
   onFiltersChange,
-  initialFilters = {},
+  onResetFilters,
+  hasActiveFilters,
 }) => {
-  const [filters, setFilters] = useState({
-    category: initialFilters.category || "",
-    priceRange: initialFilters.priceRange || "all",
-    availability: initialFilters.availability || "all",
-    sortBy: initialFilters.sortBy || "relevance",
-    ...initialFilters,
-  });
-
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Prix prédéfinis
+  // Configuration des options
   const priceRanges = [
     { value: "all", label: "Tous les prix" },
     { value: "0-50", label: "Moins de 50€" },
@@ -27,7 +21,6 @@ const SearchFilters = ({
     { value: "500+", label: "Plus de 500€" },
   ];
 
-  // Options de tri
   const sortOptions = [
     { value: "relevance", label: "Pertinence" },
     { value: "price-asc", label: "Prix croissant" },
@@ -36,41 +29,23 @@ const SearchFilters = ({
     { value: "date-desc", label: "Plus récents" },
   ];
 
-  // Disponibilité
   const availabilityOptions = [
     { value: "all", label: "Tous les produits" },
     { value: "in-stock", label: "En stock" },
     { value: "pre-order", label: "En précommande" },
   ];
 
-  const updateFilter = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFiltersChange?.(newFilters);
-  };
+  // Calcul des filtres actifs pour l'affichage
+  const activeFilters = useMemo(() => {
+    const active = [];
 
-  const resetFilters = () => {
-    const defaultFilters = {
-      category: "",
-      priceRange: "all",
-      availability: "all",
-      sortBy: "relevance",
-    };
-    setFilters(defaultFilters);
-    onFiltersChange?.(defaultFilters);
-  };
-
-  const getActiveFilters = () => {
-    const activeFilters = [];
-
-    if (filters.category && filters.category !== "") {
+    if (filters.category) {
       const category = categories.find(
         (c) => String(c.id) === String(filters.category)
       );
-      const categoryName = category ? category.name : filters.category;
-      activeFilters.push({
+      active.push({
         key: "category",
-        label: categoryName,
+        label: category?.name || filters.category,
         value: filters.category,
       });
     }
@@ -80,7 +55,7 @@ const SearchFilters = ({
         (p) => p.value === filters.priceRange
       )?.label;
       if (priceLabel) {
-        activeFilters.push({
+        active.push({
           key: "priceRange",
           label: priceLabel,
           value: filters.priceRange,
@@ -93,7 +68,7 @@ const SearchFilters = ({
         (a) => a.value === filters.availability
       )?.label;
       if (availabilityLabel) {
-        activeFilters.push({
+        active.push({
           key: "availability",
           label: availabilityLabel,
           value: filters.availability,
@@ -106,7 +81,7 @@ const SearchFilters = ({
         (s) => s.value === filters.sortBy
       )?.label;
       if (sortLabel) {
-        activeFilters.push({
+        active.push({
           key: "sortBy",
           label: `Tri: ${sortLabel}`,
           value: filters.sortBy,
@@ -114,11 +89,12 @@ const SearchFilters = ({
       }
     }
 
-    return activeFilters;
-  };
+    return active;
+  }, [filters, categories, priceRanges, sortOptions, availabilityOptions]);
 
-  const activeFilters = getActiveFilters();
-  const hasActiveFilters = activeFilters.length > 0;
+  const updateFilter = (key, value) => {
+    onFiltersChange({ [key]: value });
+  };
 
   const removeFilter = (filterKey) => {
     const defaultValues = {
@@ -132,11 +108,11 @@ const SearchFilters = ({
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-indigo-50/30 border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40">
-      {/* Éléments décoratifs simplifiés pour mobile */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100/30 sm:from-indigo-100/40 to-transparent rounded-full blur-3xl -translate-y-16 translate-x-16 hidden sm:block"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/20 sm:from-emerald-100/30 to-transparent rounded-full blur-2xl translate-y-8 -translate-x-8 hidden sm:block"></div>
+      {/* Éléments décoratifs */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100/40 to-transparent rounded-full blur-3xl -translate-y-16 translate-x-16 hidden sm:block"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/30 to-transparent rounded-full blur-2xl translate-y-8 -translate-x-8 hidden sm:block"></div>
 
-      {/* Header des filtres */}
+      {/* Header */}
       <div
         className="relative flex items-center justify-between p-6 sm:p-5 cursor-pointer group transition-colors duration-200 hover:bg-slate-50/80 min-h-[80px] sm:min-h-[64px]"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -149,7 +125,6 @@ const SearchFilters = ({
             Filtres
           </h3>
 
-          {/* Badge du nombre de filtres actifs */}
           {hasActiveFilters && (
             <div className="flex items-center ml-3 sm:ml-2">
               <span className="inline-flex items-center justify-center min-w-[28px] sm:min-w-[20px] h-7 sm:h-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm sm:text-xs font-bold sm:font-medium px-3 sm:px-2 rounded-full shadow-sm">
@@ -158,7 +133,6 @@ const SearchFilters = ({
             </div>
           )}
 
-          {/* Affichage des filtres actifs */}
           {hasActiveFilters && (
             <div className="hidden sm:flex items-center gap-2 ml-4 flex-wrap">
               {activeFilters.slice(0, 3).map((filter) => (
@@ -192,7 +166,7 @@ const SearchFilters = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                resetFilters();
+                onResetFilters();
               }}
               className="text-base sm:text-sm font-semibold sm:font-medium text-slate-600 hover:text-emerald-600 px-5 sm:px-3 py-3 sm:py-1.5 rounded-xl sm:rounded-lg bg-slate-100/60 hover:bg-emerald-50 border border-slate-200/60 hover:border-emerald-200 transition-colors duration-200 min-h-[48px] sm:min-h-[32px]"
             >
@@ -209,7 +183,7 @@ const SearchFilters = ({
         </div>
       </div>
 
-      {/* Contenu des filtres avec animation */}
+      {/* Contenu des filtres */}
       <div
         className={`overflow-hidden transition-all duration-300 ease-out ${
           isExpanded
@@ -221,7 +195,7 @@ const SearchFilters = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-4">
             {/* Tri */}
             <select
-              value={filters.sortBy}
+              value={filters.sortBy || "relevance"}
               onChange={(e) => updateFilter("sortBy", e.target.value)}
               className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-emerald-200 hover:border-emerald-300 focus:border-emerald-400 rounded-xl focus:ring-2 focus:ring-emerald-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
             >
@@ -234,7 +208,7 @@ const SearchFilters = ({
 
             {/* Catégorie */}
             <select
-              value={filters.category}
+              value={filters.category || ""}
               onChange={(e) => updateFilter("category", e.target.value)}
               className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-blue-200 hover:border-blue-300 focus:border-blue-400 rounded-xl focus:ring-2 focus:ring-blue-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
             >
@@ -248,7 +222,7 @@ const SearchFilters = ({
 
             {/* Prix */}
             <select
-              value={filters.priceRange}
+              value={filters.priceRange || "all"}
               onChange={(e) => updateFilter("priceRange", e.target.value)}
               className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-amber-200 hover:border-amber-300 focus:border-amber-400 rounded-xl focus:ring-2 focus:ring-amber-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
             >
@@ -261,7 +235,7 @@ const SearchFilters = ({
 
             {/* Disponibilité */}
             <select
-              value={filters.availability}
+              value={filters.availability || "all"}
               onChange={(e) => updateFilter("availability", e.target.value)}
               className="w-full p-4 sm:p-3 bg-white border-2 sm:border border-purple-200 hover:border-purple-300 focus:border-purple-400 rounded-xl focus:ring-2 focus:ring-purple-100 focus:outline-none text-base sm:text-sm font-semibold sm:font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[56px] sm:min-h-[40px] cursor-pointer"
             >

@@ -4,7 +4,7 @@ import { HEADER_CONFIG, getCurrentTheme } from "../../../config/components";
 import Navigation from "../Navigation";
 import HeroBackground from "./HeroBackground";
 import HeroSlider from "./HeroSlider";
-import SearchModal from "../../Search/SearchModal"; // Import de la modal
+import Search from "../../Search/Search"; // Import de la modal
 
 const Header = ({ showHero = false }) => {
   const { siteData, menus, loading } = useWordPress();
@@ -100,7 +100,7 @@ const Header = ({ showHero = false }) => {
       )}
 
       {/* Modal de recherche */}
-      <SearchModal isOpen={isSearchOpen} onClose={handleSearchClose} />
+      <Search isOpen={isSearchOpen} onClose={handleSearchClose} />
     </header>
   );
 };
