@@ -30,9 +30,9 @@ const Home = () => {
 
           {/* Utilisation du composant CategoryGrid */}
           <CategoryGrid
-            categories={categories.slice(0, 6)} // Limiter à 6 catégories sur la home
+            categories={categories} // Toutes vos catégories dans l'ordre WooCommerce
             loading={loading.categories}
-            className="grid-cols-1 md:grid-cols-3 gap-8"
+            className="my-8"
           />
 
           {/* Bouton pour voir toutes les catégories */}

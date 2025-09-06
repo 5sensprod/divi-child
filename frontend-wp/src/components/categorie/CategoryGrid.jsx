@@ -1,9 +1,40 @@
 // src/components/categorie/CategoryGrid.jsx
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 6;
+
+  // Calculer le nombre total de pages
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+
+  // Obtenir les catégories pour la page actuelle
+  const getCurrentPageCategories = () => {
+    const startIndex = currentPage * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return categories.slice(startIndex, endIndex);
+  };
+
+  // Réinitialiser à la première page quand les catégories changent
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [categories]);
+
+  // Navigation du carousel
+  const goToNextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % totalPages);
+  };
+
+  const goToPrevPage = () => {
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+  };
+
+  const goToPage = (pageIndex) => {
+    setCurrentPage(pageIndex);
+  };
+
   // Composant de chargement pour les catégories
   const CategorySkeleton = () => (
     <div className="group relative overflow-hidden rounded-2xl shadow-lg animate-pulse">
@@ -15,7 +46,7 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
     </div>
   );
 
-  // Composant d'une catégorie individuelle
+  // Composant d'une catégorie individuelle (EXACTEMENT comme l'original)
   const CategoryCard = ({ category }) => {
     // Image par défaut si pas d'image de catégorie
     const defaultImage =
@@ -100,17 +131,159 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
     );
   }
 
+  // Si en chargement, utiliser l'affichage original
+  if (loading) {
+    return (
+      <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${className}`}>
+        {Array.from({ length: 6 }).map((_, index) => (
+          <CategorySkeleton key={`skeleton-${index}`} />
+        ))}
+      </div>
+    );
+  }
+
+  // Affichage avec carousel SEULEMENT si plus de 6 catégories
+  if (categories.length <= 6) {
+    // Affichage simple (original) si 6 catégories ou moins
+    return (
+      <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${className}`}>
+        {categories.map((category) => (
+          <CategoryCard key={category.id} category={category} />
+        ))}
+      </div>
+    );
+  }
+
+  // Affichage avec carousel si plus de 6 catégories
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${className}`}>
-      {loading
-        ? // Afficher les skeletons pendant le chargement
-          Array.from({ length: 6 }).map((_, index) => (
-            <CategorySkeleton key={`skeleton-${index}`} />
-          ))
-        : // Afficher les vraies catégories
-          categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
-          ))}
+    <div className={className}>
+      {/* En-tête avec compteur et navigation */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="text-gray-600">
+          <span className="font-medium">
+            {categories.length} catégorie{categories.length > 1 ? "s" : ""} au
+            total
+          </span>
+          <span className="text-sm ml-2">
+            • Page {currentPage + 1} sur {totalPages}
+          </span>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={goToPrevPage}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+            aria-label="Page précédente"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Indicateurs de pages */}
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToPage(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  index === currentPage
+                    ? "bg-blue-500 scale-110"
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Aller à la page ${index + 1}`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={goToNextPage}
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+            aria-label="Page suivante"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Grille des catégories (exactement comme l'original) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {getCurrentPageCategories().map((category) => (
+          <CategoryCard key={category.id} category={category} />
+        ))}
+      </div>
+
+      {/* Navigation mobile */}
+      <div className="flex justify-center mt-8 md:hidden">
+        <div className="flex items-center gap-4 bg-white rounded-full shadow-lg px-6 py-3">
+          <button
+            onClick={goToPrevPage}
+            className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            <span className="text-sm font-medium">Précédent</span>
+          </button>
+
+          <span className="text-sm text-gray-500 px-3">
+            {currentPage + 1} / {totalPages}
+          </span>
+
+          <button
+            onClick={goToNextPage}
+            className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
+          >
+            <span className="text-sm font-medium">Suivant</span>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
