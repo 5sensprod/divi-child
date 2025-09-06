@@ -1,4 +1,5 @@
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
+import { cacheUtils, CACHE_KEYS } from "../utils/cache";
 
 // Configuration WooCommerce
 const createWooCommerceAPI = () => {
@@ -43,9 +44,20 @@ export const getProducts = async (params = {}) => {
   }
 };
 
-// Service pour récupérer TOUTES les catégories
+// Service pour récupérer TOUTES les catégories AVEC CACHE
 export const getCategories = async () => {
   try {
+    // Vérifier le cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.get(CACHE_KEYS.CATEGORIES);
+      if (cached) {
+        console.log("=== CATÉGORIES DEPUIS LE CACHE ===");
+        console.log("Nombre de catégories (cache):", cached.length);
+        return cached;
+      }
+    }
+
+    // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products/categories", {
       per_page: 100,
@@ -53,7 +65,7 @@ export const getCategories = async () => {
     });
 
     // Console.log pour voir les catégories récupérées
-    console.log("=== TOUTES LES CATÉGORIES ===");
+    console.log("=== TOUTES LES CATÉGORIES (API) ===");
     console.log("Nombre de catégories:", response.data.length);
     console.log("Données complètes:", response.data);
 
@@ -64,6 +76,12 @@ export const getCategories = async () => {
         `- ID: ${category.id}, Nom: ${category.name}, Slug: ${category.slug}, Parent: ${category.parent}`
       );
     });
+
+    // Sauvegarder en cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.set(CACHE_KEYS.CATEGORIES, response.data);
+      console.log("Catégories sauvegardées en cache");
+    }
 
     return response.data;
   } catch (error) {
@@ -77,9 +95,23 @@ export const getCategories = async () => {
   }
 };
 
-// Service pour récupérer UNIQUEMENT les catégories PARENTES
+// Service pour récupérer UNIQUEMENT les catégories PARENTES AVEC CACHE
 export const getParentCategories = async () => {
   try {
+    // Créer une clé de cache spécifique pour les catégories parentes
+    const parentCategoriesCacheKey = `${CACHE_KEYS.CATEGORIES}_parent`;
+
+    // Vérifier le cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.get(parentCategoriesCacheKey);
+      if (cached) {
+        console.log("=== CATÉGORIES PARENTES DEPUIS LE CACHE ===");
+        console.log("Nombre de catégories parentes (cache):", cached.length);
+        return cached;
+      }
+    }
+
+    // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products/categories", {
       per_page: 100,
@@ -88,7 +120,7 @@ export const getParentCategories = async () => {
     });
 
     // Console.log pour voir les catégories parentes
-    console.log("=== CATÉGORIES PARENTES UNIQUEMENT ===");
+    console.log("=== CATÉGORIES PARENTES (API) ===");
     console.log("Nombre de catégories parentes:", response.data.length);
     console.log("Données complètes:", response.data);
 
@@ -99,6 +131,12 @@ export const getParentCategories = async () => {
         `- ID: ${category.id}, Nom: ${category.name}, Slug: ${category.slug}`
       );
     });
+
+    // Sauvegarder en cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.set(parentCategoriesCacheKey, response.data);
+      console.log("Catégories parentes sauvegardées en cache");
+    }
 
     return response.data;
   } catch (error) {
@@ -112,9 +150,23 @@ export const getParentCategories = async () => {
   }
 };
 
-// Alternative : Filtrer côté client (si l'API ne supporte pas parent: 0)
+// Alternative : Filtrer côté client (si l'API ne supporte pas parent: 0) AVEC CACHE
 export const getParentCategoriesFiltered = async () => {
   try {
+    // Créer une clé de cache spécifique pour les catégories parentes filtrées
+    const filteredCacheKey = `${CACHE_KEYS.CATEGORIES}_parent_filtered`;
+
+    // Vérifier le cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.get(filteredCacheKey);
+      if (cached) {
+        console.log("=== CATÉGORIES PARENTES FILTRÉES DEPUIS LE CACHE ===");
+        console.log("Nombre de catégories parentes (cache):", cached.length);
+        return cached;
+      }
+    }
+
+    // Récupérer toutes les catégories (avec leur propre cache)
     const allCategories = await getCategories();
 
     // Filtrer les catégories parentes (parent === 0)
@@ -126,6 +178,12 @@ export const getParentCategoriesFiltered = async () => {
     console.log("Nombre total de catégories:", allCategories.length);
     console.log("Nombre de catégories parentes:", parentCategories.length);
     console.log("Catégories parentes:", parentCategories);
+
+    // Sauvegarder en cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.set(filteredCacheKey, parentCategories);
+      console.log("Catégories parentes filtrées sauvegardées en cache");
+    }
 
     return parentCategories;
   } catch (error) {
@@ -219,6 +277,14 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
   }
 };
 
+// Fonction utilitaire pour vider le cache des catégories
+export const clearCategoriesCache = () => {
+  cacheUtils.remove(CACHE_KEYS.CATEGORIES);
+  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent`);
+  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);
+  console.log("Cache des catégories vidé");
+};
+
 export default {
   getProducts,
   getCategories,
@@ -227,4 +293,5 @@ export default {
   getProduct,
   searchProducts,
   getProductsByCategory,
+  clearCategoriesCache,
 };

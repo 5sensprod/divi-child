@@ -169,26 +169,6 @@ const SearchModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Indicateur des filtres actifs */}
-            {hasActiveFilters(currentFilters) && (
-              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-700">
-                  🔍 Filtres appliqués :
-                  {currentFilters.category &&
-                    ` Catégorie: ${
-                      categories?.find((c) => c.id == currentFilters.category)
-                        ?.name
-                    }`}
-                  {currentFilters.priceRange !== "all" &&
-                    ` Prix: ${currentFilters.priceRange}`}
-                  {currentFilters.availability !== "all" &&
-                    ` Disponibilité: ${currentFilters.availability}`}
-                  {currentFilters.sortBy !== "relevance" &&
-                    ` Tri: ${currentFilters.sortBy}`}
-                </p>
-              </div>
-            )}
-
             {/* Pas de résultats */}
             {hasSearched &&
               !loading &&
