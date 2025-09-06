@@ -98,10 +98,8 @@ export const getCategories = async () => {
 // Service pour récupérer UNIQUEMENT les catégories PARENTES AVEC CACHE
 export const getParentCategories = async () => {
   try {
-    // Créer une clé de cache spécifique pour les catégories parentes
     const parentCategoriesCacheKey = `${CACHE_KEYS.CATEGORIES}_parent`;
 
-    // Vérifier le cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       const cached = cacheUtils.get(parentCategoriesCacheKey);
       if (cached) {
@@ -111,34 +109,40 @@ export const getParentCategories = async () => {
       }
     }
 
-    // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products/categories", {
       per_page: 100,
       hide_empty: true,
-      parent: 0, // ← Paramètre API pour récupérer uniquement les catégories parentes
+      parent: 0,
+      orderby: "id", // Tri par ID (ordre de création)
+      order: "asc", // Ordre croissant (du plus ancien au plus récent)
     });
 
-    // Console.log pour voir les catégories parentes
-    console.log("=== CATÉGORIES PARENTES (API) ===");
-    console.log("Nombre de catégories parentes:", response.data.length);
-    console.log("Données complètes:", response.data);
+    // Tri supplémentaire côté client si nécessaire
+    const sortedCategories = response.data.sort((a, b) => {
+      // Tri par ID (ordre de création)
+      return a.id - b.id;
 
-    // Affichage simplifié des catégories parentes
-    console.log("Liste des catégories parentes:");
-    response.data.forEach((category) => {
+      // OU tri par date de création si disponible
+      // return new Date(a.date_created) - new Date(b.date_created);
+    });
+
+    console.log("=== CATÉGORIES PARENTES TRIÉES ===");
+    console.log("Nombre de catégories parentes:", sortedCategories.length);
+    sortedCategories.forEach((category, index) => {
       console.log(
-        `- ID: ${category.id}, Nom: ${category.name}, Slug: ${category.slug}`
+        `${index + 1}. ID: ${category.id}, Nom: ${category.name}, Date: ${
+          category.date_created
+        }`
       );
     });
 
-    // Sauvegarder en cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      cacheUtils.set(parentCategoriesCacheKey, response.data);
-      console.log("Catégories parentes sauvegardées en cache");
+      cacheUtils.set(parentCategoriesCacheKey, sortedCategories);
+      console.log("Catégories parentes triées sauvegardées en cache");
     }
 
-    return response.data;
+    return sortedCategories;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
