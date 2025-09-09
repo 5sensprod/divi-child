@@ -13,6 +13,7 @@ export const useSearch = () => {
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState(null);
 
   const {
     results,
@@ -70,8 +71,13 @@ export const useSearch = () => {
     setIsOpen(false);
     setQuery("");
     setFilters(DEFAULT_FILTERS);
+    setExpandedProduct(null);
     clearSearch();
   }, [clearSearch]);
+
+  const toggleProductExpansion = useCallback((productId) => {
+    setExpandedProduct((prev) => (prev === productId ? null : productId));
+  }, []);
 
   // État calculé
   const isEmpty = !query.trim() && !hasActiveFilters;
@@ -88,6 +94,7 @@ export const useSearch = () => {
     loading,
     error,
     hasSearched,
+    expandedProduct,
 
     // État calculé
     hasActiveFilters,
@@ -104,6 +111,7 @@ export const useSearch = () => {
     openSearch,
     closeSearch,
     performSearch,
+    toggleProductExpansion,
 
     // Données
     recentSearches: getRecentSearches(),

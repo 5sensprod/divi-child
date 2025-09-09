@@ -1,16 +1,19 @@
 // src/components/Search/Search.jsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Search as SearchIcon,
   ShoppingBag,
   Clock,
   TrendingUp,
+  ChevronDown,
   X,
 } from "lucide-react";
 import { useWordPress } from "../../context/WordPressContext";
 import { useSearch } from "../../hooks/useSearch";
 import Modal from "../UI/Modal";
 import SearchFilters from "./SearchFilters";
+import { getProduct } from "../../services/woocommerce";
+import ProductExpansion from "./ProductExpansion";
 
 const Search = ({ isOpen, onClose }) => {
   const inputRef = useRef(null);
@@ -32,6 +35,8 @@ const Search = ({ isOpen, onClose }) => {
     clearQuery,
     performSearch,
     recentSearches,
+    toggleProductExpansion,
+    expandedProduct,
   } = useSearch();
 
   // Focus automatique à l'ouverture
@@ -97,6 +102,9 @@ const Search = ({ isOpen, onClose }) => {
               onRetry={performSearch}
               onSuggestionClick={updateQuery}
               onClose={handleClose}
+              toggleProductExpansion={toggleProductExpansion}
+              expandedProduct={expandedProduct}
+              getProduct={getProduct}
             />
           </div>
         </div>
@@ -161,6 +169,9 @@ const SearchContent = ({
   onRetry,
   onSuggestionClick,
   onClose,
+  toggleProductExpansion,
+  expandedProduct,
+  getProduct,
 }) => {
   if (loading) {
     return (
@@ -206,6 +217,9 @@ const SearchContent = ({
         query={query}
         hasActiveFilters={hasActiveFilters}
         onClose={onClose}
+        toggleProductExpansion={toggleProductExpansion}
+        expandedProduct={expandedProduct}
+        getProduct={getProduct} // ✅ Ajouté
       />
     );
   }
@@ -282,7 +296,15 @@ const SearchSuggestions = ({ recentSearches, onSuggestionClick }) => (
   </>
 );
 
-const SearchResults = ({ results, query, hasActiveFilters, onClose }) => (
+const SearchResults = ({
+  results,
+  query,
+  hasActiveFilters,
+  onClose,
+  toggleProductExpansion,
+  expandedProduct,
+  getProduct, // ✅ Ajouté
+}) => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
       <p className="text-sm text-gray-600">
@@ -302,16 +324,50 @@ const SearchResults = ({ results, query, hasActiveFilters, onClose }) => (
 
     <div className="grid gap-3">
       {results.map((product) => (
-        <SearchResult key={product.id} product={product} onClose={onClose} />
+        <SearchResult
+          key={product.id}
+          product={product}
+          onClose={onClose}
+          onToggleProduct={toggleProductExpansion}
+          isExpanded={expandedProduct === product.id}
+          getProduct={getProduct} // ✅ Ajouté
+        />
       ))}
     </div>
   </div>
 );
 
-const SearchResult = ({ product, onClose }) => {
-  const handleClick = () => {
+const SearchResult = ({ product, onClose, onToggleProduct, isExpanded }) => {
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [fullProduct, setFullProduct] = useState(null);
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    onToggleProduct(product.id);
+
+    // Charger les détails du produit si on l'expanse et qu'on ne les a pas déjà
+    if (!isExpanded && !fullProduct) {
+      loadProductDetails();
+    }
+  };
+
+  const loadProductDetails = async () => {
+    try {
+      setLoadingDetails(true);
+      const details = await getProduct(product.id);
+      setFullProduct(details);
+    } catch (error) {
+      console.error("Erreur chargement détails produit:", error);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleNavigateToProduct = (e) => {
+    e.stopPropagation();
     onClose();
     // Navigation vers le produit
+    console.log("Navigation vers produit:", product.id);
   };
 
   const formatPrice = (price) => {
@@ -323,51 +379,84 @@ const SearchResult = ({ product, onClose }) => {
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200 hover:shadow-sm"
-    >
-      <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-        {product.images?.[0] ? (
-          <img
-            src={product.images[0].src}
-            alt={product.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <ShoppingBag size={24} />
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-gray-900 line-clamp-1 mb-1">
-          {product.name}
-        </h3>
-        <div className="flex items-center gap-3">
-          {product.price && (
-            <p className="text-lg font-bold text-blue-600">
-              {formatPrice(product.price)}
-            </p>
-          )}
-          {product.categories?.length > 0 && (
-            <p className="text-sm text-gray-500">
-              {product.categories[0].name}
-            </p>
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+      {/* Ligne principale du produit */}
+      <div
+        onClick={handleClick}
+        className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+          {product.images?.[0] ? (
+            <img
+              src={product.images[0].src}
+              alt={product.name}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <ShoppingBag size={24} />
+            </div>
           )}
         </div>
-        {product.stock_status === "instock" && (
-          <p className="text-xs text-green-600 mt-1">✓ En stock</p>
-        )}
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-gray-900 line-clamp-1 mb-1">
+            {product.name}
+          </h3>
+          <div className="flex items-center gap-3">
+            {product.price && (
+              <p className="text-lg font-bold text-blue-600">
+                {formatPrice(product.price)}
+              </p>
+            )}
+            {product.categories?.length > 0 && (
+              <p className="text-sm text-gray-500">
+                {product.categories[0].name}
+              </p>
+            )}
+          </div>
+          {product.stock_status === "instock" && (
+            <p className="text-xs text-green-600 mt-1">✓ En stock</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNavigateToProduct}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Voir le produit"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="text-gray-400"
+            >
+              <path d="M6 3l5 5-5 5V3z" />
+            </svg>
+          </button>
+
+          <ChevronDown
+            size={20}
+            className={`text-gray-400 transition-transform duration-200 ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          />
+        </div>
       </div>
 
-      <div className="flex-shrink-0 text-gray-400">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M6 3l5 5-5 5V3z" />
-        </svg>
-      </div>
+      {/* Zone d'expansion avec les détails */}
+      {isExpanded && (
+        <div className="border-t border-gray-100">
+          <ProductExpansion
+            product={product}
+            fullProduct={fullProduct}
+            isLoading={loadingDetails}
+          />
+        </div>
+      )}
     </div>
   );
 };
