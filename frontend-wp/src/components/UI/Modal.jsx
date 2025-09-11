@@ -95,7 +95,7 @@ const Modal = ({
           )}
 
           {/* Contenu - prend tout l'espace disponible */}
-          <div className={`flex-1 overflow-hidden ${contentClassName}`}>
+          <div className={`flex-1 overflow-auto ${contentClassName}`}>
             {children}
           </div>
         </div>
@@ -117,14 +117,14 @@ const Modal = ({
           rounded-lg
           ${position === "top" ? "max-h-[90vh]" : "max-h-[95vh]"}
           w-full mx-4
-          overflow-hidden
+          flex flex-col
           ${className}
         `}
       >
         {/* Header avec titre et bouton fermer */}
         {(title || showCloseButton) && (
           <div
-            className={`flex items-center justify-between p-4 border-b border-gray-200 ${contentClassName}`}
+            className={`flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 ${contentClassName}`}
           >
             {title && (
               <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
@@ -140,11 +140,14 @@ const Modal = ({
             )}
           </div>
         )}
-        {/* Contenu */}
+
+        {/* Contenu - avec scroll pour toutes les tailles */}
         <div
-          className={`${
-            title || showCloseButton ? "" : "p-4"
-          } ${contentClassName}`}
+          className={`
+            flex-1 overflow-auto
+            ${title || showCloseButton ? "p-4" : "p-4"}
+            ${contentClassName}
+          `}
         >
           {children}
         </div>

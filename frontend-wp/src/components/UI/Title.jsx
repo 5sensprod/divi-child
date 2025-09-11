@@ -13,8 +13,9 @@ const Title = ({
   showAnimation = true,
   animationType = "equalizer",
   mode = "auto", // "neon" | "sunset" | "auto"
-  intervalMs = 5000, // switch toutes les 2 s
+  intervalMs = 5000, // switch toutes les 5s
   useCssOnly = false, // true => utilise l'animation CSS .theme-auto (pas de JS)
+  solidColor = null, // nouvelle prop : couleur unie (ex: "#ffffff" ou "red")
 }) => {
   const TagName = tag;
 
@@ -36,7 +37,7 @@ const Title = ({
   }, [mode, isNeon]);
 
   const titleClasses = `
-    title-gradient-text font-bold
+    ${solidColor ? "text-solid" : "title-gradient-text"} font-bold
     ${tag === "h1" ? "text-5xl md:text-6xl" : ""}
     ${tag === "h2" ? "text-4xl md:text-5xl" : ""}
     ${tag === "h3" ? "text-3xl md:text-4xl" : ""}
@@ -47,16 +48,21 @@ const Title = ({
 
   const [c1, c2, c3] = activePalette;
 
+  // Style dynamique pour le titre
+  const titleStyle = solidColor ? { color: solidColor } : undefined;
+
+  // Style pour le conteneur
+  const containerStyle =
+    useCssOnly && mode === "auto"
+      ? undefined
+      : { ["--c1"]: c1, ["--c2"]: c2, ["--c3"]: c3 };
+
   return (
     <div
       className={`title-root ${
         useCssOnly && mode === "auto" ? "theme-auto" : ""
       } ${className}`}
-      style={
-        useCssOnly && mode === "auto"
-          ? undefined
-          : { ["--c1"]: c1, ["--c2"]: c2, ["--c3"]: c3 }
-      }
+      style={containerStyle}
     >
       {showAnimation && (
         <div className={`title-animation ${animationType}`} aria-hidden="true">
@@ -71,7 +77,9 @@ const Title = ({
           )}
         </div>
       )}
-      <TagName className={titleClasses}>{children}</TagName>
+      <TagName className={titleClasses} style={titleStyle}>
+        {children}
+      </TagName>
     </div>
   );
 };

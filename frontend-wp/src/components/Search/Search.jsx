@@ -56,7 +56,7 @@ const Search = ({ isOpen, onClose }) => {
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      size="fullscreen"
+      size="default"
       position="top"
       showCloseButton={false}
       backdropClassName="bg-black/50 backdrop-blur-sm"
