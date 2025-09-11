@@ -176,16 +176,18 @@ const ProductFilter = forwardRef(
           </div>
         </div>
 
-        {/* Filtres avec badges intégrés */}
-        <div className="max-w-6xl mx-auto">
-          <SearchFilters
-            categories={categories || []}
-            filters={filters}
-            onFiltersChange={updateFilters}
-            onResetFilters={resetFilters}
-            hasActiveFilters={hasActiveFilters}
-            simplified={true} // ✅ Mode simplifié avec badges intégrés
-          />
+        {/* Bouton filtres sticky - Version pastille */}
+        <div className="sticky top-[84px] z-10 mb-6">
+          <div className="max-w-6xl mx-auto">
+            <SearchFilters
+              categories={categories || []}
+              filters={filters}
+              onFiltersChange={updateFilters}
+              onResetFilters={resetFilters}
+              hasActiveFilters={hasActiveFilters}
+              simplified={false} // ✅ Mode complet avec bouton pliable
+            />
+          </div>
         </div>
 
         {/* Compteur de résultats */}
@@ -254,7 +256,7 @@ const ProductFilter = forwardRef(
         </div>
 
         {/* Indicateur de recherche active */}
-        {/* {hasAnyFilter && (
+        {hasAnyFilter && (
           <div className="text-center">
             <p className="text-sm text-gray-500">
               Recherche et filtres actifs -{" "}
@@ -266,7 +268,7 @@ const ProductFilter = forwardRef(
               </button>
             </p>
           </div>
-        )} */}
+        )}
       </div>
     );
   }
