@@ -1,5 +1,5 @@
 // src/components/Search/SearchFilters.jsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronDown, X, Filter } from "lucide-react";
 
 const SearchFilters = ({
@@ -8,9 +8,34 @@ const SearchFilters = ({
   onFiltersChange,
   onResetFilters,
   hasActiveFilters,
-  simplified = false, // ✅ Nouveau prop pour le mode simplifié
+  simplified = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const containerRef = useRef(null);
+
+  // ✅ Détection du mode sticky et auto-repli
+  useEffect(() => {
+    if (simplified) return; // Pas besoin en mode simplifié
+
+    let wasSticky = false;
+
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const isSticky = rect.top <= 108; // Ajustez selon votre valeur de top
+
+      // Si l'élément vient de devenir sticky (transition) et que les filtres sont ouverts, les fermer
+      if (isSticky && !wasSticky && isExpanded) {
+        setIsExpanded(false);
+      }
+
+      wasSticky = isSticky;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isExpanded, simplified]);
 
   // Configuration des options
   const priceRanges = [
@@ -293,9 +318,12 @@ const SearchFilters = ({
     );
   }
 
-  // ✅ Mode complet original (pour la modal de recherche)
+  // ✅ Mode complet original (pour la modal de recherche) avec auto-repli
   return (
-    <div className="relative overflow-hidden bg-white border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40">
+    <div
+      ref={containerRef}
+      className="relative overflow-hidden bg-white border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40"
+    >
       {/* Éléments décoratifs */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100/40 to-transparent rounded-full blur-3xl -translate-y-16 translate-x-16 hidden sm:block"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/30 to-transparent rounded-full blur-2xl translate-y-8 -translate-x-8 hidden sm:block"></div>
