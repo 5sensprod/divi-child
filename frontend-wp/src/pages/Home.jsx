@@ -2,9 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
 import ProductGrid from "../components/Product/ProductGrid";
+import ProductFilter from "../components/Product/ProductFilter"; // ✅ Nouveau composant
 import CategoryGrid from "../components/categorie/CategoryGrid";
 import CategoryAccordion from "../components/categorie/CategoryAccordion";
-import Title from "../components/UI/Title"; // Import du nouveau composant
+import Title from "../components/UI/Title";
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
@@ -30,39 +31,14 @@ const Home = () => {
 
           {/* Utilisation du composant CategoryGrid */}
           <CategoryGrid
-            categories={categories} // Toutes vos catégories dans l'ordre WooCommerce
+            categories={categories}
             loading={loading.categories}
             className="my-8"
           />
-
-          {/* Bouton pour voir toutes les catégories */}
-          {/* {categories.length > 6 && (
-            <div className="text-center mt-12">
-              <Link
-                to="/categories"
-                className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
-              >
-                <span>Voir toutes les catégories</span>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </Link>
-            </div>
-          )} */}
         </div>
       </section>
 
-      {/* Produits vedettes */}
+      {/* Section Produits avec recherche et filtres */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="text-center mb-16">
@@ -79,10 +55,11 @@ const Home = () => {
             </p>
           </div>
 
-          <ProductGrid
-            products={products.slice(0, 8)}
-            loading={loading.products}
-            className="grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+          {/* ✅ Nouveau composant ProductFilter qui remplace ProductGrid */}
+          <ProductFilter
+            initialProducts={products.slice(0, 8)}
+            showTitle={false} // Le titre est déjà affiché au-dessus
+            className="mb-12"
           />
 
           {/* Bouton centré sous les produits */}

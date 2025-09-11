@@ -220,32 +220,20 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
   try {
     const WooCommerce = createWooCommerceAPI();
 
-    // Construire les paramètres de base
     const params = {
       per_page: 20,
       status: "publish",
       ...searchParams,
     };
 
-    // Ajouter le terme de recherche s'il existe
     if (searchTerm && searchTerm.trim()) {
       params.search = searchTerm.trim();
     }
 
-    let response = await WooCommerce.get("products", params);
+    const response = await WooCommerce.get("products", params);
 
-    // Si pas de résultats avec recherche + catégorie, essayer juste la catégorie
-    if (response.data.length === 0 && searchTerm && searchParams.category) {
-      const categoryOnlyParams = { ...params };
-      delete categoryOnlyParams.search;
-
-      const fallbackResponse = await WooCommerce.get(
-        "products",
-        categoryOnlyParams
-      );
-      return fallbackResponse.data;
-    }
-
+    // ✅ Supprimer ou modifier cette logique de fallback
+    // Ne pas faire de fallback automatique qui ignore le terme de recherche
     return response.data;
   } catch (error) {
     if (import.meta.env.DEV) {
