@@ -277,6 +277,40 @@ export const clearCategoriesCache = () => {
   console.log("Cache des catégories vidé");
 };
 
+export const getTotalProductsCount = async () => {
+  try {
+    const WooCommerce = createWooCommerceAPI();
+    const response = await WooCommerce.get("products", {
+      per_page: 1, // On récupère juste 1 produit pour avoir les headers
+      status: "publish",
+    });
+
+    // Le nombre total est dans les headers de la réponse
+    const totalCount =
+      response.headers["x-wp-total"] || response.headers["X-WP-Total"];
+    return parseInt(totalCount) || 0;
+  } catch (error) {
+    console.error("Erreur getTotalProductsCount:", error);
+    return 0;
+  }
+};
+
+// Service pour récupérer toutes les marques uniques
+export const getBrands = async () => {
+  try {
+    const WooCommerce = createWooCommerceAPI();
+    // Si vous avez un plugin de marques, utilisez l'endpoint approprié
+    const response = await WooCommerce.get("products/brands", {
+      per_page: 100,
+    });
+    return response.data;
+  } catch (error) {
+    // Fallback : extraire les marques depuis les produits
+    console.log("Pas d'endpoint brands, extraction depuis les produits...");
+    return [];
+  }
+};
+
 export default {
   getProducts,
   getCategories,
@@ -285,5 +319,7 @@ export default {
   getProduct,
   searchProducts,
   getProductsByCategory,
+  getTotalProductsCount, // ← Nouvelle méthode
+  getBrands,
   clearCategoriesCache,
 };
