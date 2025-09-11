@@ -254,7 +254,7 @@ const ProductFilter = forwardRef(
         </div>
 
         {/* Indicateur de recherche active */}
-        {hasAnyFilter && (
+        {/* {hasAnyFilter && (
           <div className="text-center">
             <p className="text-sm text-gray-500">
               Recherche et filtres actifs -{" "}
@@ -266,7 +266,7 @@ const ProductFilter = forwardRef(
               </button>
             </p>
           </div>
-        )}
+        )} */}
       </div>
     );
   }
