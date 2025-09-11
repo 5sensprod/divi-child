@@ -80,15 +80,15 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
 
         {/* Contenu */}
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <h3 className="text-2xl font-bold mb-2 group-hover:text-pink-300 transition-colors duration-300">
+          <h3 className="text-2xl font-bold mb-2 group-hover:text-pink-300 transition-colors duration-300 backdrop-blur-sm bg-gradient-to-br from-black/50 via-black/30 to-black/10 px-4 py-2 rounded-md">
             {category.name}
           </h3>
-          <p className="text-white/80 text-sm line-clamp-2">{description}</p>
+          <p className="text-white/80 text-sm line-clamp-2 ">{description}</p>
 
           {/* Badge du nombre de produits */}
           {category.count > 0 && (
             <div className="mt-2 inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
-              <span className="text-xs font-medium">
+              <span className="text-md font-medium">
                 {category.count} produit{category.count > 1 ? "s" : ""}
               </span>
             </div>
@@ -96,7 +96,7 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
 
           {/* Flèche animée */}
           <div className="mt-3 flex items-center text-pink-300 group-hover:text-cyan-300 transition-colors duration-300">
-            <span className="text-sm font-medium mr-2">Explorer</span>
+            <span className="text-md font-medium mr-2">Explorer</span>
             <svg
               className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300"
               fill="none"

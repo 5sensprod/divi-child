@@ -4,27 +4,57 @@ import { WordPressProvider } from "./context/WordPressContext";
 import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
 
-// Composant de redirection
+// Composant de redirection optimisé
 const RedirectToWordPress = () => {
   useEffect(() => {
-    // Rediriger automatiquement vers la page WordPress correspondante
-    window.location.href = window.location.href;
+    // Masquer immédiatement le body
+    document.body.style.visibility = "hidden";
+
+    // Redirection immédiate avec replace pour éviter l'historique
+    window.location.replace(window.location.href);
   }, []);
 
-  return <div>Redirection vers WordPress...</div>;
+  // Ne rien retourner - composant invisible
+  return null;
+};
+
+// Hook pour gérer les redirections
+const useWordPressRedirect = () => {
+  useEffect(() => {
+    // Ajouter une classe CSS pour les redirections
+    const handleRouteChange = () => {
+      if (window.location.pathname !== "/") {
+        document.body.classList.add("redirecting");
+      }
+    };
+
+    handleRouteChange();
+    window.addEventListener("popstate", handleRouteChange);
+
+    return () => {
+      window.removeEventListener("popstate", handleRouteChange);
+      document.body.classList.remove("redirecting");
+    };
+  }, []);
 };
 
 const App = () => {
+  useWordPressRedirect();
+
   return (
     <WordPressProvider>
       <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            {/* Toutes les autres routes redirigent vers WordPress */}
-            <Route path="*" element={<RedirectToWordPress />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Layout>
+                <Home />
+              </Layout>
+            }
+          />
+          <Route path="*" element={<RedirectToWordPress />} />
+        </Routes>
       </Router>
     </WordPressProvider>
   );

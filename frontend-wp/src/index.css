@@ -167,6 +167,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* ============================================
    COMPOSANTS RÉUTILISABLES
    ============================================ */
@@ -184,7 +188,7 @@
 
   /* Navigation styles */
   .nav-link {
-    @apply px-3 py-2 text-sm font-light uppercase tracking-wide transition-colors duration-300;
+    @apply px-3 py-2 text-base font-light uppercase tracking-wide transition-colors duration-300;
     font-family: "Coda", sans-serif;
   }
 

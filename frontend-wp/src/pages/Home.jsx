@@ -12,16 +12,16 @@ const Home = () => {
   return (
     <div>
       {/* Catégories populaires - Utilisation des vraies catégories WooCommerce */}
-      <section className="py-10 bg-white">
+      <section id="boutique" className="py-14 bg-white">
         <div className="container-divi">
-          <div className="text-center mb-16">
+          <div className="text-center mb-14">
             <Title
               tag="h2"
-              className="mb-6"
+              className="mb-1"
               animationType="equalizer"
               gradient="default"
             >
-              Nos Catégories
+              La boutique
             </Title>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Découvrez notre sélection d'instruments organisée par catégories
@@ -36,7 +36,7 @@ const Home = () => {
           />
 
           {/* Bouton pour voir toutes les catégories */}
-          {categories.length > 6 && (
+          {/* {categories.length > 6 && (
             <div className="text-center mt-12">
               <Link
                 to="/categories"
@@ -58,7 +58,7 @@ const Home = () => {
                 </svg>
               </Link>
             </div>
-          )}
+          )} */}
         </div>
       </section>
 
