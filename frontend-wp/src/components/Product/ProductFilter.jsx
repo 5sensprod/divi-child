@@ -177,7 +177,7 @@ const ProductFilter = forwardRef(
         </div>
 
         {/* Bouton filtres sticky - Version pastille */}
-        <div className="sticky top-[84px] z-10 mb-6">
+        <div className="sticky top-[90px] lg:top-[108px] z-10 mb-6">
           <div className="max-w-6xl mx-auto">
             <SearchFilters
               categories={categories || []}

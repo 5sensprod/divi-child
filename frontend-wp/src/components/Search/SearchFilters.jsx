@@ -295,7 +295,7 @@ const SearchFilters = ({
 
   // ✅ Mode complet original (pour la modal de recherche)
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-indigo-50/30 border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40">
+    <div className="relative overflow-hidden bg-white border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40">
       {/* Éléments décoratifs */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100/40 to-transparent rounded-full blur-3xl -translate-y-16 translate-x-16 hidden sm:block"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-100/30 to-transparent rounded-full blur-2xl translate-y-8 -translate-x-8 hidden sm:block"></div>
