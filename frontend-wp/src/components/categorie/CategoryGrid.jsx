@@ -22,6 +22,20 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
     setCurrentPage(0);
   }, [categories]);
 
+  // SEULE OPTIMISATION : Préchargement simple des images
+  useEffect(() => {
+    if (categories.length > 0) {
+      const defaultImage =
+        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400";
+
+      categories.forEach((category) => {
+        const imageUrl = category.image?.src || defaultImage;
+        const img = new Image();
+        img.src = imageUrl;
+      });
+    }
+  }, [categories]);
+
   // Navigation du carousel
   const goToNextPage = () => {
     setCurrentPage((prev) => (prev + 1) % totalPages);
