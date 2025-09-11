@@ -12,12 +12,11 @@ const SearchFilters = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const containerRef = useRef(null);
+  const wasStickyRef = useRef(false);
 
   // ✅ Détection du mode sticky et auto-repli
   useEffect(() => {
     if (simplified) return; // Pas besoin en mode simplifié
-
-    let wasSticky = false;
 
     const handleScroll = () => {
       if (!containerRef.current) return;
@@ -26,15 +25,17 @@ const SearchFilters = ({
       const isSticky = rect.top <= 108; // Ajustez selon votre valeur de top
 
       // Si l'élément vient de devenir sticky (transition) et que les filtres sont ouverts, les fermer
-      if (isSticky && !wasSticky && isExpanded) {
+      if (isSticky && !wasStickyRef.current && isExpanded) {
         setIsExpanded(false);
       }
 
-      wasSticky = isSticky;
+      wasStickyRef.current = isSticky;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, [isExpanded, simplified]);
 
   // Configuration des options
