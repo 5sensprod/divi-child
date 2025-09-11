@@ -1,15 +1,26 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
-import ProductGrid from "../components/Product/ProductGrid";
-import ProductFilter from "../components/Product/ProductFilter"; // ✅ Nouveau composant
+import ProductFilter from "../components/Product/ProductFilter";
 import CategoryGrid from "../components/categorie/CategoryGrid";
-import CategoryAccordion from "../components/categorie/CategoryAccordion";
 import Title from "../components/UI/Title";
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
+  const productFilterRef = useRef(null);
 
+  // Fonction pour gérer le clic sur une catégorie
+  const handleCategoryClick = (categoryId) => {
+    console.log("🔥 Clic détecté sur catégorie:", categoryId);
+    console.log("🔗 Ref disponible:", !!productFilterRef.current);
+
+    if (productFilterRef.current) {
+      console.log("✅ Appel de setCategory");
+      productFilterRef.current.setCategory(categoryId);
+    } else {
+      console.error("❌ ProductFilter ref non disponible");
+    }
+  };
   return (
     <div>
       {/* Catégories populaires - Utilisation des vraies catégories WooCommerce */}
@@ -34,12 +45,16 @@ const Home = () => {
             categories={categories}
             loading={loading.categories}
             className="my-8"
+            onCategoryClick={handleCategoryClick}
           />
         </div>
       </section>
 
       {/* Section Produits avec recherche et filtres */}
-      <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section
+        id="ProduitsVedettes"
+        className="py-10 bg-gradient-to-br from-gray-50 to-gray-100"
+      >
         <div className="container-divi">
           <div className="text-center mb-16">
             <Title
@@ -48,22 +63,24 @@ const Home = () => {
               animationType="equalizer"
               gradient="sunset"
             >
-              Produits Vedettes
+              Notre sélection
             </Title>
             <p className="text-lg text-gray-600">
               Notre sélection des meilleurs instruments
             </p>
           </div>
 
-          {/* ✅ Nouveau composant ProductFilter qui remplace ProductGrid */}
+          {/* Nouveau composant ProductFilter qui remplace ProductGrid */}
           <ProductFilter
+            ref={productFilterRef}
             initialProducts={products.slice(0, 8)}
-            showTitle={false} // Le titre est déjà affiché au-dessus
+            initialLoading={loading.products} // ✅ Ajoutez cette ligne
+            showTitle={false}
             className="mb-12"
           />
 
           {/* Bouton centré sous les produits */}
-          <div className="text-center mt-12">
+          {/* <div className="text-center mt-12">
             <Link
               to="/boutique"
               className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
@@ -84,7 +101,7 @@ const Home = () => {
                 />
               </svg>
             </Link>
-          </div>
+          </div> */}
         </div>
       </section>
 

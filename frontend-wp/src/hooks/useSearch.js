@@ -6,7 +6,7 @@ const DEFAULT_FILTERS = {
   category: "",
   priceRange: "all",
   availability: "all",
-  sortBy: "relevance",
+  sortBy: "name-asc",
 };
 
 export const useSearch = () => {

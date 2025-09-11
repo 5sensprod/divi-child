@@ -1,8 +1,7 @@
 // src/components/categorie/CategoryGrid.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 
-const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
+const CategoryGrid = ({ categories, loading, className, onCategoryClick }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 6;
   const totalPages = Math.ceil(categories.length / itemsPerPage);
@@ -63,6 +62,12 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
     </div>
   );
 
+  const handleCategoryClick = (category) => {
+    if (onCategoryClick) {
+      onCategoryClick(category.id);
+    }
+  };
+
   const CategoryCard = ({ category }) => {
     const defaultImage =
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400";
@@ -72,9 +77,9 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
       : `Découvrez notre sélection ${category.name.toLowerCase()}`;
 
     return (
-      <Link
-        to={`/categorie-produit/${category.slug}`}
-        className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+      <button
+        onClick={() => handleCategoryClick(category)}
+        className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 w-full text-left"
       >
         <div className="relative h-80 overflow-hidden">
           <img
@@ -117,7 +122,7 @@ const CategoryGrid = ({ categories = [], loading = false, className = "" }) => {
             </svg>
           </div>
         </div>
-      </Link>
+      </button>
     );
   };
 

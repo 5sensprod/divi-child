@@ -175,6 +175,10 @@ html {
   scroll-margin-top: 80px; /* Ajustez selon la hauteur de votre header */
 }
 
+#ProduitsVedettes {
+  scroll-margin-top: 80px;
+}
+
 /* ============================================
    COMPOSANTS RÉUTILISABLES
    ============================================ */
