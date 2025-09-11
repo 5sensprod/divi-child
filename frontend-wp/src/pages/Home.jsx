@@ -56,7 +56,7 @@ const Home = () => {
         className="py-10 bg-gradient-to-br from-gray-50 to-gray-100"
       >
         <div className="container-divi">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <Title
               tag="h2"
               className="mb-4"
@@ -65,9 +65,9 @@ const Home = () => {
             >
               Notre sélection
             </Title>
-            <p className="text-lg text-gray-600">
+            {/* <p className="text-lg text-gray-600">
               Notre sélection des meilleurs instruments
-            </p>
+            </p> */}
           </div>
 
           {/* Nouveau composant ProductFilter qui remplace ProductGrid */}

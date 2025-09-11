@@ -8,6 +8,7 @@ const SearchFilters = ({
   onFiltersChange,
   onResetFilters,
   hasActiveFilters,
+  simplified = false, // ✅ Nouveau prop pour le mode simplifié
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -26,6 +27,7 @@ const SearchFilters = ({
     { value: "price-asc", label: "Prix croissant" },
     { value: "price-desc", label: "Prix décroissant" },
     { value: "name-asc", label: "Nom A-Z" },
+    { value: "name-desc", label: "Nom Z-A" },
     { value: "date-desc", label: "Plus récents" },
   ];
 
@@ -106,6 +108,69 @@ const SearchFilters = ({
     updateFilter(filterKey, defaultValues[filterKey]);
   };
 
+  // ✅ Mode simplifié - juste les dropdowns sans header
+  if (simplified) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Tri */}
+          <select
+            value={filters.sortBy || "name-asc"}
+            onChange={(e) => updateFilter("sortBy", e.target.value)}
+            className="w-full p-3 bg-white border border-emerald-200 hover:border-emerald-300 focus:border-emerald-400 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Catégorie */}
+          <select
+            value={filters.category || ""}
+            onChange={(e) => updateFilter("category", e.target.value)}
+            className="w-full p-3 bg-white border border-blue-200 hover:border-blue-300 focus:border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          >
+            <option value="">Toutes les catégories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Prix */}
+          <select
+            value={filters.priceRange || "all"}
+            onChange={(e) => updateFilter("priceRange", e.target.value)}
+            className="w-full p-3 bg-white border border-amber-200 hover:border-amber-300 focus:border-amber-400 rounded-lg focus:ring-2 focus:ring-amber-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          >
+            {priceRanges.map((range) => (
+              <option key={range.value} value={range.value}>
+                {range.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Disponibilité */}
+          <select
+            value={filters.availability || "all"}
+            onChange={(e) => updateFilter("availability", e.target.value)}
+            className="w-full p-3 bg-white border border-purple-200 hover:border-purple-300 focus:border-purple-400 rounded-lg focus:ring-2 focus:ring-purple-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+          >
+            {availabilityOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ Mode complet original (pour la modal de recherche)
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-indigo-50/30 border border-slate-200/60 rounded-xl shadow-lg shadow-slate-200/40">
       {/* Éléments décoratifs */}
