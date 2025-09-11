@@ -108,64 +108,165 @@ const SearchFilters = ({
     updateFilter(filterKey, defaultValues[filterKey]);
   };
 
-  // ✅ Mode simplifié - juste les dropdowns sans header
+  // ✅ Mode simplifié - dropdowns + badges intégrés
   if (simplified) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Tri */}
-          <select
-            value={filters.sortBy || "name-asc"}
-            onChange={(e) => updateFilter("sortBy", e.target.value)}
-            className="w-full p-3 bg-white border border-emerald-200 hover:border-emerald-300 focus:border-emerald-400 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+      <div className="space-y-4">
+        {/* Dropdowns */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Tri */}
+            <select
+              value={filters.sortBy || "name-asc"}
+              onChange={(e) => updateFilter("sortBy", e.target.value)}
+              className="w-full p-3 bg-white border border-emerald-200 hover:border-emerald-300 focus:border-emerald-400 rounded-lg focus:ring-2 focus:ring-emerald-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            >
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
 
-          {/* Catégorie */}
-          <select
-            value={filters.category || ""}
-            onChange={(e) => updateFilter("category", e.target.value)}
-            className="w-full p-3 bg-white border border-blue-200 hover:border-blue-300 focus:border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
-          >
-            <option value="">Toutes les catégories</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            {/* Catégorie */}
+            <select
+              value={filters.category || ""}
+              onChange={(e) => updateFilter("category", e.target.value)}
+              className="w-full p-3 bg-white border border-blue-200 hover:border-blue-300 focus:border-blue-400 rounded-lg focus:ring-2 focus:ring-blue-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            >
+              <option value="">Toutes les catégories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
 
-          {/* Prix */}
-          <select
-            value={filters.priceRange || "all"}
-            onChange={(e) => updateFilter("priceRange", e.target.value)}
-            className="w-full p-3 bg-white border border-amber-200 hover:border-amber-300 focus:border-amber-400 rounded-lg focus:ring-2 focus:ring-amber-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
-          >
-            {priceRanges.map((range) => (
-              <option key={range.value} value={range.value}>
-                {range.label}
-              </option>
-            ))}
-          </select>
+            {/* Prix */}
+            <select
+              value={filters.priceRange || "all"}
+              onChange={(e) => updateFilter("priceRange", e.target.value)}
+              className="w-full p-3 bg-white border border-amber-200 hover:border-amber-300 focus:border-amber-400 rounded-lg focus:ring-2 focus:ring-amber-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            >
+              {priceRanges.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
+              ))}
+            </select>
 
-          {/* Disponibilité */}
-          <select
-            value={filters.availability || "all"}
-            onChange={(e) => updateFilter("availability", e.target.value)}
-            className="w-full p-3 bg-white border border-purple-200 hover:border-purple-300 focus:border-purple-400 rounded-lg focus:ring-2 focus:ring-purple-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
-          >
-            {availabilityOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            {/* Disponibilité */}
+            <select
+              value={filters.availability || "all"}
+              onChange={(e) => updateFilter("availability", e.target.value)}
+              className="w-full p-3 bg-white border border-purple-200 hover:border-purple-300 focus:border-purple-400 rounded-lg focus:ring-2 focus:ring-purple-100 focus:outline-none text-sm font-medium text-slate-700 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            >
+              {availabilityOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* Badges des filtres actifs */}
+        {hasActiveFilters && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Badge catégorie */}
+            {filters.category && (
+              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full border border-blue-200/50 shadow-sm">
+                {categories?.find(
+                  (c) => String(c.id) === String(filters.category)
+                )?.name || filters.category}
+                <button
+                  onClick={() => updateFilter("category", "")}
+                  className="p-0.5 rounded-full hover:bg-blue-200/60 transition-colors duration-200"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            )}
+
+            {/* Badge prix */}
+            {filters.priceRange && filters.priceRange !== "all" && (
+              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 text-xs font-medium px-3 py-1.5 rounded-full border border-amber-200/50 shadow-sm">
+                {(() => {
+                  const shortPriceRanges = [
+                    { value: "0-50", label: "< 50€" },
+                    { value: "50-100", label: "50€-100€" },
+                    { value: "100-300", label: "100€-300€" },
+                    { value: "300-500", label: "300€-500€" },
+                    { value: "500+", label: "> 500€" },
+                  ];
+                  return (
+                    shortPriceRanges.find((p) => p.value === filters.priceRange)
+                      ?.label || filters.priceRange
+                  );
+                })()}
+                <button
+                  onClick={() => updateFilter("priceRange", "all")}
+                  className="p-0.5 rounded-full hover:bg-amber-200/60 transition-colors duration-200"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            )}
+
+            {/* Badge disponibilité */}
+            {filters.availability && filters.availability !== "all" && (
+              <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full border border-green-200/50 shadow-sm">
+                {filters.availability === "in-stock"
+                  ? "En stock"
+                  : filters.availability === "pre-order"
+                  ? "Précommande"
+                  : filters.availability}
+                <button
+                  onClick={() => updateFilter("availability", "all")}
+                  className="p-0.5 rounded-full hover:bg-green-200/60 transition-colors duration-200"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            )}
+
+            {/* Badge tri */}
+            {filters.sortBy &&
+              filters.sortBy !== "relevance" &&
+              filters.sortBy !== "name-asc" && (
+                <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-100 to-violet-100 text-purple-700 text-xs font-medium px-3 py-1.5 rounded-full border border-purple-200/50 shadow-sm">
+                  Tri:{" "}
+                  {(() => {
+                    const shortSortOptions = [
+                      { value: "price-asc", label: "Prix ↑" },
+                      { value: "price-desc", label: "Prix ↓" },
+                      { value: "name-desc", label: "Nom Z-A" },
+                      { value: "date-desc", label: "Récents" },
+                    ];
+                    return (
+                      shortSortOptions.find((s) => s.value === filters.sortBy)
+                        ?.label || filters.sortBy
+                    );
+                  })()}
+                  <button
+                    onClick={() => updateFilter("sortBy", "name-asc")}
+                    className="p-0.5 rounded-full hover:bg-purple-200/60 transition-colors duration-200"
+                  >
+                    <X size={10} />
+                  </button>
+                </span>
+              )}
+
+            {/* Bouton tout effacer */}
+            <button
+              onClick={onResetFilters}
+              className="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 transition-colors duration-200"
+            >
+              <X size={10} />
+              Tout effacer
+            </button>
+          </div>
+        )}
       </div>
     );
   }

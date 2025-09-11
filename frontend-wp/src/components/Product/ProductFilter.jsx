@@ -176,7 +176,7 @@ const ProductFilter = forwardRef(
           </div>
         </div>
 
-        {/* Filtres */}
+        {/* Filtres avec badges intégrés */}
         <div className="max-w-6xl mx-auto">
           <SearchFilters
             categories={categories || []}
@@ -184,129 +184,29 @@ const ProductFilter = forwardRef(
             onFiltersChange={updateFilters}
             onResetFilters={resetFilters}
             hasActiveFilters={hasActiveFilters}
-            simplified={true} // ✅ Mode simplifié
+            simplified={true} // ✅ Mode simplifié avec badges intégrés
           />
         </div>
 
-        {/* Barre d'état et actions */}
+        {/* Compteur de résultats */}
         {hasAnyFilter && (
-          <div className="flex items-center justify-between bg-blue-50 rounded-xl p-4 max-w-6xl mx-auto">
-            <div className="flex items-center space-x-4 flex-wrap gap-2">
-              <p className="text-sm text-blue-700">
-                <span className="font-semibold">{displayProducts.length}</span>{" "}
-                produit
-                {displayProducts.length > 1 ? "s" : ""} trouvé
-                {displayProducts.length > 1 ? "s" : ""}
-                {query.trim() && (
-                  <>
-                    {" "}
-                    pour <span className="font-semibold">"{query}"</span>
-                  </>
-                )}
-              </p>
-
-              {/* Badges des filtres actifs */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* Badge catégorie */}
-                {filters.category && (
-                  <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full border border-blue-200/50 shadow-sm">
-                    {categories?.find(
-                      (c) => String(c.id) === String(filters.category)
-                    )?.name || filters.category}
-                    <button
-                      onClick={() => updateFilters({ category: "" })}
-                      className="p-0.5 rounded-full hover:bg-blue-200/60 transition-colors duration-200"
-                    >
-                      <X size={10} />
-                    </button>
-                  </span>
-                )}
-
-                {/* Badge prix */}
-                {filters.priceRange && filters.priceRange !== "all" && (
-                  <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-700 text-xs font-medium px-3 py-1.5 rounded-full border border-amber-200/50 shadow-sm">
-                    {(() => {
-                      const priceRanges = [
-                        { value: "0-50", label: "< 50€" },
-                        { value: "50-100", label: "50€-100€" },
-                        { value: "100-300", label: "100€-300€" },
-                        { value: "300-500", label: "300€-500€" },
-                        { value: "500+", label: "> 500€" },
-                      ];
-                      return (
-                        priceRanges.find((p) => p.value === filters.priceRange)
-                          ?.label || filters.priceRange
-                      );
-                    })()}
-                    <button
-                      onClick={() => updateFilters({ priceRange: "all" })}
-                      className="p-0.5 rounded-full hover:bg-amber-200/60 transition-colors duration-200"
-                    >
-                      <X size={10} />
-                    </button>
-                  </span>
-                )}
-
-                {/* Badge disponibilité */}
-                {filters.availability && filters.availability !== "all" && (
-                  <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full border border-green-200/50 shadow-sm">
-                    {filters.availability === "in-stock"
-                      ? "En stock"
-                      : filters.availability === "pre-order"
-                      ? "Précommande"
-                      : filters.availability}
-                    <button
-                      onClick={() => updateFilters({ availability: "all" })}
-                      className="p-0.5 rounded-full hover:bg-green-200/60 transition-colors duration-200"
-                    >
-                      <X size={10} />
-                    </button>
-                  </span>
-                )}
-
-                {/* Badge tri */}
-                {filters.sortBy &&
-                  filters.sortBy !== "relevance" &&
-                  filters.sortBy !== "name-asc" && (
-                    <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-100 to-violet-100 text-purple-700 text-xs font-medium px-3 py-1.5 rounded-full border border-purple-200/50 shadow-sm">
-                      Tri:{" "}
-                      {(() => {
-                        const sortOptions = [
-                          { value: "price-asc", label: "Prix ↑" },
-                          { value: "price-desc", label: "Prix ↓" },
-                          { value: "name-desc", label: "Nom Z-A" },
-                          { value: "date-desc", label: "Récents" },
-                        ];
-                        return (
-                          sortOptions.find((s) => s.value === filters.sortBy)
-                            ?.label || filters.sortBy
-                        );
-                      })()}
-                      <button
-                        onClick={() => updateFilters({ sortBy: "name-asc" })}
-                        className="p-0.5 rounded-full hover:bg-purple-200/60 transition-colors duration-200"
-                      >
-                        <X size={10} />
-                      </button>
-                    </span>
-                  )}
-              </div>
-
-              {loading && (
-                <div className="flex items-center text-blue-600">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                  <span className="text-sm">Recherche...</span>
-                </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold">{displayProducts.length}</span>{" "}
+              produit{displayProducts.length > 1 ? "s" : ""} trouvé
+              {displayProducts.length > 1 ? "s" : ""}
+              {query.trim() && (
+                <>
+                  {" "}
+                  pour <span className="font-semibold">"{query}"</span>
+                </>
               )}
-            </div>
-
-            <button
-              onClick={handleClearAll}
-              className="flex items-center space-x-2 px-4 py-2 bg-white text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium ml-4"
-            >
-              <X size={14} />
-              <span>Tout effacer</span>
-            </button>
+              {loading && (
+                <span className="ml-2 text-blue-600">
+                  <span className="animate-pulse">• Recherche...</span>
+                </span>
+              )}
+            </p>
           </div>
         )}
 
