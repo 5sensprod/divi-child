@@ -5,6 +5,7 @@ import ProductFilter from "../components/Product/ProductFilter";
 import CategoryGrid from "../components/categorie/CategoryGrid";
 import Title from "../components/UI/Title";
 import AnimatedStats from "../components/UI/AnimatedStats";
+import CTASection from "../components/UI/CTASection";
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
@@ -110,48 +111,7 @@ const Home = () => {
       <AnimatedStats products={products} categories={categories} />
 
       {/* CTA Section finale */}
-      <section className="py-20 bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white relative overflow-hidden">
-        {/* Éléments décoratifs */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-20 h-20 bg-pink-500 rounded-full blur-xl"></div>
-          <div className="absolute bottom-10 right-10 w-32 h-32 bg-cyan-500 rounded-full blur-xl"></div>
-          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-purple-500 rounded-full blur-xl"></div>
-        </div>
-
-        <div className="container-divi relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <Title
-              tag="h2"
-              className="mb-6"
-              animationType="equalizer"
-              gradient="ocean"
-            >
-              Prêt à faire de la musique ?
-            </Title>
-            <p className="text-xl opacity-90 mb-10 leading-relaxed">
-              Rejoignez des milliers de musiciens qui nous font confiance pour
-              leurs instruments
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                to="/boutique"
-                className="group relative px-8 py-4 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-pink-500/25"
-              >
-                <span className="relative z-10">Explorer le catalogue</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-cyan-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </Link>
-
-              <Link
-                to="/contact"
-                className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full transition-all duration-300 hover:bg-white/10 hover:border-white/50 backdrop-blur-sm"
-              >
-                Nous contacter
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CTASection />
     </div>
   );
 };
