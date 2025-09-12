@@ -45,6 +45,11 @@
   --secondary: #31d1ff;
   --accent: #7d49ff;
 
+  /* NOUVEAU - Couleurs Océan Nocturne */
+  --ocean-primary: #70b2e0;
+  --ocean-secondary: #4dd0e1;
+  --ocean-accent: #3f51b5;
+
   /* Dégradés */
   --gradient-primary: linear-gradient(90deg, var(--primary), var(--secondary));
   --gradient-warm: linear-gradient(90deg, #ff6b35, #ffd23f);
@@ -53,6 +58,19 @@
     #ff4500 0%,
     #ff8c00 50%,
     #ffd700 100%
+  );
+
+  /* NOUVEAUX - Dégradés Océan Nocturne */
+  --gradient-ocean: linear-gradient(
+    90deg,
+    var(--ocean-primary),
+    var(--ocean-secondary)
+  );
+  --gradient-ocean-night: linear-gradient(
+    90deg,
+    #4fc3f7 0%,
+    #70b2e0 50%,
+    #3f51b5 100%
   );
 
   /* Layout */
@@ -79,6 +97,16 @@
   --neon-pink-outer: #ff3fd1;
   --neon-cyan-core: #9beaff;
   --neon-cyan-outer: #31d1ff;
+
+  /* NOUVELLES - Variables Background Océan Nocturne */
+  --ocean-bg-0: #0a0e1a;
+  --ocean-bg-55: #132040;
+  --ocean-bg-100: #1e3a5f;
+  --ocean-light-core: #4fc3f7;
+  --ocean-light-outer: #29b6f6;
+  --ocean-cyan-core: #81d4fa;
+  --ocean-cyan-outer: #4dd0e1;
+  --ocean-deep: #3f51b5;
 
   /* Variables CSS pour le Logo - Thème par défaut (neon) */
   --logo-primary: #ff3fd1;
@@ -273,6 +301,21 @@ html {
     color: transparent;
   }
 
+  /* NOUVEAUX - Dégradés de texte océan nocturne */
+  .text-gradient-ocean {
+    background: var(--gradient-ocean);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-ocean-night {
+    background: var(--gradient-ocean-night);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
   /* Line clamp */
   .line-clamp-2 {
     display: -webkit-box;
@@ -452,6 +495,13 @@ html {
   --logo-accent: #ff4d6d;
 }
 
+/* NOUVEAU - Thème océan nocturne */
+.theme-ocean-night {
+  --logo-primary: #70b2e0;
+  --logo-secondary: #4dd0e1;
+  --logo-accent: #3f51b5;
+}
+
 /* Classes utilitaires pour forcer un thème */
 .logo-neon {
   --logo-primary: #ff3fd1;
@@ -463,6 +513,13 @@ html {
   --logo-primary: #ff6b35;
   --logo-secondary: #ffd23f;
   --logo-accent: #ff4d6d;
+}
+
+/* NOUVELLE - Classe utilitaire océan nocturne */
+.logo-ocean-night {
+  --logo-primary: #70b2e0;
+  --logo-secondary: #4dd0e1;
+  --logo-accent: #3f51b5;
 }
 
 /* ============================================

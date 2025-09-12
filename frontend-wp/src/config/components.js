@@ -100,15 +100,22 @@ export const HEADER_CONFIG = {
         title: "ACHETEZ ET RÉPAREZ VOTRE MATOS MUSICAL",
         description:
           "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
-        image: "/assets/images/slider1-min.webp",
+        image: "/assets/images/bassiste_.png",
         theme: "neon",
       },
       {
         title: "BIENTÔT 30 ANS À VOTRE SERVICE",
         description:
           "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
-        image: "/assets/images/foodtruck4-min50-min.webp",
+        image: "/assets/images/Hero_truck768-min.webp",
         theme: "sunset",
+      },
+      {
+        title: "EXPLOREZ LES PROFONDEURS MUSICALES",
+        description:
+          "Plongez dans un univers sonore mystérieux où chaque note résonne comme un écho dans les profondeurs océaniques de la création musicale.",
+        image: "/assets/images/Hero_forest_-min.webp",
+        theme: "oceanNight",
       },
     ],
   },
@@ -151,6 +158,25 @@ export const HEADER_CONFIG = {
         "cyan-core": "#ffe08a",
         "cyan-outer": "#ffb703",
         violet: "#ff4d6d",
+      },
+    },
+    oceanNight: {
+      gradient: "var(--gradient-ocean)",
+      textGradient: "var(--gradient-ocean-night)",
+      color: "#70B2E0",
+      dotColor: "#70B2E0",
+      hoverGradient: "linear-gradient(90deg, #4DD0E1, #70B2E0)",
+
+      // Variables pour le background - Océan Nocturne (exactement comme notre CSS pur)
+      background: {
+        "bg-0": "#0A0E1A",
+        "bg-55": "#132040",
+        "bg-100": "#1E3A5F",
+        "pink-core": "#4FC3F7", // Bleu clair spot gauche
+        "pink-outer": "#29B6F6", // Bleu moyen spot gauche
+        "cyan-core": "#81D4FA", // Bleu ciel spot droite
+        "cyan-outer": "#4DD0E1", // Bleu turquoise spot droite
+        violet: "#3F51B5", // Indigo spot bottom
       },
     },
   },

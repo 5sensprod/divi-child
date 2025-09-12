@@ -4,6 +4,7 @@ import "./Title.css";
 const PALETTES = {
   neon: ["#ff3fd1", "#31d1ff", "#7d49ff"],
   sunset: ["#ff6b35", "#ffd23f", "#ff4d6d"],
+  oceanNight: ["#70B2E0", "#4DD0E1", "#3F51B5"], // NOUVEAU - Thème océan nocturne
 };
 
 const Title = ({
@@ -12,29 +13,36 @@ const Title = ({
   className = "",
   showAnimation = true,
   animationType = "equalizer",
-  mode = "auto", // "neon" | "sunset" | "auto"
+  mode = "auto", // "neon" | "sunset" | "oceanNight" | "auto"
   intervalMs = 5000, // switch toutes les 5s
   useCssOnly = false, // true => utilise l'animation CSS .theme-auto (pas de JS)
-  solidColor = null, // nouvelle prop : couleur unie (ex: "#ffffff" ou "red")
+  solidColor = null, // couleur unie (ex: "#ffffff" ou "red")
+  cycleThemes = ["neon", "sunset", "oceanNight"], // NOUVEAU - Thèmes à cycler en mode auto
 }) => {
   const TagName = tag;
 
-  // gestion JS (désactivée si useCssOnly=true ou mode !== "auto")
-  const [isNeon, setIsNeon] = useState(true);
+  // gestion JS avec cycle de 3 thèmes
+  const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
+
   useEffect(() => {
     if (useCssOnly || mode !== "auto") return;
-    const t = setInterval(
-      () => setIsNeon((v) => !v),
-      Math.max(500, intervalMs)
-    );
+
+    const t = setInterval(() => {
+      setCurrentThemeIndex((prevIndex) => (prevIndex + 1) % cycleThemes.length);
+    }, Math.max(500, intervalMs));
+
     return () => clearInterval(t);
-  }, [mode, intervalMs, useCssOnly]);
+  }, [mode, intervalMs, useCssOnly, cycleThemes.length]);
 
   const activePalette = useMemo(() => {
     if (mode === "neon") return PALETTES.neon;
     if (mode === "sunset") return PALETTES.sunset;
-    return isNeon ? PALETTES.neon : PALETTES.sunset;
-  }, [mode, isNeon]);
+    if (mode === "oceanNight") return PALETTES.oceanNight; // NOUVEAU
+
+    // Mode auto - cycle entre les thèmes spécifiés
+    const currentTheme = cycleThemes[currentThemeIndex];
+    return PALETTES[currentTheme] || PALETTES.neon;
+  }, [mode, currentThemeIndex, cycleThemes]);
 
   const titleClasses = `
     ${solidColor ? "text-solid" : "title-gradient-text"} font-bold

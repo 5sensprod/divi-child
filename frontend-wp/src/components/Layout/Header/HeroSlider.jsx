@@ -1,4 +1,4 @@
-// HeroSlider.jsx - Version simplifiée et fiable
+// HeroSlider.jsx - Version corrigée avec thème océan nocturne
 import { useState, useEffect, useRef } from "react";
 import {
   HEADER_CONFIG,
@@ -33,16 +33,10 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
     timeoutRef.current = setTimeout(() => {
       // Redémarrer l'autoplay après le glissement
       intervalRef.current = setInterval(nextSlide, slider.autoplayDelay);
-    }, 100); // Juste le temps de redémarrer
+    }, 100);
   };
 
-  // Démarrer l'animation de transition quand la slide change (sauf si manuel)
-  useEffect(() => {
-    // Plus besoin de isTransitioning avec le glissement !
-    // L'animation CSS se charge de tout
-  }, [currentSlide]);
-
-  // Autoplay - Super simple !
+  // Autoplay
   useEffect(() => {
     intervalRef.current = setInterval(nextSlide, slider.autoplayDelay);
 
@@ -50,9 +44,9 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       clearInterval(intervalRef.current);
       clearTimeout(timeoutRef.current);
     };
-  }, []); // Pas de dépendances = démarre une fois et c'est tout
+  }, []);
 
-  // Apply theme - EXACTEMENT comme l'original
+  // Apply theme - CORRIGÉ avec le nouveau thème
   useEffect(() => {
     const slide = slider.slides[currentSlide];
     if (!slide?.theme) return;
@@ -77,7 +71,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
     }, 300);
   }, [currentSlide, slider.slides]);
 
-  // Fonction logo
+  // Fonction logo CORRIGÉE avec tous les thèmes
   const applyLogoTheme = (themeName) => {
     const root = document.documentElement;
 
@@ -96,6 +90,15 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       root.style.setProperty(
         "--logo-gradient",
         "linear-gradient(90deg, #ff6b35, #ffd23f)"
+      );
+    } else if (themeName === "oceanNight") {
+      // NOUVEAU - Thème océan nocturne
+      root.style.setProperty("--logo-primary", "#70B2E0");
+      root.style.setProperty("--logo-secondary", "#4DD0E1");
+      root.style.setProperty("--logo-accent", "#3F51B5");
+      root.style.setProperty(
+        "--logo-gradient",
+        "linear-gradient(90deg, #70B2E0, #4DD0E1)"
       );
     }
   };
@@ -117,7 +120,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
     <section className={`w-full ${slider.layout.padding} relative z-[1]`}>
       <div className={getContainerClass()}>
         <div className={`${slider.layout.grid} ${slider.layout.minHeight}`}>
-          {/* Contenu avec effet de glissement - démarre en premier */}
+          {/* Contenu avec effet de glissement */}
           <div className="relative overflow-hidden">
             {slider.slides.map((slide, index) => (
               <div
@@ -125,7 +128,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
                 className="absolute inset-0 transition-transform duration-700 ease-in-out"
                 style={{
                   transform: `translateX(${(index - currentSlide) * 100}%)`,
-                  transitionDelay: "0ms", // Démarre immédiatement
+                  transitionDelay: "0ms",
                 }}
               >
                 <HeroContent
@@ -140,7 +143,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
             ))}
           </div>
 
-          {/* Image avec effet de glissement - démarre après le texte */}
+          {/* Image avec effet de glissement */}
           <div className="relative overflow-hidden">
             {slider.slides.map((slide, index) => (
               <div
@@ -148,7 +151,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
                 className="absolute inset-0 transition-transform duration-700 ease-in-out"
                 style={{
                   transform: `translateX(${(index - currentSlide) * 100}%)`,
-                  transitionDelay: "200ms", // Délai de 200ms après le texte
+                  transitionDelay: "200ms",
                 }}
               >
                 <HeroImage slide={slide} config={slider} />
@@ -159,7 +162,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       </div>
 
       {/* Indicateurs */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-10">
         <div className="flex gap-4">
           {slider.slides.map((slide, index) => {
             const isActive = index === currentSlide;
@@ -168,7 +171,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`
-                  relative w-16 h-2 rounded-full overflow-hidden cursor-pointer
+                  relative w-12 h-2 rounded-full overflow-hidden cursor-pointer
                   transition-all duration-300 hover:scale-105
                   ${isActive ? "opacity-100" : "opacity-60 hover:opacity-80"}
                 `}
