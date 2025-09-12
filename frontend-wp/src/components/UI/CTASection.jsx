@@ -6,7 +6,7 @@ import LeafletMap from "./LeafletMap";
 
 const CTASection = ({
   title = "Prêt à faire de la musique ?",
-  subtitle = "Passe essayer, obtenir un conseil, ou comparer avant d’acheter.",
+  subtitle = "Passe essayer, obtenir un conseil, ou comparer avant d'acheter.",
   phone = "0326657495",
   email = "contact@axemusique.shop",
   showMap = true,
@@ -46,6 +46,26 @@ const CTASection = ({
   };
 
   const { url: tileUrl, attribution } = tileSets[mapTheme] || tileSets.light;
+
+  // Fonction pour rendre le nom avec les polices personnalisées
+  const renderStoreName = (name) => {
+    const parts = name.split(" ");
+    if (
+      parts.length === 2 &&
+      parts[0].toLowerCase() === "axe" &&
+      parts[1].toLowerCase() === "musique"
+    ) {
+      return (
+        <>
+          <span style={{ fontFamily: "AnticFont, serif", fontSize: "1.5em" }}>
+            AXE
+          </span>{" "}
+          <span style={{ fontFamily: "Bauhaus, sans-serif" }}>MUSIQUE</span>
+        </>
+      );
+    }
+    return name;
+  };
 
   return (
     <section
@@ -89,7 +109,7 @@ const CTASection = ({
               />
               <div>
                 <h3 className="text-2xl md:text-3xl font-bold">
-                  {storeInfo.name}
+                  {renderStoreName(storeInfo.name)}
                 </h3>
                 <p className="text-base md:text-lg text-white/70 flex items-center gap-1.5">
                   <MapPin className="w-5 h-5" />
