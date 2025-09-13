@@ -68,34 +68,8 @@ const CTASection = ({
   };
 
   return (
-    <section
-      className="relative py-14 md:py-18 text-white"
-      style={{
-        backgroundImage: `
-      linear-gradient(to bottom, rgba(11, 15, 36, 0.9), rgba(11, 15, 36, 0.95)),
-      url('/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min_1.webp')
-    `,
-        backgroundSize: "cover, auto", // gradient cover + image taille réelle
-        backgroundRepeat: "no-repeat, no-repeat",
-        backgroundPosition: "center, bottom center", // gradient centré, image collée en bas
-      }}
-    >
+    <>
       <div className="container-divi">
-        {/* En-tête */}
-        <div className="text-center mb-10 md:mb-12 max-w-3xl mx-auto">
-          <Title
-            tag="h2"
-            className="mb-4"
-            animationType="equalizer"
-            gradient="ocean"
-          >
-            {title}
-          </Title>
-          <p className="text-lg md:text-xl text-white/80 leading-relaxed">
-            {subtitle}
-          </p>
-        </div>
-
         {/* Carte unifiée : infos + map */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Colonne infos */}
@@ -201,7 +175,7 @@ const CTASection = ({
           )}
         </div>
       </div>
-    </section>
+    </>
   );
 };
 

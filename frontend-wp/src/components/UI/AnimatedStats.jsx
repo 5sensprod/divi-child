@@ -223,9 +223,12 @@ const AnimatedStats = ({ products = [], categories = [] }) => {
   ];
 
   return (
-    <section ref={ref} className="py-20 bg-white">
+    <>
       <div className="container-divi">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div
+          ref={ref}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center"
+        >
           {stats.map((stat, index) => (
             <div
               key={index}
@@ -306,7 +309,7 @@ const AnimatedStats = ({ products = [], categories = [] }) => {
             forwards;
         }
       `}</style>
-    </section>
+    </>
   );
 };
 

@@ -21,6 +21,8 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
+  position: relative; /* Important */
+  z-index: 50;
 
   /* valeurs par défaut = NEON */
   --c1: #ff3fd1; /* neon primary */

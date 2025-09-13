@@ -6,7 +6,7 @@ import CategoryGrid from "../components/categorie/CategoryGrid";
 import Title from "../components/UI/Title";
 import AnimatedStats from "../components/UI/AnimatedStats";
 import CTASection from "../components/UI/CTASection";
-import Background from "../components/UI/Background"; // Import du nouveau composant
+import Background from "../components/UI/Background";
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
@@ -27,18 +27,13 @@ const Home = () => {
 
   return (
     <div>
-      {/* Catégories populaires - Avec fond Background */}
+      {/* Catégories populaires */}
       <section
         id="boutique"
         className="py-14 relative overflow-hidden min-h-[400px]"
       >
-        {/* Fond avec variante boutique */}
         <Background variant="boutique" opacity={0.95} animated={true} />
 
-        {/* Overlay optionnel pour améliorer le contraste */}
-        {/* <div className="absolute inset-0 bg-gradient-to-b from-gray-900/10 via-transparent to-gray-900/20 pointer-events-none z-[1]" /> */}
-
-        {/* Contenu principal */}
         <div className="container-divi relative z-10">
           <div className="text-center mb-14">
             <Title
@@ -54,7 +49,6 @@ const Home = () => {
             </p>
           </div>
 
-          {/* Utilisation du composant CategoryGrid */}
           <CategoryGrid
             categories={categories}
             loading={loading.categories}
@@ -81,7 +75,6 @@ const Home = () => {
             </Title>
           </div>
 
-          {/* Nouveau composant ProductFilter qui remplace ProductGrid */}
           <ProductFilter
             ref={productFilterRef}
             initialProducts={products.slice(0, 8)}
@@ -92,11 +85,60 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Statistiques */}
-      <AnimatedStats products={products} categories={categories} />
+      {/* Section Statistiques */}
+      <section className="py-20 bg-white">
+        <div className="container-divi">
+          <div className="text-center mb-12">
+            <Title
+              tag="h2"
+              className="mb-4"
+              animationType="equalizer"
+              gradient="ocean"
+            >
+              Nos chiffres
+            </Title>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              La confiance de milliers de musiciens
+            </p>
+          </div>
 
-      {/* CTA Section finale */}
-      <CTASection />
+          <AnimatedStats products={products} categories={categories} />
+        </div>
+      </section>
+
+      {/* Section Contact / CTA */}
+      <section
+        className="relative py-14 md:py-18 text-white"
+        style={{
+          backgroundImage: `
+            linear-gradient(to bottom, rgba(11, 15, 36, 0.9), rgba(11, 15, 36, 0.95)),
+            url('/assets/images/ComfyUI_00291_-gigapixel-art-scale-4_00x-min_1.webp')
+          `,
+          backgroundSize: "cover, auto",
+          backgroundRepeat: "no-repeat, no-repeat",
+          backgroundPosition: "center, bottom center",
+        }}
+      >
+        <Background variant="oceanNight" opacity={0.95} animated={true} />
+
+        <div className="container-divi">
+          <div className="text-center mb-10 md:mb-12 max-w-3xl mx-auto">
+            <Title
+              tag="h2"
+              className="mb-4"
+              animationType="equalizer"
+              gradient="ocean"
+            >
+              Prêt à faire de la musique ?
+            </Title>
+            <p className="text-lg md:text-xl text-white/80 leading-relaxed">
+              Passe essayer, obtenir un conseil, ou comparer avant d'acheter.
+            </p>
+          </div>
+
+          <CTASection />
+        </div>
+      </section>
     </div>
   );
 };
