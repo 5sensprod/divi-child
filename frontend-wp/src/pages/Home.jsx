@@ -7,6 +7,7 @@ import Title from "../components/UI/Title";
 import AnimatedStats from "../components/UI/AnimatedStats";
 import CTASection from "../components/UI/CTASection";
 import Background from "../components/UI/Background";
+import HeroSlider from "../components/Layout/Header/HeroSlider";
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
@@ -27,6 +28,18 @@ const Home = () => {
 
   return (
     <div>
+      {/* HERO contrôlé par la page */}
+      <section
+        id="hero"
+        className="relative overflow-hidden min-h-[400px] pt-60 "
+      >
+        <Background animated={false} opacity={1} />
+        <HeroSlider
+          siteTitle={siteData?.site_title}
+          siteDescription={siteData?.site_description}
+        />
+      </section>
+
       {/* Catégories populaires */}
       <section
         id="boutique"

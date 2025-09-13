@@ -279,12 +279,6 @@ html {
     @apply text-white/90 hover:bg-white/10 hover:text-pink-300;
   }
 
-  /* Hero background */
-  .hero-background {
-    background-image: url("/assets/images/axe-musique-neon-bg-v2-variables.svg");
-    @apply bg-cover bg-center bg-no-repeat;
-  }
-
   /* Overlay système */
   .overlay-backdrop {
     @apply fixed inset-0 bg-black/50 backdrop-blur-sm;

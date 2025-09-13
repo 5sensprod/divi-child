@@ -96,17 +96,7 @@ const Header = ({ showHero = false }) => {
 
   return (
     <header className="relative">
-      {/* Background dynamique qui reçoit le thème directement */}
-      {showHero && (
-        <Background
-          currentSlideTheme={currentSlideTheme}
-          animated={false}
-          opacity={1}
-          className="z-0"
-        />
-      )}
-
-      <div className="z-navigation sticky top-0">
+      <div className="z-navigation">
         <Navigation
           menuItems={menus?.items || []}
           siteTitle={siteData?.site_title || HEADER_CONFIG.defaults.siteTitle}
@@ -116,15 +106,6 @@ const Header = ({ showHero = false }) => {
           {...HEADER_CONFIG.navigation}
         />
       </div>
-
-      {showHero && (
-        <HeroSlider
-          siteTitle={siteData?.site_title || HEADER_CONFIG.defaults.siteTitle}
-          siteDescription={
-            siteData?.site_description || HEADER_CONFIG.defaults.siteDescription
-          }
-        />
-      )}
 
       {/* Modal de recherche */}
       <Search isOpen={isSearchOpen} onClose={handleSearchClose} />

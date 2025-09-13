@@ -125,7 +125,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
   };
 
   return (
-    <section className={`w-full ${slider.layout.padding} relative z-[1]`}>
+    <div className="relative">
       <div className={getContainerClass()}>
         <div className={`${slider.layout.grid} ${slider.layout.minHeight}`}>
           {/* Contenu avec effet de glissement */}
@@ -206,7 +206,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
           })}
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

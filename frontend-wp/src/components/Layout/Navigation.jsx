@@ -20,6 +20,8 @@ const Navigation = ({
   onSearchClick, // ← AJOUTER CETTE LIGNE
 }) => {
   const location = useLocation();
+  const isHome = location.pathname === "/";
+  const shouldAddSpacer = !isHome;
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState(new Set());
@@ -145,7 +147,6 @@ const Navigation = ({
   return (
     <>
       {/* Spacer pour menu fixe */}
-      <div className={`w-full transition-all duration-300 ${heightClasses}`} />
 
       <nav className={navClasses}>
         <div className="container-divi">
