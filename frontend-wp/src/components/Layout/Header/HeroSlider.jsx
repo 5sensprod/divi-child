@@ -7,11 +7,13 @@ import {
 } from "../../../config/components";
 import HeroContent from "./HeroComponents/HeroContent";
 import HeroImage from "./HeroComponents/HeroImage";
+import { useTheme } from "../../../context/ThemeContext";
 
 const HeroSlider = ({ siteTitle, siteDescription }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { slider } = HEADER_CONFIG;
+  const { setTheme } = useTheme();
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
 
@@ -70,6 +72,11 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       root.style.transition = "";
     }, 300);
   }, [currentSlide, slider.slides]);
+
+  useEffect(() => {
+    const t = slider.slides[currentSlide]?.theme ?? "neon";
+    setTheme(t); // ← DIFFUSE le thème via contexte
+  }, [currentSlide, slider.slides, setTheme]);
 
   // Fonction logo COMPLÈTE avec tous les thèmes
   const applyLogoTheme = (themeName) => {

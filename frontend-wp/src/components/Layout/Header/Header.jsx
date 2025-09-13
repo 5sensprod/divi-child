@@ -6,70 +6,10 @@ import Background from "../../UI/Background";
 import HeroSlider from "./HeroSlider";
 import Search from "../../Search/Search";
 
-const Header = ({ showHero = false }) => {
+const Header = () => {
   const { siteData, menus, loading } = useWordPress();
   const [currentTheme, setCurrentTheme] = useState("neon");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [currentSlideTheme, setCurrentSlideTheme] = useState("neon"); // État pour le thème de la slide
-
-  // Écouter les changements de thème depuis le HeroSlider
-  useEffect(() => {
-    if (!showHero) return;
-
-    // Observer les changements de variables CSS pour détecter le changement de thème
-    const observer = new MutationObserver(() => {
-      const theme = getCurrentTheme();
-      setCurrentTheme(theme);
-    });
-
-    // Observer les changements sur le root element
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["style"],
-    });
-
-    // Alternative: écouter les changements de variables CSS avec détection améliorée
-    const handleThemeChange = () => {
-      const gradient = getComputedStyle(document.documentElement)
-        .getPropertyValue("--current-gradient")
-        .trim();
-
-      // Amélioration de la détection des thèmes
-      if (gradient.includes("var(--gradient-warm)")) {
-        setCurrentSlideTheme("sunset");
-      } else if (gradient.includes("var(--gradient-ocean)")) {
-        setCurrentSlideTheme("oceanNight");
-      } else if (gradient.includes("var(--gradient-havana)")) {
-        setCurrentSlideTheme("havana");
-      } else {
-        setCurrentSlideTheme("neon");
-      }
-
-      console.log(
-        "🎭 Header détecte thème:",
-        gradient,
-        "→",
-        gradient.includes("var(--gradient-warm)")
-          ? "sunset"
-          : gradient.includes("var(--gradient-ocean)")
-          ? "oceanNight"
-          : gradient.includes("var(--gradient-havana)")
-          ? "havana"
-          : "neon"
-      );
-    };
-
-    // Vérifier le thème initial
-    handleThemeChange();
-
-    // Écouter les changements de propriétés CSS plus fréquemment
-    const interval = setInterval(handleThemeChange, 200);
-
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  }, [showHero]);
 
   // Gestionnaire pour ouvrir la modal de recherche
   const handleSearchOpen = () => {

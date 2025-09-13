@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { WordPressProvider } from "./context/WordPressContext";
 import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Composant de redirection optimisé
 const RedirectToWordPress = () => {
@@ -43,19 +44,21 @@ const App = () => {
 
   return (
     <WordPressProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <Home />
-              </Layout>
-            }
-          />
-          <Route path="*" element={<RedirectToWordPress />} />
-        </Routes>
-      </Router>
+      <ThemeProvider initial="neon">
+        <Router>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Layout>
+                  <Home />
+                </Layout>
+              }
+            />
+            <Route path="*" element={<RedirectToWordPress />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
     </WordPressProvider>
   );
 };

@@ -33,7 +33,7 @@ const Home = () => {
         id="hero"
         className="relative overflow-hidden min-h-[400px] pt-60 "
       >
-        <Background animated={false} opacity={1} />
+        <Background variant="auto" opacity={1} animated={true} />
         <HeroSlider
           siteTitle={siteData?.site_title}
           siteDescription={siteData?.site_description}
@@ -45,7 +45,7 @@ const Home = () => {
         id="boutique"
         className="py-14 relative overflow-hidden min-h-[400px]"
       >
-        <Background variant="boutique" opacity={0.95} animated={false} />
+        <Background variant="boutique" opacity={0.95} animated={true} />
 
         <div className="container-divi relative z-10">
           <div className="text-center mb-14">
@@ -133,7 +133,7 @@ const Home = () => {
           backgroundPosition: "center, bottom center",
         }}
       >
-        <Background variant="oceanNight" opacity={0.95} animated={true} />
+        <Background variant="auto" opacity={0.95} animated={true} />
 
         <div className="container-divi">
           <div className="text-center mb-10 md:mb-12 max-w-3xl mx-auto">
