@@ -32,7 +32,7 @@ const Home = () => {
         id="boutique"
         className="py-14 relative overflow-hidden min-h-[400px]"
       >
-        <Background variant="boutique" opacity={0.95} animated={true} />
+        <Background variant="boutique" opacity={0.95} animated={false} />
 
         <div className="container-divi relative z-10">
           <div className="text-center mb-14">
@@ -41,6 +41,7 @@ const Home = () => {
               className="mb-1 text-gray-800 drop-shadow-sm"
               animationType="equalizer"
               gradient="default"
+              mode="oceanNight"
             >
               La boutique
             </Title>
@@ -131,9 +132,17 @@ const Home = () => {
             >
               Prêt à faire de la musique ?
             </Title>
-            <p className="text-lg md:text-xl text-white/80 leading-relaxed">
+            <Title
+              tag="p"
+              className="mb-4"
+              animationType="none"
+              gradient="ocean"
+              mode="neon"
+              solidColor="#fff"
+              bold={false}
+            >
               Passe essayer, obtenir un conseil, ou comparer avant d'acheter.
-            </p>
+            </Title>
           </div>
 
           <CTASection />

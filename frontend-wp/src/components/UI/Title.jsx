@@ -12,6 +12,7 @@ const PALETTES = {
 const Title = ({
   children,
   tag = "h2",
+  bold = false,
   className = "",
   showAnimation = true,
   animationType = "equalizer",
@@ -48,13 +49,16 @@ const Title = ({
   }, [mode, currentThemeIndex, cycleThemes]);
 
   const titleClasses = `
-    ${solidColor ? "text-solid" : "title-gradient-text"} font-bold
+    ${solidColor ? "text-solid" : "title-gradient-text"} ${
+    bold ? "font-bold" : ""
+  }
     ${tag === "h1" ? "text-5xl md:text-6xl" : ""}
     ${tag === "h2" ? "text-4xl md:text-5xl" : ""}
     ${tag === "h3" ? "text-3xl md:text-4xl" : ""}
     ${tag === "h4" ? "text-2xl md:text-3xl" : ""}
     ${tag === "h5" ? "text-xl md:text-2xl" : ""}
     ${tag === "h6" ? "text-lg md:text-xl" : ""}
+    ${tag === "p" ? "text-xl md:text-md" : ""}
   `.trim();
 
   const [c1, c2, c3] = activePalette;
@@ -88,7 +92,10 @@ const Title = ({
           )}
         </div>
       )}
-      <TagName className={titleClasses} style={titleStyle}>
+      <TagName
+        className={titleClasses}
+        style={solidColor ? { color: solidColor } : undefined}
+      >
         {children}
       </TagName>
     </div>

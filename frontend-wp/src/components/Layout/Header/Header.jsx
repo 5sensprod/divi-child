@@ -100,7 +100,7 @@ const Header = ({ showHero = false }) => {
       {showHero && (
         <Background
           currentSlideTheme={currentSlideTheme}
-          animated={true}
+          animated={false}
           opacity={1}
           className="z-0"
         />
