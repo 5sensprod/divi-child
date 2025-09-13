@@ -89,34 +89,41 @@
   }
 }
 
-/* Option CSS-only: rotation auto entre les 3 THÈMES sans JS */
 .title-root.theme-auto {
-  animation: tripleThemes 15s ease-in-out infinite; /* 5s par thème */
+  animation: fourThemes 20s ease-in-out infinite; /* 5s par thème */
 }
 
-@keyframes tripleThemes {
-  /* NEON - 0% à 33.333% */
+@keyframes fourThemes {
+  /* NEON - 0% à 25% */
   0%,
-  30% {
+  22.5% {
     --c1: #ff3fd1;
     --c2: #31d1ff;
     --c3: #7d49ff;
   }
 
-  /* Transition vers SUNSET */
-  33.333%,
-  63.333% {
+  /* Transition vers SUNSET - 25% à 50% */
+  25%,
+  47.5% {
     --c1: #ff6b35;
     --c2: #ffd23f;
     --c3: #ff4d6d;
   }
 
-  /* Transition vers OCÉAN NOCTURNE */
-  66.666%,
-  96.666% {
+  /* Transition vers OCÉAN NOCTURNE - 50% à 75% */
+  50%,
+  72.5% {
     --c1: #70b2e0;
     --c2: #4dd0e1;
     --c3: #3f51b5;
+  }
+
+  /* Transition vers HAVANA - 75% à 100% */
+  75%,
+  97.5% {
+    --c1: #ff7f50;
+    --c2: #ffd700;
+    --c3: #a0522d;
   }
 
   /* Retour vers NEON */
@@ -125,6 +132,31 @@
     --c2: #31d1ff;
     --c3: #7d49ff;
   }
+}
+
+/* Classes utilitaires pour forcer un thème spécifique */
+.title-root.theme-neon {
+  --c1: #ff3fd1;
+  --c2: #31d1ff;
+  --c3: #7d49ff;
+}
+
+.title-root.theme-sunset {
+  --c1: #ff6b35;
+  --c2: #ffd23f;
+  --c3: #ff4d6d;
+}
+
+.title-root.theme-ocean-night {
+  --c1: #70b2e0;
+  --c2: #4dd0e1;
+  --c3: #3f51b5;
+}
+
+.title-root.theme-havana {
+  --c1: #ff7f50;
+  --c2: #ffd700;
+  --c3: #a0522d;
 }
 
 /* Animation duo (ancienne) pour compatibilité */
@@ -165,6 +197,12 @@
   --c1: #70b2e0;
   --c2: #4dd0e1;
   --c3: #3f51b5;
+}
+
+.title-root.theme-havana {
+  --c1: #ff7f50;
+  --c2: #ffd700;
+  --c3: #a0522d;
 }
 
 /* Responsive */

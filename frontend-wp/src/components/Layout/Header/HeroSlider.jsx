@@ -1,4 +1,4 @@
-// HeroSlider.jsx - Version corrigée avec thème océan nocturne
+// HeroSlider.jsx - Version complète avec thème Havana
 import { useState, useEffect, useRef } from "react";
 import {
   HEADER_CONFIG,
@@ -46,7 +46,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
     };
   }, []);
 
-  // Apply theme - CORRIGÉ avec le nouveau thème
+  // Apply theme - COMPLET avec tous les thèmes
   useEffect(() => {
     const slide = slider.slides[currentSlide];
     if (!slide?.theme) return;
@@ -71,7 +71,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
     }, 300);
   }, [currentSlide, slider.slides]);
 
-  // Fonction logo CORRIGÉE avec tous les thèmes
+  // Fonction logo COMPLÈTE avec tous les thèmes
   const applyLogoTheme = (themeName) => {
     const root = document.documentElement;
 
@@ -92,13 +92,21 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
         "linear-gradient(90deg, #ff6b35, #ffd23f)"
       );
     } else if (themeName === "oceanNight") {
-      // NOUVEAU - Thème océan nocturne
       root.style.setProperty("--logo-primary", "#70B2E0");
       root.style.setProperty("--logo-secondary", "#4DD0E1");
       root.style.setProperty("--logo-accent", "#3F51B5");
       root.style.setProperty(
         "--logo-gradient",
         "linear-gradient(90deg, #70B2E0, #4DD0E1)"
+      );
+    } else if (themeName === "havana") {
+      // NOUVEAU - Thème Havana
+      root.style.setProperty("--logo-primary", "#FF7F50");
+      root.style.setProperty("--logo-secondary", "#FFD700");
+      root.style.setProperty("--logo-accent", "#A0522D");
+      root.style.setProperty(
+        "--logo-gradient",
+        "linear-gradient(90deg, #FF7F50, #FFD700)"
       );
     }
   };

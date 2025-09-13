@@ -1,4 +1,4 @@
-// src/config/components.js
+// src/config/components.js - CORRECTION: Thème Havana au bon niveau
 // Configuration centralisée complète pour tous les composants
 
 export const HEADER_CONFIG = {
@@ -97,30 +97,37 @@ export const HEADER_CONFIG = {
 
     slides: [
       {
-        title: "ACHETEZ ET RÉPAREZ VOTRE MATOS MUSICAL",
+        title: "ACHETEZ, RÉPAREZ, RÉGLEZ VOTRE MATÉRIEL",
         description:
-          "Guitares, basses, claviers, sono et accessoires. Vendez votre matériel d'occasion, profitez de conseils d'experts et d'un atelier de réparation.",
+          "Vente d'instruments neufs et d'occasion, réparations expertes et réglages de précision. Notre atelier spécialisé redonne vie à votre matériel musical avec le savoir-faire de vrais passionnés.",
         image: "/assets/images/bassiste_.png",
         theme: "neon",
       },
       {
-        title: "BIENTÔT 30 ANS À VOTRE SERVICE",
+        title: "DEPUIS 1998, VOTRE PARTENAIRE MUSICAL",
         description:
-          "Depuis 1995, notre équipe de passionnés vous accompagne dans vos projets musicaux. Trois décennies d'expertise, de confiance et d'innovation.",
+          "Bientôt 30 ans que nous servons les musiciens avec passion et expertise. Une équipe dévouée qui comprend vos besoins et vous accompagne dans tous vos projets musicaux.",
         image: "/assets/images/Hero_truck768-min.webp",
         theme: "sunset",
       },
       {
-        title: "EXPLOREZ LES PROFONDEURS MUSICALES",
+        title: "PARTOUT OÙ LA MUSIQUE VOUS MÈNE",
         description:
-          "Plongez dans un univers sonore mystérieux où chaque note résonne comme un écho dans les profondeurs océaniques de la création musicale.",
+          "Conservatoire, garage entre amis, scène prestigieuse ou studio d'enregistrement... Quel que soit votre univers musical, nous vous équipons pour donner le meilleur de vous-même.",
         image: "/assets/images/Hero_forest_-min.webp",
         theme: "oceanNight",
+      },
+      {
+        title: "TOUS LES STYLES, TOUTES LES PASSIONS",
+        description:
+          "Du classique au beatbox, du rock au jazz manouche, de l'électro aux musiques du monde. Notre diversité d'instruments et d'accessoires épouse tous les genres musicaux.",
+        image: "/assets/images/Hero_havana-min.webp",
+        theme: "havana",
       },
     ],
   },
 
-  // Configuration des thèmes
+  // Configuration des thèmes - CORRECTION: tous au même niveau
   themes: {
     neon: {
       gradient: "var(--gradient-primary)",
@@ -141,6 +148,7 @@ export const HEADER_CONFIG = {
         violet: "#7D49FF",
       },
     },
+
     sunset: {
       gradient: "var(--gradient-warm)",
       textGradient: "var(--gradient-sunset)",
@@ -160,6 +168,7 @@ export const HEADER_CONFIG = {
         violet: "#ff4d6d",
       },
     },
+
     oceanNight: {
       gradient: "var(--gradient-ocean)",
       textGradient: "var(--gradient-ocean-night)",
@@ -177,6 +186,26 @@ export const HEADER_CONFIG = {
         "cyan-core": "#81D4FA", // Bleu ciel spot droite
         "cyan-outer": "#4DD0E1", // Bleu turquoise spot droite
         violet: "#3F51B5", // Indigo spot bottom
+      },
+    },
+
+    // CORRECTION: Thème Havana au même niveau que les autres
+    havana: {
+      gradient: "var(--gradient-havana)",
+      textGradient: "var(--gradient-havana-night)",
+      color: "#FF7F50",
+      dotColor: "#FFD700",
+      hoverGradient: "linear-gradient(90deg, #CD5C5C, #FF7F50)",
+
+      background: {
+        "bg-0": "#1A0F0F", // Brun très foncé
+        "bg-55": "#2F1B14", // Brun chocolat
+        "bg-100": "#3D2817", // Terre de Sienne
+        "pink-core": "#FF7F50", // Coral (spot gauche)
+        "pink-outer": "#FF6347", // Tomato (spot gauche)
+        "cyan-core": "#FFD700", // Gold (spot droite)
+        "cyan-outer": "#FFA500", // Orange (spot droite)
+        violet: "#A0522D", // SaddleBrown (spot bottom)
       },
     },
   },

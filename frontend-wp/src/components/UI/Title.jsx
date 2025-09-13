@@ -1,10 +1,12 @@
+// Title.jsx - Avec palette Havana
 import React, { useEffect, useMemo, useState } from "react";
 import "./Title.css";
 
 const PALETTES = {
   neon: ["#ff3fd1", "#31d1ff", "#7d49ff"],
   sunset: ["#ff6b35", "#ffd23f", "#ff4d6d"],
-  oceanNight: ["#70B2E0", "#4DD0E1", "#3F51B5"], // NOUVEAU - Thème océan nocturne
+  oceanNight: ["#70B2E0", "#4DD0E1", "#3F51B5"],
+  havana: ["#FF7F50", "#FFD700", "#A0522D"], // NOUVEAU - Palette Havana
 };
 
 const Title = ({
@@ -13,15 +15,15 @@ const Title = ({
   className = "",
   showAnimation = true,
   animationType = "equalizer",
-  mode = "auto", // "neon" | "sunset" | "oceanNight" | "auto"
+  mode = "auto", // "neon" | "sunset" | "oceanNight" | "havana" | "auto"
   intervalMs = 5000, // switch toutes les 5s
   useCssOnly = false, // true => utilise l'animation CSS .theme-auto (pas de JS)
   solidColor = null, // couleur unie (ex: "#ffffff" ou "red")
-  cycleThemes = ["neon", "sunset", "oceanNight"], // NOUVEAU - Thèmes à cycler en mode auto
+  cycleThemes = ["neon", "sunset", "oceanNight", "havana"], // MODIFIÉ - 4 thèmes par défaut
 }) => {
   const TagName = tag;
 
-  // gestion JS avec cycle de 3 thèmes
+  // gestion JS avec cycle de 4 thèmes
   const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
 
   useEffect(() => {
@@ -37,7 +39,8 @@ const Title = ({
   const activePalette = useMemo(() => {
     if (mode === "neon") return PALETTES.neon;
     if (mode === "sunset") return PALETTES.sunset;
-    if (mode === "oceanNight") return PALETTES.oceanNight; // NOUVEAU
+    if (mode === "oceanNight") return PALETTES.oceanNight;
+    if (mode === "havana") return PALETTES.havana; // NOUVEAU
 
     // Mode auto - cycle entre les thèmes spécifiés
     const currentTheme = cycleThemes[currentThemeIndex];

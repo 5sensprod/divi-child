@@ -50,6 +50,11 @@
   --ocean-secondary: #4dd0e1;
   --ocean-accent: #3f51b5;
 
+  /* NOUVELLES - Couleurs Havana */
+  --havana-primary: #ff7f50; /* Coral */
+  --havana-secondary: #ffd700; /* Gold */
+  --havana-accent: #a0522d; /* SaddleBrown */
+
   /* Dégradés */
   --gradient-primary: linear-gradient(90deg, var(--primary), var(--secondary));
   --gradient-warm: linear-gradient(90deg, #ff6b35, #ffd23f);
@@ -71,6 +76,19 @@
     #4fc3f7 0%,
     #70b2e0 50%,
     #3f51b5 100%
+  );
+  /* NOUVEAUX - Dégradés Havana */
+  --gradient-havana: linear-gradient(
+    90deg,
+    var(--havana-primary),
+    var(--havana-secondary)
+  );
+  --gradient-havana-night: linear-gradient(
+    90deg,
+    #ff7f50 0%,
+    #ffd700 35%,
+    #cd5c5c 70%,
+    #a0522d 100%
   );
 
   /* Layout */
@@ -107,6 +125,16 @@
   --ocean-cyan-core: #81d4fa;
   --ocean-cyan-outer: #4dd0e1;
   --ocean-deep: #3f51b5;
+
+  /* NOUVELLES - Variables Background Havana */
+  --havana-bg-0: #1a0f0f; /* Brun très foncé */
+  --havana-bg-55: #2f1b14; /* Brun chocolat */
+  --havana-bg-100: #3d2817; /* Terre de Sienne */
+  --havana-coral-core: #ff7f50; /* Coral */
+  --havana-coral-outer: #ff6347; /* Tomato */
+  --havana-gold-core: #ffd700; /* Gold */
+  --havana-gold-outer: #ffa500; /* Orange */
+  --havana-earth: #a0522d; /* SaddleBrown */
 
   /* Variables CSS pour le Logo - Thème par défaut (neon) */
   --logo-primary: #ff3fd1;
@@ -316,6 +344,21 @@ html {
     color: transparent;
   }
 
+  /* NOUVEAUX - Dégradés Havana */
+  .text-gradient-havana {
+    background: var(--gradient-havana);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-havana-night {
+    background: var(--gradient-havana-night);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
   /* Line clamp */
   .line-clamp-2 {
     display: -webkit-box;
@@ -502,6 +545,13 @@ html {
   --logo-accent: #3f51b5;
 }
 
+/* NOUVEAU - Thème Havana */
+.theme-havana {
+  --logo-primary: #ff7f50;
+  --logo-secondary: #ffd700;
+  --logo-accent: #a0522d;
+}
+
 /* Classes utilitaires pour forcer un thème */
 .logo-neon {
   --logo-primary: #ff3fd1;
@@ -520,6 +570,12 @@ html {
   --logo-primary: #70b2e0;
   --logo-secondary: #4dd0e1;
   --logo-accent: #3f51b5;
+}
+
+.logo-havana {
+  --logo-primary: #ff7f50;
+  --logo-secondary: #ffd700;
+  --logo-accent: #a0522d;
 }
 
 /* ============================================
