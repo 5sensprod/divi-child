@@ -18,7 +18,7 @@ const ProductFilter = forwardRef(
       className = "",
       showTitle = true,
       title = "Rechercher et filtrer",
-      initialLoading = false, // ✅ Prop pour gérer le loading initial
+      initialLoading = false,
     },
     ref
   ) => {
@@ -26,8 +26,8 @@ const ProductFilter = forwardRef(
     const [displayProducts, setDisplayProducts] = useState(initialProducts);
 
     const {
-      query,
-      filters,
+      query = "", // 🔧 Valeur par défaut pour éviter undefined
+      filters = {}, // 🔧 Objet par défaut pour éviter undefined
       results,
       loading,
       error,
@@ -113,9 +113,11 @@ const ProductFilter = forwardRef(
                 <SearchIcon className="text-gray-400 ml-4" size={20} />
                 <input
                   type="text"
+                  value="" // 🔧 Valeur contrôlée même en loading
                   placeholder="Rechercher des instruments, accessoires..."
                   className="flex-1 p-4 text-lg outline-none bg-transparent placeholder-gray-500 rounded-xl"
                   disabled
+                  readOnly // 🔧 Ajout de readOnly pour éviter les warnings
                 />
               </div>
             </div>
@@ -159,7 +161,7 @@ const ProductFilter = forwardRef(
               <SearchIcon className="text-gray-400 ml-4" size={20} />
               <input
                 type="text"
-                value={query}
+                value={query || ""} // 🔧 Fallback vers string vide si query est undefined
                 onChange={(e) => updateQuery(e.target.value)}
                 placeholder="Rechercher des instruments, accessoires..."
                 className="flex-1 p-4 text-lg outline-none bg-transparent placeholder-gray-500 rounded-xl"
@@ -185,7 +187,7 @@ const ProductFilter = forwardRef(
               onFiltersChange={updateFilters}
               onResetFilters={resetFilters}
               hasActiveFilters={hasActiveFilters}
-              simplified={false} // ✅ Mode complet avec bouton pliable
+              simplified={false}
             />
           </div>
         </div>
