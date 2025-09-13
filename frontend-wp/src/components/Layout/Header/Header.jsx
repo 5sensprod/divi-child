@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { useWordPress } from "../../../context/WordPressContext";
 import { HEADER_CONFIG, getCurrentTheme } from "../../../config/components";
 import Navigation from "../Navigation";
-import HeroBackground from "./HeroBackground";
+import Background from "../../UI/Background";
 import HeroSlider from "./HeroSlider";
-import Search from "../../Search/Search"; // Import de la modal
+import Search from "../../Search/Search";
 
 const Header = ({ showHero = false }) => {
   const { siteData, menus, loading } = useWordPress();
   const [currentTheme, setCurrentTheme] = useState("neon");
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // État pour la modal
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [currentSlideTheme, setCurrentSlideTheme] = useState("neon"); // État pour le thème de la slide
 
   // Écouter les changements de thème depuis le HeroSlider
   useEffect(() => {
@@ -27,24 +28,42 @@ const Header = ({ showHero = false }) => {
       attributeFilter: ["style"],
     });
 
-    // Alternative: écouter les changements de variables CSS
+    // Alternative: écouter les changements de variables CSS avec détection améliorée
     const handleThemeChange = () => {
-      const gradient = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--current-gradient");
+      const gradient = getComputedStyle(document.documentElement)
+        .getPropertyValue("--current-gradient")
+        .trim();
 
-      if (gradient.includes("var(--gradient-primary)")) {
-        setCurrentTheme("neon");
-      } else if (gradient.includes("var(--gradient-warm)")) {
-        setCurrentTheme("sunset");
+      // Amélioration de la détection des thèmes
+      if (gradient.includes("var(--gradient-warm)")) {
+        setCurrentSlideTheme("sunset");
+      } else if (gradient.includes("var(--gradient-ocean)")) {
+        setCurrentSlideTheme("oceanNight");
+      } else if (gradient.includes("var(--gradient-havana)")) {
+        setCurrentSlideTheme("havana");
+      } else {
+        setCurrentSlideTheme("neon");
       }
+
+      console.log(
+        "🎭 Header détecte thème:",
+        gradient,
+        "→",
+        gradient.includes("var(--gradient-warm)")
+          ? "sunset"
+          : gradient.includes("var(--gradient-ocean)")
+          ? "oceanNight"
+          : gradient.includes("var(--gradient-havana)")
+          ? "havana"
+          : "neon"
+      );
     };
 
     // Vérifier le thème initial
     handleThemeChange();
 
-    // Écouter les changements de propriétés CSS
-    const interval = setInterval(handleThemeChange, 100);
+    // Écouter les changements de propriétés CSS plus fréquemment
+    const interval = setInterval(handleThemeChange, 200);
 
     return () => {
       observer.disconnect();
@@ -77,7 +96,15 @@ const Header = ({ showHero = false }) => {
 
   return (
     <header className="relative">
-      {showHero && <HeroBackground />}
+      {/* Background dynamique qui reçoit le thème directement */}
+      {showHero && (
+        <Background
+          currentSlideTheme={currentSlideTheme}
+          animated={true}
+          opacity={1}
+          className="z-0"
+        />
+      )}
 
       <div className="z-navigation sticky top-0">
         <Navigation
@@ -85,7 +112,7 @@ const Header = ({ showHero = false }) => {
           siteTitle={siteData?.site_title || HEADER_CONFIG.defaults.siteTitle}
           loading={loading.menus}
           currentTheme={currentTheme}
-          onSearchClick={handleSearchOpen} // Passer le gestionnaire à Navigation
+          onSearchClick={handleSearchOpen}
           {...HEADER_CONFIG.navigation}
         />
       </div>

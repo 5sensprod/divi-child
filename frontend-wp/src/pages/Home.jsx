@@ -6,6 +6,7 @@ import CategoryGrid from "../components/categorie/CategoryGrid";
 import Title from "../components/UI/Title";
 import AnimatedStats from "../components/UI/AnimatedStats";
 import CTASection from "../components/UI/CTASection";
+import Background from "../components/UI/Background"; // Import du nouveau composant
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
@@ -23,21 +24,32 @@ const Home = () => {
       console.error("❌ ProductFilter ref non disponible");
     }
   };
+
   return (
     <div>
-      {/* Catégories populaires - Utilisation des vraies catégories WooCommerce */}
-      <section id="boutique" className="py-14 bg-white">
-        <div className="container-divi">
+      {/* Catégories populaires - Avec fond Background */}
+      <section
+        id="boutique"
+        className="py-14 relative overflow-hidden min-h-[400px]"
+      >
+        {/* Fond avec variante boutique */}
+        <Background variant="boutique" opacity={0.95} animated={true} />
+
+        {/* Overlay optionnel pour améliorer le contraste */}
+        {/* <div className="absolute inset-0 bg-gradient-to-b from-gray-900/10 via-transparent to-gray-900/20 pointer-events-none z-[1]" /> */}
+
+        {/* Contenu principal */}
+        <div className="container-divi relative z-10">
           <div className="text-center mb-14">
             <Title
               tag="h2"
-              className="mb-1"
+              className="mb-1 text-gray-800 drop-shadow-sm"
               animationType="equalizer"
               gradient="default"
             >
               La boutique
             </Title>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-700 max-w-2xl mx-auto drop-shadow-sm">
               Découvrez notre sélection d'instruments organisée par catégories
             </p>
           </div>
@@ -67,43 +79,16 @@ const Home = () => {
             >
               Notre sélection
             </Title>
-            {/* <p className="text-lg text-gray-600">
-              Notre sélection des meilleurs instruments
-            </p> */}
           </div>
 
           {/* Nouveau composant ProductFilter qui remplace ProductGrid */}
           <ProductFilter
             ref={productFilterRef}
             initialProducts={products.slice(0, 8)}
-            initialLoading={loading.products} // ✅ Ajoutez cette ligne
+            initialLoading={loading.products}
             showTitle={false}
             className="mb-12"
           />
-
-          {/* Bouton centré sous les produits */}
-          {/* <div className="text-center mt-12">
-            <Link
-              to="/boutique"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300"
-            >
-              <span className="hidden md:inline">Voir tout le catalogue</span>
-              <span className="md:hidden">Voir tout</span>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
-          </div> */}
         </div>
       </section>
 
