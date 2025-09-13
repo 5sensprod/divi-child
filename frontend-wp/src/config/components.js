@@ -113,7 +113,7 @@ export const HEADER_CONFIG = {
       {
         title: "PARTOUT OÙ LA MUSIQUE VOUS MÈNE",
         description:
-          "Conservatoire, garage entre amis, scène prestigieuse ou studio d'enregistrement... Quel que soit votre univers musical, nous vous équipons pour donner le meilleur de vous-même.",
+          "Conservatoire, scène prestigieuse ou studio d'enregistrement... Quel que soit votre univers musical, nous vous équipons pour donner le meilleur de vous-même.",
         image: "/assets/images/Hero_forest_-min.webp",
         theme: "oceanNight",
       },

@@ -1,5 +1,6 @@
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
 import { cacheUtils, CACHE_KEYS } from "../utils/cache";
+import { enrichCategoriesWithOptimizedImages } from "./mediaService";
 
 // Configuration WooCommerce
 const createWooCommerceAPI = () => {
@@ -95,10 +96,11 @@ export const getCategories = async () => {
   }
 };
 
-// Service pour récupérer UNIQUEMENT les catégories PARENTES AVEC CACHE
-export const getParentCategories = async () => {
+export const getParentCategories = async (withOptimizedImages = false) => {
   try {
-    const parentCategoriesCacheKey = `${CACHE_KEYS.CATEGORIES}_parent`;
+    const parentCategoriesCacheKey = `${CACHE_KEYS.CATEGORIES}_parent${
+      withOptimizedImages ? "_optimized" : ""
+    }`;
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       const cached = cacheUtils.get(parentCategoriesCacheKey);
@@ -119,12 +121,9 @@ export const getParentCategories = async () => {
     });
 
     // Tri supplémentaire côté client si nécessaire
-    const sortedCategories = response.data.sort((a, b) => {
+    let sortedCategories = response.data.sort((a, b) => {
       // Tri par ID (ordre de création)
       return a.id - b.id;
-
-      // OU tri par date de création si disponible
-      // return new Date(a.date_created) - new Date(b.date_created);
     });
 
     console.log("=== CATÉGORIES PARENTES TRIÉES ===");
@@ -136,6 +135,20 @@ export const getParentCategories = async () => {
         }`
       );
     });
+
+    // NOUVEAU: Enrichir avec les images optimisées si demandé
+    if (withOptimizedImages) {
+      try {
+        console.log("🖼️ Enrichissement avec images optimisées...");
+        sortedCategories = await enrichCategoriesWithOptimizedImages(
+          sortedCategories
+        );
+        console.log("✅ Images optimisées ajoutées");
+      } catch (error) {
+        console.warn("⚠️ Erreur enrichissement images:", error.message);
+        // Continue avec les catégories sans optimisation
+      }
+    }
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       cacheUtils.set(parentCategoriesCacheKey, sortedCategories);
@@ -154,11 +167,15 @@ export const getParentCategories = async () => {
   }
 };
 
-// Alternative : Filtrer côté client (si l'API ne supporte pas parent: 0) AVEC CACHE
-export const getParentCategoriesFiltered = async () => {
+// De même pour getParentCategoriesFiltered
+export const getParentCategoriesFiltered = async (
+  withOptimizedImages = false
+) => {
   try {
     // Créer une clé de cache spécifique pour les catégories parentes filtrées
-    const filteredCacheKey = `${CACHE_KEYS.CATEGORIES}_parent_filtered`;
+    const filteredCacheKey = `${CACHE_KEYS.CATEGORIES}_parent_filtered${
+      withOptimizedImages ? "_optimized" : ""
+    }`;
 
     // Vérifier le cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
@@ -174,13 +191,28 @@ export const getParentCategoriesFiltered = async () => {
     const allCategories = await getCategories();
 
     // Filtrer les catégories parentes (parent === 0)
-    const parentCategories = allCategories.filter(
+    let parentCategories = allCategories.filter(
       (category) => category.parent === 0
     );
 
     console.log("=== CATÉGORIES PARENTES (FILTRÉES) ===");
     console.log("Nombre total de catégories:", allCategories.length);
     console.log("Nombre de catégories parentes:", parentCategories.length);
+
+    // NOUVEAU: Enrichir avec les images optimisées si demandé
+    if (withOptimizedImages) {
+      try {
+        console.log("🖼️ Enrichissement avec images optimisées...");
+        parentCategories = await enrichCategoriesWithOptimizedImages(
+          parentCategories
+        );
+        console.log("✅ Images optimisées ajoutées");
+      } catch (error) {
+        console.warn("⚠️ Erreur enrichissement images:", error.message);
+        // Continue avec les catégories sans optimisation
+      }
+    }
+
     console.log("Catégories parentes:", parentCategories);
 
     // Sauvegarder en cache si activé
@@ -199,6 +231,31 @@ export const getParentCategoriesFiltered = async () => {
     }
     throw error;
   }
+};
+
+// Fonction utilitaire pour vider le cache (à ajouter à tes fonctions existantes)
+export const clearOptimizedCategoriesCache = () => {
+  // Vider les anciens caches
+  clearCategoriesCache();
+
+  // Vider aussi les nouveaux caches optimisés
+  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_optimized`);
+  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered_optimized`);
+
+  // Vider le cache des médias
+  try {
+    const keys = Object.keys(localStorage);
+    keys.forEach((key) => {
+      if (key.startsWith("wp_media_")) {
+        localStorage.removeItem(key);
+      }
+    });
+    console.log("🧹 Cache des médias nettoyé");
+  } catch (error) {
+    console.warn("Erreur nettoyage cache médias:", error);
+  }
+
+  console.log("🧹 Cache complet nettoyé (catégories + médias optimisés)");
 };
 
 // Service pour récupérer un produit spécifique
