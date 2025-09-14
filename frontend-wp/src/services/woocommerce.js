@@ -1,5 +1,5 @@
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
-import { cacheUtils, CACHE_KEYS } from "../utils/cache";
+import { cacheUtils, CACHE_KEYS, CACHE_DURATIONS } from "../utils/cache";
 
 // Configuration WooCommerce
 const createWooCommerceAPI = () => {
@@ -249,6 +249,17 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
 // Service pour récupérer les produits par catégorie
 export const getProductsByCategory = async (categoryId, params = {}) => {
   try {
+    const cacheKey = `axemusique_category_${categoryId}_simple`;
+
+    // Vérifier le cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products", {
       category: categoryId,
@@ -256,6 +267,11 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
       status: "publish",
       ...params,
     });
+
+    // Sauvegarder en cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.setWithTTL(cacheKey, response.data, CACHE_DURATIONS.DEFAULT);
+    }
 
     return response.data;
   } catch (error) {
@@ -268,13 +284,11 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
     throw error;
   }
 };
-
 // Fonction utilitaire pour vider le cache des catégories
 export const clearCategoriesCache = () => {
   cacheUtils.remove(CACHE_KEYS.CATEGORIES);
   cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent`);
   cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);
-  console.log("Cache des catégories vidé");
 };
 
 export const getTotalProductsCount = async () => {

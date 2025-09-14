@@ -122,6 +122,7 @@ export const CACHE_KEYS = {
   MENU: "axemusique_menu",
   CATEGORIES: "axemusique_categories",
   SITE_DATA: "axemusique_site_data",
+  PRODUCTS: "axemusique_products",
   // Nouveaux keys pour la recherche
   SEARCH_PREFIX: "axemusique_search_", // Préfixe pour les recherches
   RECENT_SEARCHES: "axemusique_recent_searches", // Historique des recherches
