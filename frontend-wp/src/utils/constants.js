@@ -4,7 +4,8 @@ export const API_CONFIG = {
     import.meta.env.VITE_WP_API_URL || "https://axemusique.shop/wp-json/wp/v2",
   siteURL: import.meta.env.VITE_WP_SITE_URL || "https://axemusique.shop",
   timeout: 30000,
-  isDevMode: import.meta.env.VITE_DEV_MODE === "true",
+  // Supprimé isDevMode - plus besoin
+  useReactCategories: import.meta.env.VITE_USE_REACT_CATEGORIES === "true",
   auth: {
     username: import.meta.env.VITE_WP_USER,
     password: import.meta.env.VITE_WP_APP_PASSWORD,

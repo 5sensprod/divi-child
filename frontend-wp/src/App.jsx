@@ -4,6 +4,11 @@ import { WordPressProvider } from "./context/WordPressContext";
 import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
 import { ThemeProvider } from "./context/ThemeContext";
+import { API_CONFIG } from "./utils/constants";
+
+// Nouvelles pages React pour les catégories (à créer)
+import CategoryPage from "./pages/CategoryPage";
+import ShopPage from "./pages/ShopPage";
 
 // Composant de redirection optimisé
 const RedirectToWordPress = () => {
@@ -41,12 +46,16 @@ const useWordPressRedirect = () => {
 
 const App = () => {
   useWordPressRedirect();
+  console.log(
+    `🎛️ React Categories: ${API_CONFIG.useReactCategories ? "ON" : "OFF"}`
+  );
 
   return (
     <WordPressProvider>
       <ThemeProvider initial="neon">
         <Router>
           <Routes>
+            {/* Page d'accueil - toujours React */}
             <Route
               path="/"
               element={
@@ -55,6 +64,50 @@ const App = () => {
                 </Layout>
               }
             />
+
+            {/* Pages catégories - conditionnel selon l'env */}
+            {API_CONFIG.useReactCategories ? (
+              <>
+                <Route
+                  path="/categorie-produit/:slug"
+                  element={
+                    <Layout>
+                      <CategoryPage />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/shop"
+                  element={
+                    <Layout>
+                      <ShopPage />
+                    </Layout>
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <Route
+                  path="/categorie-produit/*"
+                  element={<RedirectToWordPress />}
+                />
+                <Route path="/shop" element={<RedirectToWordPress />} />
+              </>
+            )}
+
+            {/* Autres routes spécifiques que vous voulez en React */}
+            {/* Par exemple si vous avez déjà une page contact en React :
+          <Route
+            path="/contact"
+            element={
+              <Layout>
+                <ContactPage />
+              </Layout>
+            }
+          />
+          */}
+
+            {/* Toutes les autres routes -> WordPress */}
             <Route path="*" element={<RedirectToWordPress />} />
           </Routes>
         </Router>

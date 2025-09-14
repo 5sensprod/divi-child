@@ -973,3 +973,7 @@ a:focus-visible {
     opacity: 1;
   }
 }
+/* Classe pour les pages avec header fixe */
+.page-content {
+  @apply pt-[150px] lg:pt-[200px];
+}

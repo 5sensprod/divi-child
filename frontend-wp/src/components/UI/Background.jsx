@@ -68,7 +68,6 @@ const Background = ({
   return (
     <>
       {/* Import du CSS avec les @property */}
-      <link rel="stylesheet" href="/styles/background-transitions.css" />
 
       <div
         ref={backgroundRef}

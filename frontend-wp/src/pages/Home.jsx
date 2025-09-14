@@ -31,7 +31,7 @@ const Home = () => {
       {/* HERO contrôlé par la page */}
       <section
         id="hero"
-        className="relative overflow-hidden min-h-[400px] pt-60 "
+        className="page-content relative overflow-hidden min-h-[400px]"
       >
         <Background variant="auto" opacity={1} animated={true} />
         <HeroSlider

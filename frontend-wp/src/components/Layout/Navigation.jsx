@@ -1,11 +1,12 @@
 // src/components/Layout/Navigation.jsx
-// Version corrigée avec redirection vers pages WordPress
+// Version mise à jour avec gestion des catégories React
 
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, ChevronDown } from "lucide-react";
 import { MenuSkeleton } from "../UI/LoadingSkeleton";
 import { HEADER_CONFIG } from "../../config/components";
+import { API_CONFIG } from "../../utils/constants"; // Import de votre config
 import AxeLogo from "../UI/AxeLogo";
 
 const Navigation = ({
@@ -17,11 +18,9 @@ const Navigation = ({
   cartCount = HEADER_CONFIG.navigation.cartCount,
   scrollThreshold = HEADER_CONFIG.navigation.scrollThreshold,
   currentTheme = "neon",
-  onSearchClick, // ← AJOUTER CETTE LIGNE
+  onSearchClick,
 }) => {
   const location = useLocation();
-  const isHome = location.pathname === "/";
-  const shouldAddSpacer = !isHome;
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState(new Set());
@@ -58,20 +57,18 @@ const Navigation = ({
   // Close dropdowns on outside click
   useEffect(() => {
     const handleOutsideClick = (event) => {
-      // Si on clique en dehors du menu de navigation
       if (!event.target.closest(".nav-dropdown-container")) {
         setOpenDropdowns(new Set());
       }
     };
 
-    // Ajouter l'écouteur seulement si des dropdowns sont ouverts
     if (openDropdowns.size > 0) {
       document.addEventListener("click", handleOutsideClick);
       return () => document.removeEventListener("click", handleOutsideClick);
     }
   }, [openDropdowns]);
 
-  // Build menu structure - Version récursive pour tous les niveaux
+  // Build menu structure
   const organizedMenu = useMemo(() => {
     if (!menuItems?.length) return [];
 
@@ -87,18 +84,55 @@ const Navigation = ({
     return buildMenuTree();
   }, [menuItems]);
 
-  // Déterminer si c'est une route React ou WordPress
+  // ✨ NOUVELLE LOGIQUE : Déterminer si c'est une route React
   const isReactRoute = (url) => {
-    return url === "/" || url === "" || url === "#";
+    // Routes toujours React
+    if (url === "/" || url === "" || url === "#") return true;
+
+    // Si les catégories React sont activées
+    if (API_CONFIG.useReactCategories) {
+      // Vérifier si c'est une URL de catégorie WooCommerce (CORRIGÉ avec vos vraies URLs)
+      if (url.includes("/categorie-produit/") || url.includes("/shop")) {
+        return true;
+      }
+    }
+
+    // Autres routes spécifiques React
+    const reactRoutes = ["/contact", "/about", "/mentions-legales"];
+    return reactRoutes.some((route) => url.includes(route));
+  };
+
+  // ✨ NOUVELLE FONCTION : Convertir URL WordPress vers React
+  const convertToReactUrl = (url) => {
+    // Page d'accueil
+    if (url === "/" || url === "" || url === "#") return "/";
+
+    // Si les catégories React sont activées
+    if (API_CONFIG.useReactCategories) {
+      // Convertir les URLs WordPress complètes en URLs React
+      if (url.includes("/categorie-produit/")) {
+        // Extraire le slug de catégorie depuis l'URL WordPress
+        // https://axemusique.shop/categorie-produit/guitares-electriques/ -> /product-category/guitares-electriques
+        const match = url.match(/\/categorie-produit\/([^\/]+)/);
+        if (match) {
+          return `/categorie-produit/${match[1]}`;
+        }
+      }
+      if (url.includes("/shop")) {
+        return "/shop";
+      }
+    }
+
+    return url;
   };
 
   const isActive = (path) => location.pathname === path;
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
   const toggleDropdown = (itemId) => {
     setOpenDropdowns((prev) => {
       const newSet = new Set(prev);
 
-      // Trouver l'item correspondant
       const findItem = (items, id) => {
         for (const item of items) {
           if (item.id === id) return item;
@@ -113,16 +147,13 @@ const Navigation = ({
       const clickedItem = findItem(organizedMenu, itemId);
       if (!clickedItem) return newSet;
 
-      // Si c'est un item de niveau 1 (parent = "0")
       if (clickedItem.parent === "0") {
-        // Fermer tous les autres dropdowns de niveau 1
         const level1Items = organizedMenu.map((item) => item.id);
         level1Items.forEach((id) => {
           if (id !== itemId) newSet.delete(id);
         });
       }
 
-      // Toggle l'item cliqué
       if (newSet.has(itemId)) {
         newSet.delete(itemId);
       } else {
@@ -133,7 +164,7 @@ const Navigation = ({
     });
   };
 
-  // Classes dynamiques depuis la config
+  // Classes dynamiques
   const navClasses = `fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${
     isScrolled
       ? `${navigation.styles.background.scrolled} ${navigation.styles.padding.scrolled}`
@@ -150,13 +181,11 @@ const Navigation = ({
 
       <nav className={navClasses}>
         <div className="container-divi">
-          {/* NAV BAR: grid 3 colonnes */}
           <div
             className={`grid items-center gap-4 ${heightClasses} grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
           >
-            {/* GAUCHE – Burger (mobile) + Logo desktop */}
+            {/* GAUCHE — Burger (mobile) + Logo desktop */}
             <div className="flex items-center justify-start">
-              {/* Burger MOBILE */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className={`lg:hidden text-white/90 hover:text-pink-300 hover:bg-white/10 rounded-lg transition-all active:scale-95 ${
@@ -171,7 +200,6 @@ const Navigation = ({
                 )}
               </button>
 
-              {/* Logo DESKTOP */}
               <Link to="/" className="hidden lg:flex flex-shrink-0">
                 <AxeLogo
                   theme={currentTheme}
@@ -183,9 +211,8 @@ const Navigation = ({
               </Link>
             </div>
 
-            {/* CENTRE – Logo mobile (centré) / Menu desktop */}
+            {/* CENTRE — Logo mobile / Menu desktop */}
             <div className="justify-self-center lg:justify-self-stretch flex items-center">
-              {/* Logo MOBILE centré */}
               <Link to="/" className="lg:hidden block" aria-label="Accueil">
                 <AxeLogo
                   theme={currentTheme}
@@ -195,7 +222,6 @@ const Navigation = ({
                 />
               </Link>
 
-              {/* Menu DESKTOP */}
               <div className="hidden lg:flex items-center justify-center flex-1 space-x-4 nav-dropdown-container">
                 {loading ? (
                   <MenuSkeleton />
@@ -206,6 +232,7 @@ const Navigation = ({
                       item={item}
                       isActive={isActive}
                       isReactRoute={isReactRoute}
+                      convertToReactUrl={convertToReactUrl}
                       openDropdowns={openDropdowns}
                       toggleDropdown={toggleDropdown}
                     />
@@ -214,7 +241,7 @@ const Navigation = ({
               </div>
             </div>
 
-            {/* DROITE – Actions */}
+            {/* DROITE — Actions */}
             <div className="flex items-center justify-end space-x-3">
               {showSearch && (
                 <ActionButton
@@ -235,13 +262,14 @@ const Navigation = ({
           menuItems={organizedMenu}
           loading={loading}
           isReactRoute={isReactRoute}
+          convertToReactUrl={convertToReactUrl}
           isActive={isActive}
           onClose={closeMobileMenu}
           siteTitle={siteTitle}
           config={navigation.mobileMenu}
           currentTheme={currentTheme}
-          onSearchClick={onSearchClick} // ← AJOUTER CETTE LIGNE
-          showSearch={showSearch} // ← AJOUTER CETTE LIGNE
+          onSearchClick={onSearchClick}
+          showSearch={showSearch}
         />
       )}
     </>
@@ -274,14 +302,15 @@ const CartButton = ({ count }) => (
   </button>
 );
 
-// Desktop menu item component - VERSION RÉCURSIVE
+// ✨ CORRECTION : DesktopMenuItem modifié
 const DesktopMenuItem = ({
   item,
   isActive,
   isReactRoute,
+  convertToReactUrl, // ← Cette prop existe déjà
   openDropdowns,
   toggleDropdown,
-  level = 1, // Niveau de profondeur
+  level = 1,
 }) => {
   const hasChildren = item.children?.length > 0;
   const isDropdownOpen = openDropdowns.has(item.id);
@@ -289,12 +318,13 @@ const DesktopMenuItem = ({
   // Item sans enfants
   if (!hasChildren) {
     if (isReactRoute(item.url)) {
-      const path = item.url === "#" ? "/" : item.url;
+      // ✅ CORRECTION : Utiliser convertToReactUrl au lieu de l'URL originale
+      const reactPath = convertToReactUrl(item.url);
       return (
         <Link
-          to={path}
+          to={reactPath}
           className={`nav-link ${
-            isActive(path) ? "nav-link-active" : "nav-link-inactive"
+            isActive(reactPath) ? "nav-link-active" : "nav-link-inactive"
           }`}
         >
           {item.title}
@@ -313,7 +343,7 @@ const DesktopMenuItem = ({
     );
   }
 
-  // Item avec enfants - gérer différents niveaux
+  // Item avec enfants - reste identique
   return (
     <div className="relative">
       <button
@@ -342,6 +372,7 @@ const DesktopMenuItem = ({
               key={child.id}
               item={child}
               isReactRoute={isReactRoute}
+              convertToReactUrl={convertToReactUrl} // ← Passer la fonction
               isActive={isActive}
               openDropdowns={openDropdowns}
               toggleDropdown={toggleDropdown}
@@ -355,10 +386,11 @@ const DesktopMenuItem = ({
   );
 };
 
-// Composant pour les items enfants du dropdown - VERSION RÉCURSIVE
+// ✨ CORRECTION : DropdownChildItem modifié
 const DropdownChildItem = ({
   item,
   isReactRoute,
+  convertToReactUrl, // ← Ajouter cette prop
   isActive,
   openDropdowns,
   toggleDropdown,
@@ -373,9 +405,10 @@ const DropdownChildItem = ({
   // Item sans enfants
   if (!hasChildren) {
     if (isReactRoute(item.url)) {
-      const path = item.url === "#" ? "/" : item.url;
+      // ✅ CORRECTION : Utiliser convertToReactUrl
+      const reactPath = convertToReactUrl(item.url);
       return (
-        <Link to={path} className={commonClasses} onClick={onClose}>
+        <Link to={reactPath} className={commonClasses} onClick={onClose}>
           <span className={level > 2 ? "ml-4" : ""}>{item.title}</span>
         </Link>
       );
@@ -392,7 +425,7 @@ const DropdownChildItem = ({
     );
   }
 
-  // Item avec enfants - créer un sous-menu
+  // Item avec enfants - crée un sous-menu
   return (
     <div className="relative">
       <button
@@ -417,6 +450,7 @@ const DropdownChildItem = ({
               key={child.id}
               item={child}
               isReactRoute={isReactRoute}
+              convertToReactUrl={convertToReactUrl} // ← Passer la fonction
               isActive={isActive}
               openDropdowns={openDropdowns}
               toggleDropdown={toggleDropdown}
@@ -430,20 +464,20 @@ const DropdownChildItem = ({
   );
 };
 
-// Menu mobile corrigé - UTILISE MAINTENANT LE MÊME SYSTÈME QUE LE DESKTOP
+// ✨ COMPOSANT MOBILE MENU MANQUANT
 const MobileMenu = ({
   menuItems,
   loading,
   isReactRoute,
+  convertToReactUrl,
   isActive,
   onClose,
   siteTitle,
   config,
   currentTheme,
-  onSearchClick, // ← AJOUTER
-  showSearch, // ← AJOUTER
+  onSearchClick,
+  showSearch,
 }) => {
-  // CHANGEMENT PRINCIPAL: utiliser un Set au lieu d'un simple state
   const [openMobileMenus, setOpenMobileMenus] = useState(new Set());
 
   const toggleMobileSubmenu = (itemId) => {
@@ -501,6 +535,7 @@ const MobileMenu = ({
                   key={item.id}
                   item={item}
                   isReactRoute={isReactRoute}
+                  convertToReactUrl={convertToReactUrl}
                   isActive={isActive}
                   onClose={onClose}
                   openMobileMenus={openMobileMenus}
@@ -515,10 +550,11 @@ const MobileMenu = ({
   );
 };
 
-// Mobile menu item component - VERSION CORRIGÉE AVEC SET
+// ✨ CORRECTION : MobileMenuItem modifié
 const MobileMenuItem = ({
   item,
   isReactRoute,
+  convertToReactUrl, // ← Ajouter cette prop
   isActive,
   onClose,
   openMobileMenus,
@@ -534,12 +570,13 @@ const MobileMenuItem = ({
     const commonClasses = `mobile-menu-item ${indentClass}`;
 
     if (isReactRoute(item.url)) {
-      const path = item.url === "#" ? "/" : item.url;
+      // ✅ CORRECTION : Utiliser convertToReactUrl
+      const reactPath = convertToReactUrl(item.url);
       return (
         <Link
-          to={path}
+          to={reactPath}
           className={`${commonClasses} ${
-            isActive(path)
+            isActive(reactPath)
               ? "mobile-menu-item-active"
               : "mobile-menu-item-inactive"
           }`}
@@ -586,6 +623,7 @@ const MobileMenuItem = ({
               key={child.id}
               item={child}
               isReactRoute={isReactRoute}
+              convertToReactUrl={convertToReactUrl} // ← Passer la fonction
               isActive={isActive}
               onClose={onClose}
               openMobileMenus={openMobileMenus}
