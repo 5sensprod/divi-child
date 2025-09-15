@@ -1,14 +1,165 @@
-// src/components/Layout/Navigation.jsx
-// Version mise à jour avec gestion des catégories React
-
-import { useState, useEffect, useMemo } from "react";
+// src/components/Layout/Navigation.jsx - Version avec Portal React
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, ChevronDown } from "lucide-react";
 import { MenuSkeleton } from "../UI/LoadingSkeleton";
 import { HEADER_CONFIG } from "../../config/components";
-import { API_CONFIG } from "../../utils/constants"; // Import de votre config
+import { API_CONFIG } from "../../utils/constants";
 import AxeLogo from "../UI/AxeLogo";
+import SmartMegaMenu from "../menu/SmartMegaMenu";
 
+// Composant principal DesktopMenuItemWithMega modifié pour utiliser le Portal
+const DesktopMenuItemWithMega = ({
+  item,
+  isActive,
+  isReactRoute,
+  convertToReactUrl,
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [allCategories, setAllCategories] = useState([]);
+  const menuItemRef = useRef(null);
+  const hoverTimeoutRef = useRef(null); // ✅ Timeout pour éviter les fermetures accidentelles
+
+  // Charger toutes les catégories
+  useEffect(() => {
+    const loadAllCategories = async () => {
+      try {
+        const { getCategories } = await import("../../services/woocommerce");
+        const categories = await getCategories();
+        setAllCategories(categories);
+      } catch (error) {
+        console.error("Erreur chargement catégories:", error);
+      }
+    };
+
+    if (allCategories.length === 0) {
+      loadAllCategories();
+    }
+  }, []);
+
+  const shouldShowMegaMenu = () => {
+    if (item.menu_type === "container" && item.has_category_children) {
+      return "container_mega_menu";
+    }
+    if (item.menu_type === "category_with_children" && item.has_subcategories) {
+      return "category_mega_menu";
+    }
+    if ((!item.url || item.url === "#") && item.children?.length > 0) {
+      const hasCategories = item.children.some(
+        (child) => child.url && child.url.includes("/categorie-produit/")
+      );
+      if (hasCategories) return "container_simple";
+    }
+    if (item.children?.length > 0) {
+      return "simple_dropdown";
+    }
+    return false;
+  };
+
+  const megaMenuType = shouldShowMegaMenu();
+
+  // ✅ FONCTIONS DE GESTION DU HOVER AMÉLIORÉES
+  const handleMouseEnter = () => {
+    // Annuler tout timeout de fermeture en cours
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    // Délai avant fermeture pour permettre le passage de la souris
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 150); // 150ms de délai
+  };
+
+  const handleMenuMouseEnter = () => {
+    // Annuler la fermeture si on entre dans le menu
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMenuMouseLeave = () => {
+    // Fermeture immédiate si on quitte le menu
+    setIsHovered(false);
+  };
+
+  // Nettoyer les timeouts au démontage
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Item sans enfants - lien simple
+  if (!megaMenuType) {
+    if (isReactRoute(item.url)) {
+      const reactPath = convertToReactUrl(item.url);
+      return (
+        <Link
+          to={reactPath}
+          className={`nav-link ${
+            isActive(reactPath) ? "nav-link-active" : "nav-link-inactive"
+          }`}
+        >
+          {item.title}
+        </Link>
+      );
+    }
+
+    return (
+      <a
+        href={item.url}
+        className="nav-link nav-link-inactive"
+        target={item.target || "_self"}
+      >
+        {item.title}
+      </a>
+    );
+  }
+
+  // Item avec méga menu
+  return (
+    <>
+      <div
+        ref={menuItemRef}
+        className="relative group"
+        onMouseEnter={handleMouseEnter} // ✅ Utiliser les nouvelles fonctions
+        onMouseLeave={handleMouseLeave} // ✅ Utiliser les nouvelles fonctions
+      >
+        <div className="nav-link nav-link-inactive flex items-center space-x-1 cursor-pointer">
+          <span>{item.title}</span>
+          <ChevronDown
+            size={16}
+            className={`transition-transform duration-200 ${
+              isHovered ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+      </div>
+
+      {/* Méga menu avec gestion du hover */}
+      <SmartMegaMenu
+        isVisible={isHovered}
+        triggerRef={menuItemRef}
+        type={megaMenuType}
+        data={item}
+        onClose={() => setIsHovered(false)}
+        convertToReactUrl={convertToReactUrl}
+        onMouseEnter={handleMenuMouseEnter} // ✅ Passer les fonctions de hover
+        onMouseLeave={handleMenuMouseLeave} // ✅ Passer les fonctions de hover
+      />
+    </>
+  );
+};
+// Composant Navigation principal (reste identique sauf le DesktopMenuItemWithMega)
 const Navigation = ({
   menuItems = [],
   siteTitle = HEADER_CONFIG.defaults.siteTitle,
@@ -23,9 +174,33 @@ const Navigation = ({
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [openDropdowns, setOpenDropdowns] = useState(new Set());
+  const [megaMenuData, setMegaMenuData] = useState([]);
+  const [megaMenuLoading, setMegaMenuLoading] = useState(false);
 
   const { navigation } = HEADER_CONFIG;
+
+  // Charger les données du méga menu
+  useEffect(() => {
+    const loadMegaMenuData = async () => {
+      if (menuItems?.length > 0 && megaMenuData.length === 0) {
+        setMegaMenuLoading(true);
+        try {
+          const { buildMegaMenuData } = await import(
+            "../../services/woocommerce"
+          );
+          const enrichedData = await buildMegaMenuData(menuItems);
+          setMegaMenuData(enrichedData);
+        } catch (error) {
+          console.error("Erreur chargement méga menu:", error);
+          setMegaMenuData(menuItems);
+        } finally {
+          setMegaMenuLoading(false);
+        }
+      }
+    };
+
+    loadMegaMenuData();
+  }, [menuItems]);
 
   // Scroll detection
   useEffect(() => {
@@ -54,26 +229,13 @@ const Navigation = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [mobileMenuOpen]);
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (!event.target.closest(".nav-dropdown-container")) {
-        setOpenDropdowns(new Set());
-      }
-    };
-
-    if (openDropdowns.size > 0) {
-      document.addEventListener("click", handleOutsideClick);
-      return () => document.removeEventListener("click", handleOutsideClick);
-    }
-  }, [openDropdowns]);
-
   // Build menu structure
   const organizedMenu = useMemo(() => {
-    if (!menuItems?.length) return [];
+    const dataToUse = megaMenuData.length > 0 ? megaMenuData : menuItems;
+    if (!dataToUse?.length) return [];
 
     const buildMenuTree = (parentId = "0") => {
-      return menuItems
+      return dataToUse
         .filter((item) => item.parent === parentId.toString())
         .map((item) => ({
           ...item,
@@ -82,87 +244,39 @@ const Navigation = ({
     };
 
     return buildMenuTree();
-  }, [menuItems]);
+  }, [menuItems, megaMenuData]);
 
-  // ✨ NOUVELLE LOGIQUE : Déterminer si c'est une route React
+  // Fonctions utilitaires
   const isReactRoute = (url) => {
-    // Routes toujours React
     if (url === "/" || url === "" || url === "#") return true;
-
-    // Si les catégories React sont activées
     if (API_CONFIG.useReactCategories) {
-      // Vérifier si c'est une URL de catégorie WooCommerce (CORRIGÉ avec vos vraies URLs)
       if (url.includes("/categorie-produit/") || url.includes("/shop")) {
         return true;
       }
     }
-
-    // Autres routes spécifiques React
     const reactRoutes = ["/contact", "/about", "/mentions-legales"];
     return reactRoutes.some((route) => url.includes(route));
   };
 
-  // ✨ NOUVELLE FONCTION : Convertir URL WordPress vers React
   const convertToReactUrl = (url) => {
-    // Page d'accueil
     if (url === "/" || url === "" || url === "#") return "/";
-
-    // Si les catégories React sont activées
     if (API_CONFIG.useReactCategories) {
-      // Convertir les URLs WordPress complètes en URLs React
       if (url.includes("/categorie-produit/")) {
-        // Extraire le slug de catégorie depuis l'URL WordPress
-        // https://axemusique.shop/categorie-produit/guitares-electriques/ -> /product-category/guitares-electriques
-        const match = url.match(/\/categorie-produit\/([^\/]+)/);
+        const match = url.match(/\/categorie-produit\/(.+?)(?:\/)?$/);
         if (match) {
-          return `/categorie-produit/${match[1]}`;
+          const fullPath = match[1];
+          return `/categorie-produit/${fullPath}`;
         }
       }
       if (url.includes("/shop")) {
         return "/shop";
       }
     }
-
     return url;
   };
 
   const isActive = (path) => location.pathname === path;
   const closeMobileMenu = () => setMobileMenuOpen(false);
-
-  const toggleDropdown = (itemId) => {
-    setOpenDropdowns((prev) => {
-      const newSet = new Set(prev);
-
-      const findItem = (items, id) => {
-        for (const item of items) {
-          if (item.id === id) return item;
-          if (item.children?.length > 0) {
-            const found = findItem(item.children, id);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-
-      const clickedItem = findItem(organizedMenu, itemId);
-      if (!clickedItem) return newSet;
-
-      if (clickedItem.parent === "0") {
-        const level1Items = organizedMenu.map((item) => item.id);
-        level1Items.forEach((id) => {
-          if (id !== itemId) newSet.delete(id);
-        });
-      }
-
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-
-      return newSet;
-    });
-  };
 
   // Classes dynamiques
   const navClasses = `fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${
@@ -177,8 +291,6 @@ const Navigation = ({
 
   return (
     <>
-      {/* Spacer pour menu fixe */}
-
       <nav className={navClasses}>
         <div className="container-divi">
           <div
@@ -222,19 +334,17 @@ const Navigation = ({
                 />
               </Link>
 
-              <div className="hidden lg:flex items-center justify-center flex-1 space-x-4 nav-dropdown-container">
-                {loading ? (
+              <div className="hidden lg:flex items-center justify-center flex-1 space-x-4">
+                {loading || megaMenuLoading ? (
                   <MenuSkeleton />
                 ) : (
                   organizedMenu.map((item) => (
-                    <DesktopMenuItem
+                    <DesktopMenuItemWithMega
                       key={item.id}
                       item={item}
                       isActive={isActive}
                       isReactRoute={isReactRoute}
                       convertToReactUrl={convertToReactUrl}
-                      openDropdowns={openDropdowns}
-                      toggleDropdown={toggleDropdown}
                     />
                   ))
                 )}
@@ -244,19 +354,33 @@ const Navigation = ({
             {/* DROITE — Actions */}
             <div className="flex items-center justify-end space-x-3">
               {showSearch && (
-                <ActionButton
-                  icon={Search}
-                  label="Recherche"
+                <button
                   onClick={onSearchClick}
-                />
+                  className="p-2 text-white/90 hover:text-pink-300 transition-colors"
+                  aria-label="Recherche"
+                >
+                  <Search size={20} />
+                </button>
               )}
-              {showCart && <CartButton count={cartCount} />}
+              {showCart && (
+                <button
+                  className="relative p-2 text-white/90 hover:text-pink-300 transition-colors"
+                  aria-label="Panier"
+                >
+                  <ShoppingCart size={20} />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Menu Mobile Overlay */}
+      {/* Menu Mobile Overlay - Gardez votre implémentation existante */}
       {mobileMenuOpen && (
         <MobileMenu
           menuItems={organizedMenu}
@@ -273,116 +397,6 @@ const Navigation = ({
         />
       )}
     </>
-  );
-};
-
-// Action Button component
-const ActionButton = ({ icon: Icon, label, onClick }) => (
-  <button
-    onClick={onClick} // ← AJOUTER CETTE LIGNE
-    className="p-2 text-white/90 hover:text-pink-300 transition-colors"
-    aria-label={label}
-  >
-    <Icon size={20} />
-  </button>
-);
-
-// Cart Button component
-const CartButton = ({ count }) => (
-  <button
-    className="relative p-2 text-white/90 hover:text-pink-300 transition-colors"
-    aria-label="Panier"
-  >
-    <ShoppingCart size={20} />
-    {count > 0 && (
-      <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-        {count > 99 ? "99+" : count}
-      </span>
-    )}
-  </button>
-);
-
-// ✨ CORRECTION : DesktopMenuItem modifié
-const DesktopMenuItem = ({
-  item,
-  isActive,
-  isReactRoute,
-  convertToReactUrl, // ← Cette prop existe déjà
-  openDropdowns,
-  toggleDropdown,
-  level = 1,
-}) => {
-  const hasChildren = item.children?.length > 0;
-  const isDropdownOpen = openDropdowns.has(item.id);
-
-  // Item sans enfants
-  if (!hasChildren) {
-    if (isReactRoute(item.url)) {
-      // ✅ CORRECTION : Utiliser convertToReactUrl au lieu de l'URL originale
-      const reactPath = convertToReactUrl(item.url);
-      return (
-        <Link
-          to={reactPath}
-          className={`nav-link ${
-            isActive(reactPath) ? "nav-link-active" : "nav-link-inactive"
-          }`}
-        >
-          {item.title}
-        </Link>
-      );
-    }
-
-    return (
-      <a
-        href={item.url}
-        className="nav-link nav-link-inactive"
-        target={item.target || "_self"}
-      >
-        {item.title}
-      </a>
-    );
-  }
-
-  // Item avec enfants - reste identique
-  return (
-    <div className="relative">
-      <button
-        onClick={() => toggleDropdown(item.id)}
-        className={`nav-link nav-link-inactive flex items-center space-x-1 ${
-          isDropdownOpen ? "text-pink-300" : ""
-        }`}
-      >
-        <span>{item.title}</span>
-        <ChevronDown
-          size={16}
-          className={`transition-transform duration-200 ${
-            isDropdownOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {isDropdownOpen && (
-        <div
-          className={`absolute top-full left-0 mt-2 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden z-dropdown animate-slide-down ${
-            level === 1 ? "w-64" : "w-56"
-          }`}
-        >
-          {item.children.map((child) => (
-            <DropdownChildItem
-              key={child.id}
-              item={child}
-              isReactRoute={isReactRoute}
-              convertToReactUrl={convertToReactUrl} // ← Passer la fonction
-              isActive={isActive}
-              openDropdowns={openDropdowns}
-              toggleDropdown={toggleDropdown}
-              onClose={() => toggleDropdown(null)}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
-    </div>
   );
 };
 

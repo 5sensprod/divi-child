@@ -247,14 +247,55 @@ export const getThemeStyle = (theme, property) => {
   );
 };
 
-// Fonction helper pour get current theme
-export const getCurrentTheme = () => {
-  const gradient = getComputedStyle(document.documentElement).getPropertyValue(
-    "--current-gradient"
-  );
-  return gradient.includes("var(--gradient-primary)") ? "neon" : "sunset";
+// NOUVELLE FONCTION: Pour définir le thème actuel
+export const setCurrentTheme = (themeName) => {
+  const theme = HEADER_CONFIG.themes[themeName];
+  if (!theme) {
+    console.warn(`Thème "${themeName}" non trouvé`);
+    return;
+  }
+
+  const root = document.documentElement;
+
+  // Définir la variable CSS pour identification
+  root.style.setProperty("--current-theme", themeName);
+
+  // Mettre à jour le gradient actuel
+  root.style.setProperty("--current-gradient", theme.gradient);
+
+  // Appliquer les variables du background SVG
+  applyBackgroundTheme(themeName);
+
+  console.log(`Thème "${themeName}" appliqué`);
 };
 
+// AMÉLIORATION: getCurrentTheme() plus robuste
+export const getCurrentTheme = () => {
+  // Méthode 1: Variable CSS directe (recommandée)
+  const currentTheme = getComputedStyle(document.documentElement)
+    .getPropertyValue("--current-theme")
+    .trim();
+
+  if (currentTheme && HEADER_CONFIG.themes[currentTheme]) {
+    return currentTheme;
+  }
+
+  // Méthode 2: Détecter via les classes du body
+  const bodyClasses = document.body.classList;
+  if (bodyClasses.contains("theme-oceanNight")) return "oceanNight";
+  if (bodyClasses.contains("theme-havana")) return "havana";
+  if (bodyClasses.contains("theme-sunset")) return "sunset";
+  if (bodyClasses.contains("theme-neon")) return "neon";
+
+  // Méthode 3: Détecter via l'URL ou un attribut data
+  const themeFromData = document.documentElement.getAttribute("data-theme");
+  if (themeFromData && HEADER_CONFIG.themes[themeFromData]) {
+    return themeFromData;
+  }
+
+  // Fallback par défaut
+  return "neon";
+};
 // Fonction helper pour appliquer les variables CSS du background SVG
 export const applyBackgroundTheme = (themeName) => {
   const theme = HEADER_CONFIG.themes[themeName] || HEADER_CONFIG.themes.neon;

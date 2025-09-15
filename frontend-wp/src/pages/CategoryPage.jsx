@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
-import { getProductsByCategory } from "../services/woocommerce";
+import { getProductsByCategory, getCategories } from "../services/woocommerce";
 import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
 
 const CategoryPage = () => {
-  const { slug } = useParams();
+  const params = useParams();
+  const fullPath = params["*"] || params.slug; // Capture le chemin complet avec le splat operator
   const { categories, loading, siteData } = useWordPress();
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState(null);
@@ -20,30 +21,77 @@ const CategoryPage = () => {
         setProductsLoading(true);
         setError(null);
 
-        console.log("🔍 Recherche catégorie:", slug);
+        console.log("🔍 Chemin complet reçu:", fullPath);
+
+        // Extraire le slug final du chemin
+        const pathSegments = fullPath
+          ? fullPath.split("/").filter(Boolean)
+          : [];
+        const finalSlug = pathSegments[pathSegments.length - 1] || fullPath;
+
+        console.log("📂 Segments du chemin:", pathSegments);
+        console.log("🎯 Slug final à rechercher:", finalSlug);
         console.log(
-          "📂 Catégories disponibles depuis le contexte:",
+          "📋 Catégories disponibles depuis le contexte:",
           categories
         );
 
-        // 1. Chercher la catégorie dans les données du contexte
-        const matchingCategory = categories.find(
-          (cat) =>
-            cat.slug === slug ||
-            cat.slug.includes(slug) ||
-            cat.name.toLowerCase().includes(slug.toLowerCase()) ||
-            slug.includes(cat.slug)
+        // Récupérer toutes les catégories si pas encore chargées
+        let allCategories = categories;
+        if (!allCategories || allCategories.length === 0) {
+          console.log("⚠️ Pas de catégories en contexte, chargement direct...");
+          allCategories = await getCategories();
+        }
+
+        // 1. Recherche par slug exact (priorité haute)
+        let matchingCategory = allCategories.find(
+          (cat) => cat.slug === finalSlug
         );
 
+        // 2. Si pas trouvé, recherche dans tout le chemin
+        if (!matchingCategory && pathSegments.length > 1) {
+          // Essayer chaque segment du chemin
+          for (const segment of pathSegments) {
+            matchingCategory = allCategories.find(
+              (cat) => cat.slug === segment
+            );
+            if (matchingCategory) {
+              console.log(`✅ Catégorie trouvée avec le segment: ${segment}`);
+              break;
+            }
+          }
+        }
+
+        // 3. Si toujours pas trouvé, recherche flexible
         if (!matchingCategory) {
-          // Afficher les slugs disponibles pour debug
-          const availableSlugs = categories.map((c) => c.slug).join(", ");
-          throw new Error(
-            `Catégorie "${slug}" non trouvée. Slugs disponibles: ${availableSlugs}`
+          matchingCategory = allCategories.find(
+            (cat) =>
+              cat.slug.includes(finalSlug) ||
+              finalSlug.includes(cat.slug) ||
+              cat.name.toLowerCase().includes(finalSlug.toLowerCase()) ||
+              finalSlug.toLowerCase().includes(cat.name.toLowerCase())
           );
         }
 
-        console.log("✅ Catégorie trouvée dans le contexte:", matchingCategory);
+        if (!matchingCategory) {
+          // Debug détaillé
+          console.log("❌ Aucune catégorie trouvée");
+          console.log("Chemin recherché:", fullPath);
+          console.log("Slug final:", finalSlug);
+          console.log("Segments:", pathSegments);
+          console.log(
+            "Slugs disponibles:",
+            allCategories.map((c) => c.slug)
+          );
+
+          throw new Error(
+            `Catégorie "${finalSlug}" non trouvée dans le chemin "${fullPath}". Slugs disponibles: ${allCategories
+              .map((c) => c.slug)
+              .join(", ")}`
+          );
+        }
+
+        console.log("✅ Catégorie trouvée:", matchingCategory);
         setCategory(matchingCategory);
 
         // 2. Récupérer les produits de cette catégorie
@@ -65,11 +113,13 @@ const CategoryPage = () => {
       }
     };
 
-    // Attendre que les catégories soient chargées depuis le contexte
-    if (!loading.categories && categories.length > 0 && slug) {
-      fetchCategoryProducts();
+    // Attendre que les catégories soient chargées depuis le contexte OU lancer directement
+    if (fullPath) {
+      if (!loading.categories || categories.length > 0) {
+        fetchCategoryProducts();
+      }
     }
-  }, [slug, categories, loading.categories]);
+  }, [fullPath, categories, loading.categories]);
 
   // Loading state - soit les catégories se chargent, soit les produits
   if (loading.categories || (productsLoading && !category)) {

@@ -69,7 +69,7 @@ const App = () => {
             {API_CONFIG.useReactCategories ? (
               <>
                 <Route
-                  path="/categorie-produit/:slug"
+                  path="/categorie-produit/*"
                   element={
                     <Layout>
                       <CategoryPage />
