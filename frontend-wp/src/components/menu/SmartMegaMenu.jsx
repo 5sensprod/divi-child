@@ -1,467 +1,172 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+// src/components/menu/SmartMegaMenu.jsx - Version complète avec Portal React
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Search, ShoppingCart, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ChevronRight, Package, Tag, Grid3X3 } from "lucide-react";
 
-// Hook Portal (inchangé)
-const useMegaMenuPortal = () => {
+const SmartMegaMenu = ({
+  isVisible,
+  triggerRef,
+  menuPosition, // Position calculée par le parent
+  type,
+  data,
+  onClose,
+  convertToReactUrl,
+  onMouseEnter,
+  onMouseLeave,
+  isScrolled, // État de scroll pour ajustements visuels
+  allCategories = [], // Toutes les catégories disponibles
+}) => {
   const [portalContainer, setPortalContainer] = useState(null);
+  const [menuDimensions, setMenuDimensions] = useState({ width: 0, height: 0 });
+  const menuRef = useRef(null);
 
+  // Créer le container du portal au montage
   useEffect(() => {
     let container = document.getElementById("mega-menu-portal");
     if (!container) {
       container = document.createElement("div");
       container.id = "mega-menu-portal";
-      Object.assign(container.style, {
-        position: "fixed",
-        top: "0",
-        left: "0",
-        right: "0",
-        bottom: "0",
-        pointerEvents: "none",
-        zIndex: "10000",
-        overflow: "visible",
-      });
       document.body.appendChild(container);
     }
     setPortalContainer(container);
 
     return () => {
-      if (container && container.children.length === 0) {
-        try {
-          document.body.removeChild(container);
-        } catch (e) {
-          // Ignore si déjà supprimé
-        }
+      // Nettoyer seulement si le container est vide
+      if (
+        container &&
+        container.children.length === 0 &&
+        container.parentNode
+      ) {
+        container.parentNode.removeChild(container);
       }
     };
   }, []);
 
-  return portalContainer;
-};
+  // Calculer les dimensions du menu pour éviter les débordements
+  useEffect(() => {
+    if (menuRef.current && isVisible) {
+      const rect = menuRef.current.getBoundingClientRect();
+      setMenuDimensions({ width: rect.width, height: rect.height });
+    }
+  }, [isVisible, type, data]);
 
-const scrollUtils = {
-  // Bloquer le scroll de la page
-  disable: () => {
-    // Sauvegarder la position actuelle
+  // Ne pas rendre si pas visible ou pas de position
+  if (!isVisible || !menuPosition || !portalContainer) {
+    return null;
+  }
+
+  // Calculer la position avec protection contre les débordements
+  const calculatePosition = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     const scrollY = window.scrollY;
 
-    // Appliquer les styles pour bloquer le scroll
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
-    document.body.style.overflowY = "hidden";
+    let left = menuPosition.left;
+    let top = menuPosition.top;
 
-    // Stocker la position pour la restaurer plus tard
-    document.body.setAttribute("data-scroll-lock", scrollY.toString());
-  },
-
-  // Restaurer le scroll de la page
-  enable: () => {
-    const scrollY = document.body.getAttribute("data-scroll-lock");
-
-    // Supprimer les styles de blocage
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.width = "";
-    document.body.style.overflowY = "";
-
-    // Restaurer la position de scroll
-    if (scrollY) {
-      window.scrollTo(0, parseInt(scrollY));
-      document.body.removeAttribute("data-scroll-lock");
+    // Protection débordement horizontal
+    if (left + menuDimensions.width > viewportWidth - 20) {
+      left = Math.max(20, viewportWidth - menuDimensions.width - 20);
     }
-  },
-};
 
-// Méga menu avec gestion améliorée du hover
-const SmartMegaMenu = ({
-  isVisible,
-  triggerRef,
-  type,
-  data,
-  onClose,
-  convertToReactUrl,
-  onMouseEnter, // Nouveau prop
-  onMouseLeave, // Nouveau prop
-}) => {
-  const portalContainer = useMegaMenuPortal();
-  const menuRef = useRef(null);
-  const [menuStyles, setMenuStyles] = useState({});
+    // Protection débordement vertical
+    if (top + menuDimensions.height > viewportHeight + scrollY - 20) {
+      // Afficher au-dessus du déclencheur si pas assez de place en dessous
+      top = menuPosition.top - menuDimensions.height - 10;
 
-  // Calcul de position (inchangé)
-  useEffect(() => {
-    if (isVisible && triggerRef.current && portalContainer) {
-      const calculatePosition = () => {
-        const triggerRect = triggerRef.current.getBoundingClientRect();
-        const viewport = {
-          width: window.innerWidth,
-          height: window.innerHeight,
-          scrollY: window.pageYOffset || document.documentElement.scrollTop,
-        };
-
-        const baseTop = triggerRect.bottom + viewport.scrollY;
-        const triggerCenterX = triggerRect.left + triggerRect.width / 2;
-
-        let menuWidth;
-        if (type === "container_mega_menu") {
-          if (window.innerWidth >= 1280) {
-            menuWidth = Math.min(1200, viewport.width - 40);
-          } else if (window.innerWidth >= 1024) {
-            menuWidth = Math.min(1000, viewport.width - 40);
-          } else if (window.innerWidth >= 768) {
-            menuWidth = Math.min(800, viewport.width - 40);
-          } else {
-            menuWidth = viewport.width - 20;
-          }
-        } else if (type === "category_mega_menu") {
-          if (window.innerWidth >= 1024) {
-            menuWidth = Math.min(900, viewport.width - 40);
-          } else if (window.innerWidth >= 768) {
-            menuWidth = Math.min(700, viewport.width - 40);
-          } else {
-            menuWidth = viewport.width - 20;
-          }
-        } else {
-          menuWidth = Math.min(320, viewport.width - 40);
-        }
-
-        let positionX = triggerCenterX - menuWidth / 2;
-        const margin = 20;
-        if (positionX < margin) {
-          positionX = margin;
-        } else if (positionX + menuWidth > viewport.width - margin) {
-          positionX = viewport.width - menuWidth - margin;
-        }
-
-        const maxHeight = Math.min(600, viewport.height * 0.8);
-
-        setMenuStyles({
-          position: "absolute",
-          top: `${baseTop}px`,
-          left: `${positionX}px`,
-          width: `${menuWidth}px`,
-          maxHeight: `${maxHeight}px`,
-          maxWidth: `${menuWidth}px`,
-          overflowY: "auto",
-          overflowX: "hidden",
-          pointerEvents: "auto",
-          zIndex: 10001,
-        });
-      };
-
-      setTimeout(calculatePosition, 10);
-
-      const handleResize = () => calculatePosition();
-      const handleScroll = () => calculatePosition();
-
-      window.addEventListener("resize", handleResize);
-      window.addEventListener("scroll", handleScroll, { passive: true });
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-        window.removeEventListener("scroll", handleScroll);
-      };
+      // Si toujours pas assez de place, forcer dans la viewport
+      if (top < scrollY + 20) {
+        top = scrollY + 20;
+      }
     }
-  }, [isVisible, triggerRef, portalContainer, type]);
 
-  if (!portalContainer || !isVisible) return null;
+    return { left, top };
+  };
 
-  // Correction de la mise en page du méga menu - remplacez votre renderContent()
+  const { left, top } = calculatePosition();
 
-  const renderContent = () => {
+  // Style de positionnement
+  const menuStyle = {
+    position: "fixed",
+    left: `${left}px`,
+    top: `${top}px`,
+    minWidth: `${Math.max(menuPosition.width, 250)}px`,
+    maxWidth: "min(90vw, 1200px)",
+    zIndex: 10001,
+    pointerEvents: "auto",
+  };
+
+  // Classes CSS adaptatives selon l'état de scroll et le type
+  const getContainerClasses = () => {
     const baseClasses =
-      "bg-white shadow-2xl border border-gray-200 rounded-lg overflow-hidden animate-slide-down";
+      "bg-gray-900/95 backdrop-blur-md rounded-lg shadow-2xl border border-white/10 animate-slide-down overflow-hidden";
 
+    const heightClass = isScrolled ? "max-h-[400px]" : "max-h-[500px]";
+
+    const typeClasses = {
+      container_mega_menu: "w-full",
+      category_mega_menu: "w-full",
+      container_simple: "min-w-[250px]",
+      simple_dropdown: "min-w-[220px]",
+    };
+
+    return `${baseClasses} ${heightClass} ${
+      typeClasses[type] || "min-w-[250px]"
+    }`;
+  };
+
+  // Rendu du contenu selon le type de menu
+  const renderContent = () => {
     switch (type) {
       case "container_mega_menu":
         return (
-          <div
-            className={baseClasses}
-            style={{
-              height: "fit-content",
-              maxWidth: "calc(100vw - 2rem)",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              overflowX: "hidden",
-            }}
-          >
-            {/* Grille responsive avec classes Tailwind pures */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
-              {data?.child_categories_data?.map((childCategory) => (
-                <div key={childCategory.id} className="space-y-4 min-w-0">
-                  {/* Titre de la catégorie */}
-                  <div className="border-b border-gray-200 pb-3">
-                    <Link
-                      to={convertToReactUrl(childCategory.url) || "#"}
-                      className="text-lg font-semibold text-gray-800 hover:text-blue-600 transition-colors block"
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                      title={childCategory.title}
-                      onClick={onClose}
-                    >
-                      {childCategory.title}
-                      {childCategory.product_count && (
-                        <span className="text-sm text-gray-500 ml-2">
-                          ({childCategory.product_count})
-                        </span>
-                      )}
-                    </Link>
-                  </div>
-
-                  {/* Sous-catégories */}
-                  <div className="space-y-2">
-                    {childCategory.sub_categories?.slice(0, 6).map((subCat) => {
-                      let finalUrl;
-                      if (subCat.hierarchical_url) {
-                        finalUrl = subCat.hierarchical_url;
-                      } else {
-                        const parentSlug =
-                          childCategory.category_slug ||
-                          childCategory.woocommerce_category?.slug;
-                        if (parentSlug) {
-                          finalUrl = `/categorie-produit/${parentSlug}/${subCat.slug}`;
-                        } else {
-                          finalUrl = `/categorie-produit/${subCat.slug}`;
-                        }
-                      }
-
-                      return (
-                        <Link
-                          key={subCat.id}
-                          to={finalUrl}
-                          className="block text-sm text-gray-600 hover:text-blue-600 transition-colors py-1"
-                          style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                          title={subCat.name}
-                          onClick={onClose}
-                        >
-                          {subCat.name}
-                          <span className="text-xs text-gray-400 ml-1">
-                            ({subCat.count})
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-
-                  {/* Message par défaut si pas de sous-catégories */}
-                  {!childCategory.sub_categories?.length && (
-                    <p className="text-sm text-gray-500 italic">
-                      Découvrez notre sélection de{" "}
-                      {childCategory.title.toLowerCase()}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <ContainerMegaMenu
+            data={data}
+            onClose={onClose}
+            convertToReactUrl={convertToReactUrl}
+          />
         );
-
       case "category_mega_menu":
         return (
-          <div
-            className={baseClasses}
-            style={{
-              height: "fit-content",
-              maxWidth: "calc(100vw - 2rem)",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              overflowX: "hidden",
-            }}
-          >
-            {/* Grille 3 colonnes responsive */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
-              {/* Colonne 1: Sous-catégories */}
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">
-                  Sous-catégories
-                </h3>
-                <div className="space-y-2">
-                  {data?.sub_categories?.map((subCat) => {
-                    let finalUrl;
-                    if (subCat.hierarchical_url) {
-                      finalUrl = subCat.hierarchical_url;
-                    } else {
-                      const parentSlug =
-                        data.category_slug || data.woocommerce_category?.slug;
-                      if (parentSlug) {
-                        finalUrl = `/categorie-produit/${parentSlug}/${subCat.slug}`;
-                      } else {
-                        finalUrl = `/categorie-produit/${subCat.slug}`;
-                      }
-                    }
-
-                    return (
-                      <Link
-                        key={subCat.id}
-                        to={finalUrl}
-                        className="block text-sm text-gray-600 hover:text-blue-600 transition-colors py-1"
-                        style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                        title={subCat.name}
-                        onClick={onClose}
-                      >
-                        {subCat.name}
-                        <span className="text-xs text-gray-400 ml-1">
-                          ({subCat.count})
-                        </span>
-                      </Link>
-                    );
-                  })}
-
-                  {!data?.sub_categories?.length && (
-                    <p className="text-sm text-gray-500 italic">
-                      Aucune sous-catégorie disponible
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Colonne 2: Navigation rapide */}
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">
-                  Navigation
-                </h3>
-                <div className="space-y-3">
-                  <Link
-                    to={convertToReactUrl(data?.url) || "#"}
-                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 px-4 rounded-lg font-semibold transition-colors"
-                    onClick={onClose}
-                  >
-                    Voir tous les produits
-                  </Link>
-
-                  <Link
-                    to={`${convertToReactUrl(data?.url)}?orderby=popularity`}
-                    className="block text-sm text-gray-600 hover:text-blue-600 transition-colors py-2 px-3 border border-gray-200 rounded"
-                    onClick={onClose}
-                  >
-                    ↗ Produits populaires
-                  </Link>
-                  <Link
-                    to={`${convertToReactUrl(data?.url)}?orderby=date`}
-                    className="block text-sm text-gray-600 hover:text-blue-600 transition-colors py-2 px-3 border border-gray-200 rounded"
-                    onClick={onClose}
-                  >
-                    ✨ Nouveautés
-                  </Link>
-                  <Link
-                    to={`${convertToReactUrl(data?.url)}?on_sale=true`}
-                    className="block text-sm text-gray-600 hover:text-blue-600 transition-colors py-2 px-3 border border-gray-200 rounded"
-                    onClick={onClose}
-                  >
-                    🏷️ Promotions
-                  </Link>
-                </div>
-              </div>
-
-              {/* Colonne 3: Info catégorie */}
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">
-                  {data?.title}
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-3">
-                    Explorez notre gamme complète de{" "}
-                    {data?.title?.toLowerCase()}
-                  </p>
-                  {data?.woocommerce_category?.count && (
-                    <p className="text-xs text-gray-500">
-                      {data.woocommerce_category.count} produits disponibles
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <CategoryMegaMenu
+            data={data}
+            onClose={onClose}
+            convertToReactUrl={convertToReactUrl}
+          />
         );
-
+      case "container_simple":
+        return (
+          <SimpleContainer
+            data={data}
+            onClose={onClose}
+            convertToReactUrl={convertToReactUrl}
+          />
+        );
       case "simple_dropdown":
         return (
-          <div
-            className="bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-xl overflow-hidden animate-slide-down"
-            style={{
-              width: "16rem",
-              maxWidth: "calc(100vw - 2rem)",
-              maxHeight: "80vh",
-              overflowY: "auto",
-            }}
-          >
-            {data?.children?.map((child) => {
-              const isReactRoute = (url) => {
-                if (url === "/" || url === "" || url === "#") return true;
-                return (
-                  url.includes("/categorie-produit/") ||
-                  url.includes("/shop") ||
-                  url.includes("/contact") ||
-                  url.includes("/about")
-                );
-              };
-
-              const commonClasses =
-                "block px-4 py-3 text-sm text-white/90 hover:bg-white/10 hover:text-pink-300 transition-colors border-b border-white/5 last:border-b-0";
-
-              if (isReactRoute(child.url)) {
-                return (
-                  <Link
-                    key={child.id}
-                    to={convertToReactUrl(child.url)}
-                    className={commonClasses}
-                    onClick={onClose}
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                    title={child.title}
-                  >
-                    {child.title}
-                  </Link>
-                );
-              }
-
-              return (
-                <a
-                  key={child.id}
-                  href={child.url}
-                  className={commonClasses}
-                  target={child.target || "_self"}
-                  onClick={onClose}
-                  style={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={child.title}
-                >
-                  {child.title}
-                </a>
-              );
-            })}
+          <SimpleDropdown
+            data={data}
+            onClose={onClose}
+            convertToReactUrl={convertToReactUrl}
+          />
+        );
+      default:
+        return (
+          <div className="p-4 text-white/70">
+            Type de menu non reconnu: {type}
           </div>
         );
-
-      default:
-        return null;
     }
   };
 
   return createPortal(
     <div
-      style={menuStyles}
       ref={menuRef}
-      onMouseEnter={onMouseEnter} // ✅ AJOUT des événements hover sur le menu
-      onMouseLeave={onMouseLeave} // ✅ AJOUT des événements hover sur le menu
+      style={menuStyle}
+      className={getContainerClasses()}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {renderContent()}
     </div>,
@@ -469,5 +174,422 @@ const SmartMegaMenu = ({
   );
 };
 
-// Export du composant pour remplacer dans votre Navigation.jsx
+// Composant pour le méga menu container avec catégories
+const ContainerMegaMenu = ({ data, onClose, convertToReactUrl }) => {
+  // Utiliser child_categories_data qui contient les vraies données
+  const children =
+    data.child_categories_data || data.children || data.items || [];
+
+  // DEBUG temporaire pour voir la structure des sous-catégories
+  if (children.length > 0) {
+    console.log("🔍 Premier enfant avec ses sous-catégories:", {
+      title: children[0].title,
+      sub_categories: children[0].sub_categories,
+      children: children[0].children,
+      subcategories: children[0].subcategories,
+      allKeys: Object.keys(children[0]),
+    });
+  }
+
+  if (!children || children.length === 0) {
+    return (
+      <div className="p-6 text-center">
+        <div className="text-white/70 mb-2">
+          <Grid3X3 size={32} className="mx-auto mb-2 opacity-50" />
+          Aucune catégorie disponible
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 overflow-y-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {children.map((category, index) => (
+          <CategoryBlock
+            key={category.id || index}
+            category={category}
+            onClose={onClose}
+            convertToReactUrl={convertToReactUrl}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Bloc de catégorie pour le méga menu
+const CategoryBlock = ({ category, onClose, convertToReactUrl }) => {
+  // Vérifier toutes les structures possibles selon vos données WooCommerce
+  const children =
+    category.sub_categories ||
+    category.children ||
+    category.subcategories ||
+    [];
+  const hasChildren = children && children.length > 0;
+  const displayLimit = 8;
+  const hasMore = hasChildren && children.length > displayLimit;
+
+  return (
+    <div className="space-y-3">
+      {/* Titre de la catégorie */}
+      <div className="flex items-center space-x-2">
+        <Tag size={14} className="text-pink-300" />
+        <h3 className="font-semibold text-pink-300 text-sm uppercase tracking-wide hover:text-pink-200 transition-colors">
+          {convertToReactUrl && category.url ? (
+            <Link to={convertToReactUrl(category.url)} onClick={onClose}>
+              {category.title || category.name}
+            </Link>
+          ) : (
+            <a href={category.url || "#"} onClick={onClose}>
+              {category.title || category.name}
+            </a>
+          )}
+        </h3>
+      </div>
+
+      {/* Liste des sous-catégories */}
+      {hasChildren && (
+        <ul className="space-y-2">
+          {children.slice(0, displayLimit).map((subcat, index) => (
+            <li key={subcat.id || index}>
+              <div className="flex items-center space-x-2 group">
+                <ChevronRight
+                  size={12}
+                  className="text-white/30 group-hover:text-pink-300 transition-colors"
+                />
+                {/* Utiliser hierarchical_url en priorité, sinon construire l'URL */}
+                {convertToReactUrl ? (
+                  <Link
+                    to={
+                      subcat.hierarchical_url
+                        ? convertToReactUrl(subcat.hierarchical_url)
+                        : convertToReactUrl(subcat.url || "#")
+                    }
+                    className="text-white/80 hover:text-pink-300 transition-colors text-sm block py-1 flex-1"
+                    onClick={onClose}
+                  >
+                    {subcat.name || subcat.title}
+                    {subcat.count && (
+                      <span className="text-white/40 text-xs ml-1">
+                        ({subcat.count})
+                      </span>
+                    )}
+                  </Link>
+                ) : (
+                  <a
+                    href={subcat.hierarchical_url || subcat.url || "#"}
+                    className="text-white/80 hover:text-pink-300 transition-colors text-sm block py-1 flex-1"
+                    onClick={onClose}
+                  >
+                    {subcat.name || subcat.title}
+                    {subcat.count && (
+                      <span className="text-white/40 text-xs ml-1">
+                        ({subcat.count})
+                      </span>
+                    )}
+                  </a>
+                )}
+              </div>
+            </li>
+          ))}
+
+          {/* Lien "Voir tout" si plus d'éléments */}
+          {hasMore && (
+            <li className="pt-2 mt-2 border-t border-white/10">
+              {convertToReactUrl && category.url ? (
+                <Link
+                  to={convertToReactUrl(category.url)}
+                  className="text-pink-400 hover:text-pink-300 transition-colors text-xs uppercase tracking-wide flex items-center space-x-1"
+                  onClick={onClose}
+                >
+                  <Package size={12} />
+                  <span>Voir tout ({children.length})</span>
+                </Link>
+              ) : (
+                <a
+                  href={category.url || "#"}
+                  className="text-pink-400 hover:text-pink-300 transition-colors text-xs uppercase tracking-wide flex items-center space-x-1"
+                  onClick={onClose}
+                >
+                  <Package size={12} />
+                  <span>Voir tout ({children.length})</span>
+                </a>
+              )}
+            </li>
+          )}
+        </ul>
+      )}
+
+      {/* Message si pas de sous-catégories */}
+      {!hasChildren && (
+        <p className="text-white/50 text-xs italic">Aucune sous-catégorie</p>
+      )}
+    </div>
+  );
+};
+
+// Composant pour le méga menu catégorie avec sous-catégories
+const CategoryMegaMenu = ({ data, onClose, convertToReactUrl }) => {
+  const hasSubcategories = data.subcategories && data.subcategories.length > 0;
+
+  if (!hasSubcategories) {
+    return (
+      <div className="p-4">
+        <div className="flex items-center space-x-2 p-2 hover:bg-white/5 rounded transition-colors">
+          <Tag size={16} className="text-pink-300" />
+          {convertToReactUrl && data.url ? (
+            <Link
+              to={convertToReactUrl(data.url)}
+              className="text-white/80 hover:text-pink-300 transition-colors flex-1"
+              onClick={onClose}
+            >
+              {data.title}
+            </Link>
+          ) : (
+            <a
+              href={data.url || "#"}
+              className="text-white/80 hover:text-pink-300 transition-colors flex-1"
+              onClick={onClose}
+            >
+              {data.title}
+            </a>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const displayLimit = 15;
+  const hasMore = data.subcategories.length > displayLimit;
+
+  return (
+    <div className="p-4 overflow-y-auto">
+      {/* Titre principal */}
+      <div className="mb-4 pb-3 border-b border-white/10">
+        <h3 className="text-pink-300 font-semibold flex items-center space-x-2">
+          <Grid3X3 size={16} />
+          <span>{data.title}</span>
+          {data.count && (
+            <span className="text-white/40 text-sm">
+              ({data.count} produits)
+            </span>
+          )}
+        </h3>
+      </div>
+
+      {/* Grille des sous-catégories */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {data.subcategories.slice(0, displayLimit).map((subcat) => (
+          <div
+            key={subcat.id}
+            className="flex items-center space-x-2 p-2 hover:bg-white/5 rounded transition-colors"
+          >
+            <ChevronRight size={14} className="text-white/40" />
+            {convertToReactUrl && subcat.url ? (
+              <Link
+                to={convertToReactUrl(subcat.url)}
+                className="text-white/80 hover:text-pink-300 transition-colors flex-1 text-sm"
+                onClick={onClose}
+              >
+                {subcat.name}
+                {subcat.count && (
+                  <span className="text-white/40 text-xs ml-1">
+                    ({subcat.count})
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <a
+                href={subcat.url || "#"}
+                className="text-white/80 hover:text-pink-300 transition-colors flex-1 text-sm"
+                onClick={onClose}
+              >
+                {subcat.name}
+                {subcat.count && (
+                  <span className="text-white/40 text-xs ml-1">
+                    ({subcat.count})
+                  </span>
+                )}
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Lien "Voir tout" */}
+      {hasMore && (
+        <div className="mt-4 pt-4 border-t border-white/10">
+          {convertToReactUrl && data.url ? (
+            <Link
+              to={convertToReactUrl(data.url)}
+              className="text-pink-400 hover:text-pink-300 transition-colors text-sm flex items-center space-x-2"
+              onClick={onClose}
+            >
+              <Package size={16} />
+              <span>
+                Voir toutes les sous-catégories ({data.subcategories.length})
+              </span>
+            </Link>
+          ) : (
+            <a
+              href={data.url || "#"}
+              className="text-pink-400 hover:text-pink-300 transition-colors text-sm flex items-center space-x-2"
+              onClick={onClose}
+            >
+              <Package size={16} />
+              <span>
+                Voir toutes les sous-catégories ({data.subcategories.length})
+              </span>
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Composant pour le container simple
+const SimpleContainer = ({ data, onClose, convertToReactUrl }) => {
+  // Utiliser la structure de données appropriée
+  const children =
+    data.child_categories_data || data.children || data.items || [];
+
+  if (!children || children.length === 0) {
+    return (
+      <div className="p-4 text-white/70 text-center">
+        Aucun élément disponible
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 min-w-[250px] max-h-80 overflow-y-auto">
+      {children.map((child, index) => (
+        <div
+          key={child.id || index}
+          className="hover:bg-white/5 transition-colors"
+        >
+          <div className="flex items-center space-x-2 px-4 py-2">
+            <ChevronRight size={14} className="text-white/40" />
+            {convertToReactUrl && child.url ? (
+              <Link
+                to={convertToReactUrl(child.url)}
+                className="text-white/80 hover:text-pink-300 transition-colors flex-1"
+                onClick={onClose}
+              >
+                {child.title || child.name}
+              </Link>
+            ) : (
+              <a
+                href={child.url || "#"}
+                className="text-white/80 hover:text-pink-300 transition-colors flex-1"
+                onClick={onClose}
+              >
+                {child.title || child.name}
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Composant pour le dropdown simple avec hiérarchie
+const SimpleDropdown = ({ data, onClose, convertToReactUrl }) => {
+  if (!data.children || data.children.length === 0) {
+    return (
+      <div className="p-4 text-white/70 text-center">
+        Aucun élément disponible
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 min-w-[220px] max-h-96 overflow-y-auto">
+      {data.children.map((child) => (
+        <DropdownItem
+          key={child.id}
+          item={child}
+          level={0}
+          onClose={onClose}
+          convertToReactUrl={convertToReactUrl}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Item individuel du dropdown avec support de la hiérarchie
+const DropdownItem = ({ item, level = 0, onClose, convertToReactUrl }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  const paddingClass = level > 0 ? `pl-${4 + level * 4}` : "pl-4";
+
+  return (
+    <div>
+      {/* Item principal */}
+      <div className={`hover:bg-white/5 transition-colors ${paddingClass}`}>
+        <div className="flex items-center py-2 pr-4">
+          {hasChildren ? (
+            <>
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="mr-2 p-1 hover:bg-white/10 rounded transition-colors"
+              >
+                <ChevronRight
+                  size={12}
+                  className={`text-white/60 transition-transform ${
+                    isExpanded ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+              <span className="text-white/80 hover:text-pink-300 transition-colors cursor-pointer flex-1">
+                {item.title}
+              </span>
+            </>
+          ) : (
+            <>
+              <ChevronRight size={12} className="text-white/40 mr-2" />
+              {convertToReactUrl && item.url ? (
+                <Link
+                  to={convertToReactUrl(item.url)}
+                  className="text-white/80 hover:text-pink-300 transition-colors flex-1"
+                  onClick={onClose}
+                >
+                  {item.title}
+                </Link>
+              ) : (
+                <a
+                  href={item.url || "#"}
+                  className="text-white/80 hover:text-pink-300 transition-colors flex-1"
+                  onClick={onClose}
+                >
+                  {item.title}
+                </a>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Enfants (si expanded) */}
+      {hasChildren && isExpanded && (
+        <div className="animate-slide-down">
+          {item.children.map((child) => (
+            <DropdownItem
+              key={child.id}
+              item={child}
+              level={level + 1}
+              onClose={onClose}
+              convertToReactUrl={convertToReactUrl}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default SmartMegaMenu;
