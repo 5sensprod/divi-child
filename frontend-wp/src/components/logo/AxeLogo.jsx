@@ -1,7 +1,8 @@
-// Version optimisée : Mobile = effet haut-parleur, Desktop = effet néon
+// src/components/logo/AxeLogo.jsx
+
 import { useEffect, useState, useMemo } from "react";
 import { getLogoSizePx } from "../../config/components";
-import "./logo.css";
+import "../logo/logo.css";
 
 const AxeLogo = ({
   width,
@@ -15,9 +16,10 @@ const AxeLogo = ({
   const [isClient, setIsClient] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  useEffect(() => setIsClient(true), []);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  // Pose les couleurs de thème sur :root (desktop surtout)
   useEffect(() => {
     if (!isClient || isMobile) return;
     const root = document.documentElement;
@@ -25,7 +27,6 @@ const AxeLogo = ({
       theme === "sunset"
         ? { primary: "#ff6b35", secondary: "#ffd23f", accent: "#ff4d6d" }
         : { primary: "#FF3FD1", secondary: "#31D1FF", accent: "#7D49FF" };
-
     requestAnimationFrame(() => {
       root.style.setProperty("--logo-primary", colors.primary);
       root.style.setProperty("--logo-secondary", colors.secondary);
@@ -53,9 +54,7 @@ const AxeLogo = ({
   );
 
   const containerProps = {
-    className: `logo-container ${
-      onClick ? "hoverable" : ""
-    } ${className}`.trim(),
+    className: `logo-container ${className} relative inline-block cursor-pointer transition-transform duration-300 hover:scale-105`,
     onClick,
     style: {
       cursor: onClick ? "pointer" : "default",
@@ -78,7 +77,7 @@ const AxeLogo = ({
             theme === "sunset"
               ? "linear-gradient(90deg, #ff6b35, #ffd23f)"
               : "linear-gradient(90deg, #FF3FD1, #31D1FF)",
-          borderRadius: 8,
+          borderRadius: "8px",
         }}
       />
     );
@@ -87,6 +86,7 @@ const AxeLogo = ({
   if (isMobile) {
     return (
       <div {...containerProps}>
+        {/* Effet membrane (durées pilotables via CSS vars) */}
         <div
           className="speaker-membrane"
           style={{
@@ -125,7 +125,7 @@ const AxeLogo = ({
                 theme === "sunset"
                   ? "linear-gradient(90deg, #ff6b35, #ffd23f)"
                   : "linear-gradient(90deg, #FF3FD1, #31D1FF)",
-              borderRadius: 8,
+              borderRadius: "8px",
               fontSize: `${textSizes.axe * 0.7}px`,
             }}
           >
@@ -139,7 +139,7 @@ const AxeLogo = ({
                 style={{
                   fontFamily: "'Bauhaus', Arial, sans-serif",
                   fontSize: `${textSizes.musique * 0.8}px`,
-                  marginTop: -2,
+                  marginTop: "-2px",
                 }}
               >
                 MUSIQUE
@@ -151,18 +151,28 @@ const AxeLogo = ({
     );
   }
 
-  // Desktop SVG + néon
+  // Desktop : SVG + flicker néon (animation via classe .neon-flicker)
   return (
     <div {...containerProps}>
       <div
         className="neon-flicker"
-        style={{ "--neon-duration": "4s", "--neon-hover-duration": "2s" }}
+        style={{
+          "--neon-duration": "4s",
+          "--neon-hover-duration": "2s",
+        }}
       >
         <svg
           width={logoSize}
           viewBox="0 0 423 281"
-          className="logo-svg transition-all duration-300"
+          className="logo-svg"
           xmlns="http://www.w3.org/2000/svg"
+          style={{
+            filter: `
+              drop-shadow(0 0 8px var(--logo-primary, #FF3FD1)) 
+              drop-shadow(0 0 15px var(--logo-primary, #FF3FD1)) 
+              drop-shadow(0 0 25px var(--logo-primary, #FF3FD1))
+            `,
+          }}
         >
           <defs>
             <linearGradient
@@ -183,7 +193,6 @@ const AxeLogo = ({
             </linearGradient>
           </defs>
 
-          {/* Badge */}
           <g transform="matrix(0.989355,0,0,1.04873,-39.0155,-125.719)">
             <g transform="matrix(1.78644,0,0,1.6853,-320.147,2.81323)">
               <g transform="matrix(0.906335,0,0,0.903945,184.699,-38.0939)">
@@ -193,22 +202,22 @@ const AxeLogo = ({
                   fillRule="evenodd"
                   stroke={`url(#logoGradient-${theme}-${logoSize})`}
                   strokeWidth="2"
+                  className="transition-all duration-300"
                 />
               </g>
             </g>
           </g>
         </svg>
 
-        {/* Texte overlay (tailles dynamiques → on garde en inline) */}
+        {/* Texte SVG avec glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div
-            className="absolute text-white logo-text-axe"
+            className="logo-text-axe"
             style={{
               fontSize: `${textSizes.axe}px`,
               left: "51%",
               top: "32%",
               transform: "translate(-50%, -50%)",
-              lineHeight: "1",
               letterSpacing: `${textSizes.scale * 0.05}em`,
               textShadow: `
                 0 0 5px var(--logo-primary, #FF3FD1),
@@ -220,13 +229,12 @@ const AxeLogo = ({
             AXE
           </div>
           <div
-            className="absolute text-white logo-text-musique"
+            className="logo-text-musique"
             style={{
               fontSize: `${textSizes.musique}px`,
               left: "51%",
               top: "70%",
               transform: "translate(-50%, -50%)",
-              lineHeight: "1",
               letterSpacing: `${textSizes.scale * 0.1}em`,
               textShadow: `
                 0 0 3px var(--logo-primary, #FF3FD1),

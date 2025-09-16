@@ -1,39 +1,14 @@
-/* Valeurs par défaut au cas où le JS n'a pas encore posé les variables */
+/* Variables par défaut (peuvent être overridées via style inline sur l'élément) */
 :root {
-  --logo-primary: #ff3fd1;
-  --logo-secondary: #31d1ff;
-  --logo-accent: #7d49ff;
+  --speaker-duration: 3s;
+  --speaker-beat-end: 24%;
+  --speaker-hover-duration: 1.5s;
+
+  --neon-duration: 4s;
+  --neon-hover-duration: 2s;
 }
 
-/* Container du logo */
-.logo-container {
-  position: relative;
-  display: inline-block;
-  cursor: default;
-  transition: transform 300ms;
-}
-.logo-container.hoverable:hover {
-  transform: scale(1.05);
-  cursor: pointer;
-}
-
-/* --------- MOBILE : effet "haut-parleur" --------- */
-.speaker-membrane {
-  position: relative;
-  transform-origin: center center;
-  animation: speakerBeat var(--speaker-duration, 3s) ease-in-out infinite;
-}
-
-.speaker-membrane:hover {
-  animation: speakerBeat var(--speaker-hover-duration, 1.5s) ease-in-out
-    infinite;
-}
-
-.speaker-membrane:active {
-  transform: scale(0.92);
-  transition: transform 150ms ease-out;
-}
-
+/* === MOBILE : effet haut-parleur === */
 @keyframes speakerBeat {
   0% {
     transform: scale(1);
@@ -62,31 +37,24 @@
   }
 }
 
-/* --------- DESKTOP : effet "néon qui grésille" --------- */
-.neon-flicker {
+.speaker-membrane {
   position: relative;
-  animation: neonFlicker var(--neon-duration, 4s) ease-in-out infinite;
+  transform-origin: center center;
+  animation: speakerBeat var(--speaker-duration, 3s) ease-in-out infinite;
+  will-change: transform;
 }
 
-.neon-flicker:hover {
-  animation: neonFlicker var(--neon-hover-duration, 2s) ease-in-out infinite;
+.speaker-membrane:hover {
+  animation: speakerBeat var(--speaker-hover-duration, 1.5s) ease-in-out
+    infinite;
 }
 
-.neon-flicker:active {
-  opacity: 0.85;
-  filter: brightness(1.3) saturate(1.2) contrast(1.1);
-  transition: all 150ms ease-out;
+.speaker-membrane:active {
+  transform: scale(0.92);
+  transition: transform 0.15s ease-out;
 }
 
-/* Glow du SVG (utilise les variables de thème) */
-.logo-svg {
-  filter: drop-shadow(0 0 8px var(--logo-primary, #ff3fd1))
-    drop-shadow(0 0 15px var(--logo-primary, #ff3fd1))
-    drop-shadow(0 0 25px var(--logo-primary, #ff3fd1));
-  will-change: filter, opacity;
-  transition: filter 300ms, opacity 300ms;
-}
-
+/* === DESKTOP : effet grésillement néon === */
 @keyframes neonFlicker {
   0% {
     opacity: 1;
@@ -150,10 +118,34 @@
   }
 }
 
-/* Accessibilité : réduit l’animation si l’utilisateur préfère moins de mouvement */
-@media (prefers-reduced-motion: reduce) {
-  .speaker-membrane,
-  .neon-flicker {
-    animation: none !important;
-  }
+.neon-flicker {
+  position: relative;
+  animation: neonFlicker var(--neon-duration, 4s) ease-in-out infinite;
+  will-change: filter, opacity;
+}
+
+.neon-flicker:hover {
+  animation: neonFlicker var(--neon-hover-duration, 2s) ease-in-out infinite;
+}
+
+.neon-flicker:active {
+  opacity: 0.85;
+  filter: brightness(1.3) saturate(1.2) contrast(1.1);
+  transition: all 0.15s ease-out;
+}
+
+/* Utilitaires optionnels (si tu veux les réutiliser) */
+.logo-container {
+  position: relative;
+  display: inline-block;
+}
+.logo-svg {
+  transition: all 300ms;
+}
+.logo-text-axe,
+.logo-text-musique {
+  position: absolute;
+  color: #fff;
+  line-height: 1;
+  pointer-events: none;
 }

@@ -1,11 +1,7 @@
 // src/hooks/useWordPressData.js
 
 import { useState, useEffect } from "react";
-import {
-  getProducts,
-  getParentCategories,
-  getCategories,
-} from "../services/woocommerce";
+import { getProducts, getParentCategories } from "../services/woocommerce";
 import { wordpressService } from "../services/wordpress";
 import { DEFAULT_DATA, FALLBACK_PRODUCTS } from "../utils/constants";
 import { cacheUtils, CACHE_KEYS } from "../utils/cache";
@@ -25,8 +21,9 @@ export const useWordPressData = () => {
       const cachedMenu = cacheUtils.get(CACHE_KEYS.MENU);
       const cachedCategories =
         import.meta.env.VITE_DISABLE_CACHE !== "true"
-          ? cacheUtils.get(CACHE_KEYS.CATEGORIES)
+          ? cacheUtils.get(`${CACHE_KEYS.CATEGORIES}_parent`)
           : null;
+
       // Mise à jour immédiate avec les données en cache
       if (cachedMenu || cachedCategories) {
         setData((prev) => ({
@@ -73,7 +70,7 @@ export const useWordPressData = () => {
           wordpressService.loadSiteData(),
           wordpressService.loadMenu(),
           getProducts({ per_page: 20 }),
-          getCategories(), // ← Utilisation des catégories parentes avec cache
+          getParentCategories(), // ← Utilisation des catégories parentes avec cache
         ]);
 
         console.log("=== RÉSULTATS DU CHARGEMENT ===");
@@ -193,7 +190,7 @@ export const useWordPressData = () => {
           clearCategoriesCache();
         }
 
-        const categories = await getCategories();
+        const categories = await getParentCategories();
         setData((prev) => ({
           ...prev,
           categories,
@@ -267,54 +264,6 @@ export const useWordPressData = () => {
       cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);
       cacheUtils.remove(CACHE_KEYS.SITE_DATA);
       console.log("Tout le cache a été vidé");
-    },
-  };
-
-  const megaMenuActions = {
-    // Construire les données du méga menu
-    buildMegaMenu: async () => {
-      setData((prev) => ({
-        ...prev,
-        loading: { ...prev.loading, megaMenu: true },
-      }));
-
-      try {
-        const { buildMegaMenuData } = await import("../services/woocommerce");
-        const megaMenuData = await buildMegaMenuData(data.menus);
-
-        setData((prev) => ({
-          ...prev,
-          megaMenuData,
-          loading: { ...prev.loading, megaMenu: false },
-        }));
-
-        return megaMenuData;
-      } catch (error) {
-        console.error("Erreur construction méga menu:", error);
-        setData((prev) => ({
-          ...prev,
-          loading: { ...prev.loading, megaMenu: false },
-        }));
-        return [];
-      }
-    },
-
-    // Recharger le méga menu
-    reloadMegaMenu: async () => {
-      const { clearMegaMenuCache } = await import("../services/woocommerce");
-      clearMegaMenuCache();
-      return megaMenuActions.buildMegaMenu();
-    },
-
-    // Récupérer les sous-catégories d'une catégorie
-    getSubCategories: async (parentId) => {
-      try {
-        const { getSubCategories } = await import("../services/woocommerce");
-        return await getSubCategories(parentId);
-      } catch (error) {
-        console.error("Erreur récupération sous-catégories:", error);
-        return [];
-      }
     },
   };
 
