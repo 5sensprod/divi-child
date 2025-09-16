@@ -4,10 +4,10 @@ import {
   HEADER_CONFIG,
   getThemeStyle,
   applyBackgroundTheme,
-} from "../../../config/components";
+} from "../../config/components";
 import HeroContent from "./HeroComponents/HeroContent";
 import HeroImage from "./HeroComponents/HeroImage";
-import { useTheme } from "../../../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 
 const HeroSlider = ({ siteTitle, siteDescription }) => {
   const [currentSlide, setCurrentSlide] = useState(0);

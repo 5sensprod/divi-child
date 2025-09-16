@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { useWordPress } from "../../../context/WordPressContext";
-import { HEADER_CONFIG, getCurrentTheme } from "../../../config/components";
-import Navigation from "../Navigation";
-import Background from "../../UI/Background";
-import HeroSlider from "./HeroSlider";
-import Search from "../../Search/Search";
+import { useWordPress } from "../../context/WordPressContext";
+import { HEADER_CONFIG } from "../../config/components";
+import Navigation from "../navigation/Navigation";
+import Search from "../Search/Search";
 
 const Header = () => {
   const { siteData, menus, loading } = useWordPress();

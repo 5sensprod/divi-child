@@ -1,5 +1,5 @@
 // src/components/Layout/Header/HeroComponents/HeroButton.jsx
-import { getCurrentTheme, getThemeStyle } from "../../../../config/components";
+import { getCurrentTheme, getThemeStyle } from "../../../config/components";
 
 const HeroButton = ({ config }) => (
   <button

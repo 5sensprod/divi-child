@@ -1,5 +1,5 @@
 // src/components/Layout/Header/HeroComponents/SlideDots.jsx
-import { getThemeStyle } from "../../../../config/components";
+import { getThemeStyle } from "../../../config/components";
 
 const SlideDots = ({ slides, currentSlide, onSlideChange, config }) => (
   <div className={config.container}>

@@ -7,7 +7,7 @@ import Title from "../components/UI/Title";
 import AnimatedStats from "../components/UI/AnimatedStats";
 import CTASection from "../components/UI/CTASection";
 import Background from "../components/UI/Background";
-import HeroSlider from "../components/Layout/Header/HeroSlider";
+import HeroSlider from "../components/UI/HeroSlider";
 
 const Home = () => {
   const { siteData, products, categories, loading } = useWordPress();
