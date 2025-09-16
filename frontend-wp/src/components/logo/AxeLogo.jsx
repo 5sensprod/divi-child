@@ -1,8 +1,7 @@
-// src/components/UI/AxeLogo.jsx
 // Version optimisée : Mobile = effet haut-parleur, Desktop = effet néon
-
 import { useEffect, useState, useMemo } from "react";
 import { getLogoSizePx } from "../../config/components";
+import "./logo.css";
 
 const AxeLogo = ({
   width,
@@ -16,22 +15,17 @@ const AxeLogo = ({
   const [isClient, setIsClient] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Détection côté client
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
-  // Application du thème optimisée (seulement pour desktop SVG)
+  // Pose les couleurs de thème sur :root (desktop surtout)
   useEffect(() => {
     if (!isClient || isMobile) return;
-
     const root = document.documentElement;
     const colors =
       theme === "sunset"
         ? { primary: "#ff6b35", secondary: "#ffd23f", accent: "#ff4d6d" }
         : { primary: "#FF3FD1", secondary: "#31D1FF", accent: "#7D49FF" };
 
-    // Batch les changements CSS
     requestAnimationFrame(() => {
       root.style.setProperty("--logo-primary", colors.primary);
       root.style.setProperty("--logo-secondary", colors.secondary);
@@ -39,7 +33,6 @@ const AxeLogo = ({
     });
   }, [theme, isClient, isMobile]);
 
-  // Calcul de taille memoized
   const logoSize = useMemo(
     () =>
       getLogoSizePx({
@@ -59,9 +52,10 @@ const AxeLogo = ({
     [logoSize]
   );
 
-  // Props communes pour le conteneur
   const containerProps = {
-    className: `logo-container ${className} relative inline-block cursor-pointer transition-transform duration-300 hover:scale-105`,
+    className: `logo-container ${
+      onClick ? "hoverable" : ""
+    } ${className}`.trim(),
     onClick,
     style: {
       cursor: onClick ? "pointer" : "default",
@@ -73,9 +67,7 @@ const AxeLogo = ({
     translate: "no",
   };
 
-  // Version mobile optimisée avec WebP + effet membrane
   if (!isClient) {
-    // Skeleton pendant l'hydration
     return (
       <div
         {...containerProps}
@@ -86,7 +78,7 @@ const AxeLogo = ({
             theme === "sunset"
               ? "linear-gradient(90deg, #ff6b35, #ffd23f)"
               : "linear-gradient(90deg, #FF3FD1, #31D1FF)",
-          borderRadius: "8px",
+          borderRadius: 8,
         }}
       />
     );
@@ -95,13 +87,9 @@ const AxeLogo = ({
   if (isMobile) {
     return (
       <div {...containerProps}>
-        {/* Container avec effet de membrane rythmé */}
         <div
-          className="speaker-membrane relative"
+          className="speaker-membrane"
           style={{
-            animation:
-              "speakerBeat var(--speaker-duration, 3s) ease-in-out infinite",
-            transformOrigin: "center center",
             "--speaker-duration": "3s",
             "--speaker-beat-end": "24%",
             "--speaker-hover-duration": "1.5s",
@@ -124,12 +112,11 @@ const AxeLogo = ({
                 theme === "sunset"
                   ? "hue-rotate(25deg) saturate(1.1) drop-shadow(0 0 12px #ff6b3580)"
                   : "drop-shadow(0 0 12px #FF3FD180)",
-              transform: "translateZ(0)", // Force GPU
+              transform: "translateZ(0)",
             }}
           />
         </div>
 
-        {/* Fallback pendant chargement */}
         {!imageLoaded && (
           <div
             className="absolute inset-0 flex items-center justify-center text-white font-bold text-center leading-tight"
@@ -138,7 +125,7 @@ const AxeLogo = ({
                 theme === "sunset"
                   ? "linear-gradient(90deg, #ff6b35, #ffd23f)"
                   : "linear-gradient(90deg, #FF3FD1, #31D1FF)",
-              borderRadius: "8px",
+              borderRadius: 8,
               fontSize: `${textSizes.axe * 0.7}px`,
             }}
           >
@@ -152,7 +139,7 @@ const AxeLogo = ({
                 style={{
                   fontFamily: "'Bauhaus', Arial, sans-serif",
                   fontSize: `${textSizes.musique * 0.8}px`,
-                  marginTop: "-2px",
+                  marginTop: -2,
                 }}
               >
                 MUSIQUE
@@ -160,76 +147,22 @@ const AxeLogo = ({
             </div>
           </div>
         )}
-
-        {/* Styles CSS pour l'effet haut-parleur mobile */}
-        <style jsx>{`
-          @keyframes speakerBeat {
-            0% {
-              transform: scale(1);
-            }
-            4% {
-              transform: scale(1.08);
-            }
-            8% {
-              transform: scale(0.92);
-            }
-            12% {
-              transform: scale(1.05);
-            }
-            16% {
-              transform: scale(0.96);
-            }
-            20% {
-              transform: scale(1.02);
-            }
-            24% {
-              transform: scale(1);
-            }
-            24%,
-            100% {
-              transform: scale(1);
-            }
-          }
-
-          .speaker-membrane:hover {
-            animation: speakerBeat var(--speaker-hover-duration) ease-in-out
-              infinite;
-          }
-
-          .speaker-membrane:active {
-            transform: scale(0.92);
-            transition: transform 0.15s ease-out;
-          }
-        `}</style>
       </div>
     );
   }
 
-  // Version desktop avec SVG + effet grésillement néon UNIQUEMENT
+  // Desktop SVG + néon
   return (
     <div {...containerProps}>
       <div
-        className="neon-flicker relative"
-        style={{
-          animation:
-            "neonFlicker var(--neon-duration, 4s) ease-in-out infinite",
-          "--neon-duration": "4s",
-          "--neon-hover-duration": "2s",
-        }}
+        className="neon-flicker"
+        style={{ "--neon-duration": "4s", "--neon-hover-duration": "2s" }}
       >
         <svg
           width={logoSize}
           viewBox="0 0 423 281"
           className="logo-svg transition-all duration-300"
           xmlns="http://www.w3.org/2000/svg"
-          style={{
-            filter: `
-              drop-shadow(0 0 8px var(--logo-primary, #FF3FD1)) 
-              drop-shadow(0 0 15px var(--logo-primary, #FF3FD1)) 
-              drop-shadow(0 0 25px var(--logo-primary, #FF3FD1))
-            `,
-            willChange: "filter, opacity",
-          }}
         >
           <defs>
             <linearGradient
@@ -250,7 +183,7 @@ const AxeLogo = ({
             </linearGradient>
           </defs>
 
-          {/* Forme du badge */}
+          {/* Badge */}
           <g transform="matrix(0.989355,0,0,1.04873,-39.0155,-125.719)">
             <g transform="matrix(1.78644,0,0,1.6853,-320.147,2.81323)">
               <g transform="matrix(0.906335,0,0,0.903945,184.699,-38.0939)">
@@ -260,14 +193,13 @@ const AxeLogo = ({
                   fillRule="evenodd"
                   stroke={`url(#logoGradient-${theme}-${logoSize})`}
                   strokeWidth="2"
-                  className="transition-all duration-300"
                 />
               </g>
             </g>
           </g>
         </svg>
 
-        {/* Texte SVG avec glow */}
+        {/* Texte overlay (tailles dynamiques → on garde en inline) */}
         <div className="absolute inset-0 pointer-events-none">
           <div
             className="absolute text-white logo-text-axe"
@@ -306,83 +238,6 @@ const AxeLogo = ({
             MUSIQUE
           </div>
         </div>
-
-        {/* Styles CSS pour l'effet grésillement néon desktop */}
-        <style jsx>{`
-          @keyframes neonFlicker {
-            0% {
-              opacity: 1;
-              filter: brightness(1) saturate(1) contrast(1);
-            }
-            3% {
-              opacity: 0.92;
-              filter: brightness(1.15) saturate(1.08) contrast(1.05);
-            }
-            6% {
-              opacity: 1;
-              filter: brightness(0.88) saturate(0.95) contrast(0.98);
-            }
-            9% {
-              opacity: 0.96;
-              filter: brightness(1.12) saturate(1.06) contrast(1.03);
-            }
-            12% {
-              opacity: 1;
-              filter: brightness(1) saturate(1) contrast(1);
-            }
-            18% {
-              opacity: 0.94;
-              filter: brightness(1.18) saturate(1.1) contrast(1.06);
-            }
-            21% {
-              opacity: 1;
-              filter: brightness(0.91) saturate(0.97) contrast(0.99);
-            }
-            25% {
-              opacity: 0.98;
-              filter: brightness(1.08) saturate(1.04) contrast(1.02);
-            }
-            30% {
-              opacity: 1;
-              filter: brightness(1) saturate(1) contrast(1);
-            }
-            45% {
-              opacity: 0.99;
-              filter: brightness(1.02) saturate(1.01) contrast(1);
-            }
-            48% {
-              opacity: 1;
-              filter: brightness(0.98) saturate(0.99) contrast(1);
-            }
-            65% {
-              opacity: 0.97;
-              filter: brightness(1.05) saturate(1.03) contrast(1.01);
-            }
-            68% {
-              opacity: 1;
-              filter: brightness(1) saturate(1) contrast(1);
-            }
-            85% {
-              opacity: 0.995;
-              filter: brightness(1.01) saturate(1.005) contrast(1);
-            }
-            100% {
-              opacity: 1;
-              filter: brightness(1) saturate(1) contrast(1);
-            }
-          }
-
-          .neon-flicker:hover {
-            animation: neonFlicker var(--neon-hover-duration) ease-in-out
-              infinite;
-          }
-
-          .neon-flicker:active {
-            opacity: 0.85;
-            filter: brightness(1.3) saturate(1.2) contrast(1.1);
-            transition: all 0.15s ease-out;
-          }
-        `}</style>
       </div>
     </div>
   );
