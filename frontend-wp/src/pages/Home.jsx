@@ -143,7 +143,7 @@ const Home = () => {
               animationType="equalizer"
               gradient="ocean"
             >
-              Prêt à faire de la musique ?
+              En avant la musique ?
             </Title>
             <Title
               tag="p"

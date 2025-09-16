@@ -1,12 +1,9 @@
 // src/components/UI/CTASection.jsx
 import React from "react";
 import { Phone, Mail, MapPin, Clock, Check } from "lucide-react";
-import Title from "./Title";
 import LeafletMap from "./LeafletMap";
 
 const CTASection = ({
-  title = "Prêt à faire de la musique ?",
-  subtitle = "Passe essayer, obtenir un conseil, ou comparer avant d'acheter.",
   phone = "0326657495",
   email = "contact@axemusique.shop",
   showMap = true,

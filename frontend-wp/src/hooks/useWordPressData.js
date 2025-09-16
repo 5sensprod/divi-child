@@ -11,7 +11,7 @@ export const useWordPressData = () => {
   const [data, setData] = useState({
     ...DEFAULT_DATA,
     products: [],
-    categories: [], // ← Ajout des catégories dans le state initial
+    categories: [],
     error: null,
   });
 
@@ -151,112 +151,6 @@ export const useWordPressData = () => {
 
   // Méthodes utilitaires pour interagir avec les données
   const actions = {
-    // Recharger les produits
-    reloadProducts: async () => {
-      setData((prev) => ({
-        ...prev,
-        loading: { ...prev.loading, products: true },
-      }));
-
-      try {
-        const products = await getProducts({ per_page: 20 });
-        setData((prev) => ({
-          ...prev,
-          products,
-          loading: { ...prev.loading, products: false },
-        }));
-      } catch (error) {
-        setData((prev) => ({
-          ...prev,
-          products: FALLBACK_PRODUCTS,
-          loading: { ...prev.loading, products: false },
-        }));
-      }
-    },
-
-    // Recharger les catégories AVEC gestion du cache
-    reloadCategories: async (forceRefresh = false) => {
-      setData((prev) => ({
-        ...prev,
-        loading: { ...prev.loading, categories: true },
-      }));
-
-      try {
-        // Si forceRefresh, vider le cache d'abord
-        if (forceRefresh) {
-          const { clearCategoriesCache } = await import(
-            "../services/woocommerce"
-          );
-          clearCategoriesCache();
-        }
-
-        const categories = await getParentCategories();
-        setData((prev) => ({
-          ...prev,
-          categories,
-          loading: { ...prev.loading, categories: false },
-        }));
-
-        console.log("Catégories rechargées:", categories.length);
-      } catch (error) {
-        console.error("Erreur rechargement catégories:", error);
-        setData((prev) => ({
-          ...prev,
-          categories: prev.categories, // Conserver les catégories existantes
-          loading: { ...prev.loading, categories: false },
-        }));
-      }
-    },
-
-    // Rechercher des produits
-    searchProducts: async (searchTerm) => {
-      setData((prev) => ({
-        ...prev,
-        loading: { ...prev.loading, products: true },
-      }));
-
-      try {
-        const { searchProducts } = await import("../services/woocommerce");
-        const products = await searchProducts(searchTerm);
-        setData((prev) => ({
-          ...prev,
-          products,
-          loading: { ...prev.loading, products: false },
-        }));
-      } catch (error) {
-        setData((prev) => ({
-          ...prev,
-          loading: { ...prev.loading, products: false },
-        }));
-      }
-    },
-
-    // Charger des produits par catégorie
-    loadProductsByCategory: async (categoryId) => {
-      setData((prev) => ({
-        ...prev,
-        loading: { ...prev.loading, products: true },
-      }));
-
-      try {
-        const { getProductsByCategory } = await import(
-          "../services/woocommerce"
-        );
-        const products = await getProductsByCategory(categoryId);
-        setData((prev) => ({
-          ...prev,
-          products,
-          loading: { ...prev.loading, products: false },
-        }));
-      } catch (error) {
-        setData((prev) => ({
-          ...prev,
-          loading: { ...prev.loading, products: false },
-        }));
-      }
-    },
-
-    // Nouvelle méthode pour vider tout le cache
     clearAllCache: () => {
       cacheUtils.remove(CACHE_KEYS.MENU);
       cacheUtils.remove(CACHE_KEYS.CATEGORIES);
