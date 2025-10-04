@@ -196,14 +196,20 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
 };
 
 // Service pour récupérer les produits par catégorie
+// Service pour récupérer les produits par catégorie AVEC headers de pagination
 export const getProductsByCategory = async (categoryId, params = {}) => {
   try {
-    const cacheKey = `axemusique_category_${categoryId}_simple`;
+    const page = params.page || 1;
+    const per_page = params.per_page || 12;
+
+    // Créer une clé de cache unique pour chaque page
+    const cacheKey = `axemusique_category_${categoryId}_page_${page}_perpage_${per_page}`;
 
     // Vérifier le cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
       if (cached) {
+        console.log(`📦 Produits de la page ${page} depuis le cache`);
         return cached;
       }
     }
@@ -212,17 +218,35 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products", {
       category: categoryId,
-      per_page: 20,
+      per_page: per_page,
+      page: page,
       status: "publish",
       ...params,
     });
 
+    // Extraire les informations de pagination depuis les headers
+    const result = {
+      data: response.data,
+      headers: {
+        "x-wp-total": response.headers["x-wp-total"],
+        "x-wp-totalpages": response.headers["x-wp-totalpages"],
+      },
+      pagination: {
+        total: parseInt(response.headers["x-wp-total"]) || 0,
+        totalPages: parseInt(response.headers["x-wp-totalpages"]) || 0,
+        currentPage: page,
+        perPage: per_page,
+      },
+    };
+
+    console.log(`📊 Pagination info:`, result.pagination);
+
     // Sauvegarder en cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      cacheUtils.setWithTTL(cacheKey, response.data, CACHE_DURATIONS.DEFAULT);
+      cacheUtils.setWithTTL(cacheKey, result, CACHE_DURATIONS.DEFAULT);
     }
 
-    return response.data;
+    return result;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
