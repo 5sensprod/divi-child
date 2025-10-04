@@ -532,11 +532,56 @@ export const getBrands = async () => {
   }
 };
 
+export const getProductBySlug = async (slug) => {
+  try {
+    const cacheKey = `axemusique_product_${slug}`;
+
+    // Vérifier le cache si activé
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
+      if (cached) {
+        console.log("📦 Produit depuis le cache");
+        return cached;
+      }
+    }
+
+    const WooCommerce = createWooCommerceAPI();
+    const response = await WooCommerce.get("products", {
+      slug: slug,
+      status: "publish",
+    });
+
+    if (response.data && response.data.length > 0) {
+      const product = response.data[0];
+
+      console.log("✅ Produit trouvé:", product.name);
+
+      // Sauvegarder en cache si activé
+      if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+        cacheUtils.setWithTTL(cacheKey, product, CACHE_DURATIONS.DEFAULT);
+      }
+
+      return product;
+    }
+
+    throw new Error("Produit non trouvé");
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(
+        "Erreur produit par slug:",
+        error.response?.data || error.message
+      );
+    }
+    throw error;
+  }
+};
+
 export default {
   // Fonctions existantes
   getProducts,
   getCategories,
   getParentCategories,
+  getProductBySlug,
   getProduct,
   searchProducts,
   getProductsByCategory,

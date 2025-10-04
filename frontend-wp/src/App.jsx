@@ -6,20 +6,19 @@ import Home from "./pages/Home";
 import { ThemeProvider } from "./context/ThemeContext";
 import { API_CONFIG } from "./utils/constants";
 
-// Nouvelles pages React pour les catégories (à créer)
+// Pages React
 import CategoryPage from "./pages/CategoryPage";
 import ShopPage from "./pages/ShopPage";
+import ProductPage from "./pages/ProductPage"; // 👈 AJOUTER
 
 // Composant de redirection optimisé
 const RedirectToWordPress = () => {
   useEffect(() => {
     // Masquer immédiatement le body
     document.body.style.visibility = "hidden";
-
     // Redirection immédiate avec replace pour éviter l'historique
     window.location.replace(window.location.href);
   }, []);
-
   // Ne rien retourner - composant invisible
   return null;
 };
@@ -33,10 +32,8 @@ const useWordPressRedirect = () => {
         document.body.classList.add("redirecting");
       }
     };
-
     handleRouteChange();
     window.addEventListener("popstate", handleRouteChange);
-
     return () => {
       window.removeEventListener("popstate", handleRouteChange);
       document.body.classList.remove("redirecting");
@@ -48,6 +45,9 @@ const App = () => {
   useWordPressRedirect();
   console.log(
     `🎛️ React Categories: ${API_CONFIG.useReactCategories ? "ON" : "OFF"}`
+  );
+  console.log(
+    `🎛️ React Products: ${API_CONFIG.useReactProducts ? "ON" : "OFF"}`
   );
 
   return (
@@ -95,17 +95,19 @@ const App = () => {
               </>
             )}
 
-            {/* Autres routes spécifiques que vous voulez en React */}
-            {/* Par exemple si vous avez déjà une page contact en React :
-          <Route
-            path="/contact"
-            element={
-              <Layout>
-                <ContactPage />
-              </Layout>
-            }
-          />
-          */}
+            {/* 👇 NOUVEAU : Pages produits - conditionnel selon l'env */}
+            {API_CONFIG.useReactProducts ? (
+              <Route
+                path="/produit/:slug"
+                element={
+                  <Layout>
+                    <ProductPage />
+                  </Layout>
+                }
+              />
+            ) : (
+              <Route path="/produit/*" element={<RedirectToWordPress />} />
+            )}
 
             {/* Toutes les autres routes -> WordPress */}
             <Route path="*" element={<RedirectToWordPress />} />

@@ -1,6 +1,6 @@
 // src/pages/CategoryPage.jsx
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
 import {
   getProductsByCategory,
@@ -16,6 +16,7 @@ import { formatPrice } from "../utils/format";
 
 const CategoryPage = () => {
   const params = useParams();
+  const navigate = useNavigate();
   const fullPath = params["*"] || params.slug;
   const { categories, loading, siteData } = useWordPress();
   const [products, setProducts] = useState([]);
@@ -543,7 +544,8 @@ const CategoryPage = () => {
                     {products.map((product) => (
                       <div
                         key={product.id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                        onClick={() => navigate(`/produit/${product.slug}`)}
                       >
                         <div className="aspect-square bg-gray-100">
                           <img
@@ -591,7 +593,13 @@ const CategoryPage = () => {
                                 : "Rupture"}
                             </span>
                           </div>
-                          <button className="w-full mt-3 bg-pink-500 text-white py-2 px-4 rounded hover:bg-pink-600 transition-colors">
+                          <button
+                            className="w-full mt-3 bg-pink-500 text-white py-2 px-4 rounded hover:bg-pink-600 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/produit/${product.slug}`);
+                            }}
+                          >
                             Voir le produit
                           </button>
                         </div>

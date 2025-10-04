@@ -57,25 +57,43 @@ export const useWordPressData = () => {
 
     const loadProductionData = async () => {
       try {
-        // Tester la connexion WordPress
-        await wordpressService.testConnection();
+        // 👇 MODIFICATION : Ne pas bloquer si testConnection échoue
+        let wordpressAvailable = true;
+        try {
+          await wordpressService.testConnection();
+        } catch (error) {
+          console.warn(
+            "⚠️ API WordPress non accessible, mode WooCommerce uniquement"
+          );
+          wordpressAvailable = false;
+        }
 
-        // Charger toutes les données en parallèle - AJOUT DES CATÉGORIES PARENTES
-        const [
-          siteDataResult,
-          menuDataResult,
-          productsResult,
-          categoriesResult,
-        ] = await Promise.allSettled([
-          wordpressService.loadSiteData(),
-          wordpressService.loadMenu(),
-          getProducts({ per_page: 20 }),
-          getParentCategories(), // ← Utilisation des catégories parentes avec cache
-        ]);
+        // Charger toutes les données en parallèle
+        const promises = [getProducts({ per_page: 20 }), getParentCategories()];
+
+        // N'ajouter les promesses WordPress que si l'API est disponible
+        if (wordpressAvailable) {
+          promises.push(
+            wordpressService.loadSiteData(),
+            wordpressService.loadMenu()
+          );
+        }
+
+        const results = await Promise.allSettled(promises);
+
+        // Extraire les résultats
+        const productsResult = results[0];
+        const categoriesResult = results[1];
+        const siteDataResult = wordpressAvailable
+          ? results[2]
+          : { status: "rejected" };
+        const menuDataResult = wordpressAvailable
+          ? results[3]
+          : { status: "rejected" };
 
         console.log("=== RÉSULTATS DU CHARGEMENT ===");
         console.log("Menu structure:", menuDataResult.value);
-        console.log("Categories loaded:", categoriesResult.value); // ← Log pour vérifier
+        console.log("Categories loaded:", categoriesResult.value);
 
         // Mise à jour du state avec les résultats
         setData((prev) => ({
@@ -95,7 +113,7 @@ export const useWordPressData = () => {
           categories:
             categoriesResult.status === "fulfilled"
               ? categoriesResult.value
-              : prev.categories, // ← Conserver les catégories en cache si l'API échoue
+              : prev.categories,
           loading: {
             initial: false,
             menus: false,
@@ -114,7 +132,6 @@ export const useWordPressData = () => {
         setData((prev) => ({
           ...prev,
           products: FALLBACK_PRODUCTS,
-          // Ne pas écraser les catégories en cache en cas d'erreur
           categories: prev.categories.length > 0 ? prev.categories : [],
           loading: {
             initial: false,
@@ -123,7 +140,7 @@ export const useWordPressData = () => {
             categories: false,
             siteData: false,
           },
-          error: "Erreur de connexion à WordPress",
+          error: null, // 👈 Ne plus afficher d'erreur bloquante
         }));
       }
     };
@@ -142,7 +159,7 @@ export const useWordPressData = () => {
           categories: false,
           siteData: false,
         },
-        error: "Erreur de connexion à WordPress.",
+        error: null, // 👈 Ne plus bloquer l'app
       }));
     };
 

@@ -6,6 +6,7 @@ export const API_CONFIG = {
   timeout: 30000,
   // Supprimé isDevMode - plus besoin
   useReactCategories: import.meta.env.VITE_USE_REACT_CATEGORIES === "true",
+  useReactProducts: import.meta.env.VITE_USE_REACT_PRODUCTS === "true",
   auth: {
     username: import.meta.env.VITE_WP_USER,
     password: import.meta.env.VITE_WP_APP_PASSWORD,
