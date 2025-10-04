@@ -12,6 +12,7 @@ import Title from "../components/UI/Title";
 import PriceFilter from "../components/UI/PriceFilter";
 import BrandFilter from "../components/UI/BrandFilter";
 import SortFilter from "../components/UI/SortFilter";
+import { formatPrice } from "../utils/format";
 
 const CategoryPage = () => {
   const params = useParams();
@@ -566,7 +567,7 @@ const CategoryPage = () => {
                               {product.on_sale && product.sale_price ? (
                                 <>
                                   <span className="text-lg font-bold text-pink-600">
-                                    {product.sale_price}€
+                                    {formatPrice(product.sale_price)}
                                   </span>
                                   <span className="text-sm text-gray-500 line-through">
                                     {product.regular_price}€
@@ -574,7 +575,7 @@ const CategoryPage = () => {
                                 </>
                               ) : (
                                 <span className="text-lg font-bold text-gray-900">
-                                  {product.regular_price}€
+                                  {formatPrice(product.regular_price)}
                                 </span>
                               )}
                             </div>

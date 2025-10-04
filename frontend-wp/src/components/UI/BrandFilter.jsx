@@ -55,35 +55,21 @@ const BrandFilter = ({
 
   return (
     <div className={`bg-white rounded-lg shadow-md ${className}`}>
-      {/* Header cliquable sur mobile */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-6 lg:cursor-default"
-      >
-        <div className="flex items-center gap-2">
+      {/* Header - div sur desktop, button sur mobile */}
+      <div className="flex items-center justify-between p-6">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="lg:cursor-default flex items-center gap-2 flex-1 lg:pointer-events-none"
+        >
           <h3 className="text-lg font-semibold text-gray-900">Marques</h3>
           {hasSelection && (
             <span className="lg:hidden text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded-full font-medium">
               {selectedBrands.length}
             </span>
           )}
-        </div>
-        <div className="flex items-center gap-2">
-          {hasSelection && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleReset();
-              }}
-              className="hidden lg:flex text-sm text-pink-600 hover:text-pink-700 font-medium items-center gap-1"
-            >
-              <X size={16} />
-              Effacer
-            </button>
-          )}
           {/* Icône chevron visible uniquement sur mobile */}
           <svg
-            className={`lg:hidden w-5 h-5 text-gray-500 transition-transform ${
+            className={`lg:hidden w-5 h-5 text-gray-500 transition-transform ml-auto ${
               isExpanded ? "rotate-180" : ""
             }`}
             fill="none"
@@ -97,8 +83,18 @@ const BrandFilter = ({
               d="M19 9l-7 7-7-7"
             />
           </svg>
-        </div>
-      </button>
+        </button>
+
+        {hasSelection && (
+          <button
+            onClick={handleReset}
+            className="hidden lg:flex text-sm text-pink-600 hover:text-pink-700 font-medium items-center gap-1 ml-2"
+          >
+            <X size={16} />
+            Effacer
+          </button>
+        )}
+      </div>
 
       {/* Contenu - Toujours visible sur desktop, conditionnel sur mobile */}
       <div className={`${isExpanded ? "block" : "hidden"} lg:block px-6 pb-6`}>
