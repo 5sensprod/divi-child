@@ -116,6 +116,22 @@ const CategoryPage = () => {
           );
         }
 
+        // 👇 METTRE LES CONSOLE.LOG ICI
+        console.log("📂 Chemin complet:", fullPath);
+        console.log("📂 Segments:", pathSegments);
+        console.log("📂 Slug final utilisé:", finalSlug);
+        console.log("📂 Catégorie trouvée:", matchingCategory);
+        console.log(
+          "📂 ID catégorie utilisé pour les produits:",
+          matchingCategory.id
+        );
+        console.log("📂 Slug de la catégorie trouvée:", matchingCategory.slug); // 👈 AJOUTE CETTE LIGNE
+        console.log("📂 Nom catégorie:", matchingCategory.name);
+        console.log("📂 Parent ID:", matchingCategory.parent);
+
+        console.log("✅ Catégorie trouvée:", matchingCategory);
+        setCategory(matchingCategory);
+
         console.log("✅ Catégorie trouvée:", matchingCategory);
         setCategory(matchingCategory);
 

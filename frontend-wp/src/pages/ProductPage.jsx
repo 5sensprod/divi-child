@@ -1,7 +1,9 @@
 // src/pages/ProductPage.jsx
+// Ajouter cette fonction utilitaire en haut du composant
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProductBySlug } from "../services/woocommerce";
+import { getProductBySlug, getCategories } from "../services/woocommerce";
 import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
 import { formatPrice } from "../utils/format";
@@ -14,6 +16,21 @@ const ProductPage = () => {
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [categoryPath, setCategoryPath] = useState(null); // 👈 NOUVEAU
+
+  // Fonction pour construire le chemin complet d'une catégorie
+  const buildCategoryPath = async (categoryId, allCategories) => {
+    const path = [];
+    let currentCat = allCategories.find((cat) => cat.id === categoryId);
+
+    while (currentCat) {
+      path.unshift(currentCat.slug);
+      if (currentCat.parent === 0) break;
+      currentCat = allCategories.find((cat) => cat.id === currentCat.parent);
+    }
+
+    return path.join("/");
+  };
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -24,6 +41,25 @@ const ProductPage = () => {
         const data = await getProductBySlug(slug);
         setProduct(data);
         console.log("✅ Produit chargé:", data);
+
+        // 👇 NOUVEAU : Construire le chemin de catégorie
+        if (data.categories && data.categories[0]) {
+          try {
+            const allCategories = await getCategories();
+            const fullPath = await buildCategoryPath(
+              data.categories[0].id,
+              allCategories
+            );
+            setCategoryPath(fullPath);
+            console.log("📂 Chemin catégorie:", fullPath);
+          } catch (err) {
+            console.warn(
+              "Impossible de construire le chemin de catégorie:",
+              err
+            );
+            setCategoryPath(data.categories[0].slug);
+          }
+        }
       } catch (err) {
         console.error("❌ Erreur chargement produit:", err);
         setError(err.message);
@@ -122,23 +158,23 @@ const ProductPage = () => {
                     Boutique
                   </button>
                 </li>
-                {product.categories && product.categories[0] && (
-                  <>
-                    <li>/</li>
-                    <li>
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/categorie-produit/${product.categories[0].slug}`
-                          )
-                        }
-                        className="hover:text-white transition-colors"
-                      >
-                        {product.categories[0].name}
-                      </button>
-                    </li>
-                  </>
-                )}
+                {product.categories &&
+                  product.categories[0] &&
+                  categoryPath && (
+                    <>
+                      <li>/</li>
+                      <li>
+                        <button
+                          onClick={() =>
+                            navigate(`/categorie-produit/${categoryPath}`)
+                          }
+                          className="hover:text-white transition-colors"
+                        >
+                          {product.categories[0].name}
+                        </button>
+                      </li>
+                    </>
+                  )}
                 <li>/</li>
                 <li className="text-white font-medium">{product.name}</li>
               </ol>
@@ -158,13 +194,12 @@ const ProductPage = () => {
         </div>
       </section>
 
-      {/* Section produit */}
+      {/* Section produit - RESTE IDENTIQUE */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Galerie d'images */}
             <div className="space-y-4">
-              {/* Image principale */}
               <div className="aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
                 <img
                   src={mainImage}
@@ -176,7 +211,6 @@ const ProductPage = () => {
                 />
               </div>
 
-              {/* Miniatures */}
               {images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
                   {images.map((image, index) => (
@@ -205,7 +239,6 @@ const ProductPage = () => {
 
             {/* Informations produit */}
             <div className="space-y-6">
-              {/* Prix */}
               <div className="bg-white rounded-lg p-6 shadow-md">
                 <div className="flex items-baseline gap-3 mb-2">
                   {product.on_sale && product.sale_price ? (
@@ -227,7 +260,6 @@ const ProductPage = () => {
                   )}
                 </div>
 
-                {/* Statut stock */}
                 <div className="flex items-center gap-2 mt-4">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
@@ -250,7 +282,6 @@ const ProductPage = () => {
                 </div>
               </div>
 
-              {/* Description courte */}
               {product.short_description && (
                 <div className="bg-white rounded-lg p-6 shadow-md">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">
@@ -265,7 +296,6 @@ const ProductPage = () => {
                 </div>
               )}
 
-              {/* Quantité et panier */}
               <div className="bg-white rounded-lg p-6 shadow-md">
                 <div className="flex items-center gap-4 mb-4">
                   <label className="text-sm font-medium text-gray-700">
@@ -301,7 +331,6 @@ const ProductPage = () => {
                 </button>
               </div>
 
-              {/* Catégories et tags */}
               {(product.categories?.length > 0 || product.tags?.length > 0) && (
                 <div className="bg-white rounded-lg p-6 shadow-md space-y-4">
                   {product.categories?.length > 0 && (
@@ -314,7 +343,9 @@ const ProductPage = () => {
                           <button
                             key={cat.id}
                             onClick={() =>
-                              navigate(`/categorie-produit/${cat.slug}`)
+                              navigate(
+                                `/categorie-produit/${categoryPath || cat.slug}`
+                              )
                             }
                             className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-700 transition-colors"
                           >
@@ -347,7 +378,6 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* Description complète */}
           {product.description && (
             <div className="mt-12 bg-white rounded-lg p-8 shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
@@ -360,7 +390,6 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Attributs du produit */}
           {product.attributes?.length > 0 && (
             <div className="mt-8 bg-white rounded-lg p-8 shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
