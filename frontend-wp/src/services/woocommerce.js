@@ -1,6 +1,12 @@
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
 import { cacheUtils, CACHE_KEYS, CACHE_DURATIONS } from "../utils/cache";
 
+const decodeHTMLEntities = (text) => {
+  if (typeof text !== "string") return text;
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = text;
+  return textarea.value;
+};
 // Configuration WooCommerce
 const createWooCommerceAPI = () => {
   const consumerKey = import.meta.env.VITE_WC_CONSUMER_KEY;
@@ -384,13 +390,12 @@ export const getBrandsByCategory = async (categoryId) => {
       // Créer le tableau final avec les comptes
       const brands = Array.from(brandsSet)
         .map((brandName) => {
-          // Trouver l'objet complet depuis la réponse des termes
           const brandTerm = response.data.find(
             (term) => term.name === brandName
           );
           return {
             id: brandTerm?.id || brandName,
-            name: brandName,
+            name: decodeHTMLEntities(brandName), // 👈 Décoder ici
             slug:
               brandTerm?.slug || brandName.toLowerCase().replace(/\s+/g, "-"),
             count: brandCounts[brandName] || 0,
