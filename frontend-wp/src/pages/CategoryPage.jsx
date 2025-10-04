@@ -11,6 +11,7 @@ import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
 import PriceFilter from "../components/UI/PriceFilter";
 import BrandFilter from "../components/UI/BrandFilter";
+import SortFilter from "../components/UI/SortFilter";
 
 const CategoryPage = () => {
   const params = useParams();
@@ -36,6 +37,33 @@ const CategoryPage = () => {
   const [brands, setBrands] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [brandsLoading, setBrandsLoading] = useState(false);
+  const [sortOrder, setSortOrder] = useState("default");
+
+  // Fonction pour trier les produits
+  const sortProducts = (productsToSort, sortType) => {
+    const sorted = [...productsToSort];
+
+    switch (sortType) {
+      case "price-asc":
+        return sorted.sort((a, b) => {
+          const priceA = parseFloat(a.price) || 0;
+          const priceB = parseFloat(b.price) || 0;
+          return priceA - priceB;
+        });
+      case "price-desc":
+        return sorted.sort((a, b) => {
+          const priceA = parseFloat(a.price) || 0;
+          const priceB = parseFloat(b.price) || 0;
+          return priceB - priceA;
+        });
+      case "name-asc":
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case "name-desc":
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return sorted;
+    }
+  };
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -115,7 +143,9 @@ const CategoryPage = () => {
           "- Prix:",
           activePriceFilter,
           "- Marques:",
-          selectedBrands
+          selectedBrands,
+          "- Tri:",
+          sortOrder
         );
 
         const response = await getProductsByCategory(matchingCategory.id, {
@@ -166,6 +196,9 @@ const CategoryPage = () => {
           );
         }
 
+        // Trier les produits
+        productsData = sortProducts(productsData, sortOrder);
+
         // Pagination côté client
         const total = productsData.length;
         const startIndex = (currentPage - 1) * productsPerPage;
@@ -205,6 +238,7 @@ const CategoryPage = () => {
     currentPage,
     activePriceFilter,
     selectedBrands,
+    sortOrder,
   ]);
 
   // Gestionnaire de changement de filtre de prix
@@ -219,10 +253,17 @@ const CategoryPage = () => {
     setCurrentPage(1);
   };
 
+  // Gestionnaire de changement de tri
+  const handleSortChange = (newSort) => {
+    setSortOrder(newSort);
+    setCurrentPage(1);
+  };
+
   // Réinitialiser tous les filtres
   const resetAllFilters = () => {
     setActivePriceFilter({ min: 0, max: 2000 });
     setSelectedBrands([]);
+    setSortOrder("default");
     setCurrentPage(1);
   };
 
@@ -230,7 +271,8 @@ const CategoryPage = () => {
   const hasActiveFilters =
     activePriceFilter.min !== 0 ||
     activePriceFilter.max !== 2000 ||
-    selectedBrands.length > 0;
+    selectedBrands.length > 0 ||
+    sortOrder !== "default";
 
   // Fonction pour changer de page
   const handlePageChange = (pageNumber) => {
@@ -407,6 +449,12 @@ const CategoryPage = () => {
             {/* Sidebar avec filtres */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="sticky top-4 space-y-4">
+                {/* Filtre de tri */}
+                <SortFilter
+                  currentSort={sortOrder}
+                  onChange={handleSortChange}
+                />
+
                 {/* Filtre de prix */}
                 <PriceFilter
                   minPrice={0}
@@ -438,6 +486,19 @@ const CategoryPage = () => {
                       </button>
                     </div>
                     <div className="space-y-1 text-xs text-pink-700">
+                      {sortOrder !== "default" && (
+                        <div>
+                          Tri:{" "}
+                          {
+                            {
+                              "price-asc": "Prix croissant",
+                              "price-desc": "Prix décroissant",
+                              "name-asc": "Nom A-Z",
+                              "name-desc": "Nom Z-A",
+                            }[sortOrder]
+                          }
+                        </div>
+                      )}
                       {(activePriceFilter.min !== 0 ||
                         activePriceFilter.max !== 2000) && (
                         <div>
