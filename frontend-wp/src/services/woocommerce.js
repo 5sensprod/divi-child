@@ -195,15 +195,15 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
   }
 };
 
-// Service pour récupérer les produits par catégorie
-// Service pour récupérer les produits par catégorie AVEC headers de pagination
 export const getProductsByCategory = async (categoryId, params = {}) => {
   try {
     const page = params.page || 1;
     const per_page = params.per_page || 12;
+    const brands = params.brands || [];
 
-    // Créer une clé de cache unique pour chaque page
-    const cacheKey = `axemusique_category_${categoryId}_page_${page}_perpage_${per_page}`;
+    // Créer une clé de cache unique pour chaque page et filtres
+    const brandsKey = brands.length > 0 ? `_brands_${brands.join("-")}` : "";
+    const cacheKey = `axemusique_category_${categoryId}_page_${page}_perpage_${per_page}${brandsKey}`;
 
     // Vérifier le cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
@@ -216,13 +216,22 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
 
     // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
-    const response = await WooCommerce.get("products", {
+
+    const apiParams = {
       category: categoryId,
       per_page: per_page,
       page: page,
       status: "publish",
       ...params,
-    });
+    };
+
+    // Ajouter le filtre de marques si présent
+    if (brands.length > 0) {
+      // WooCommerce utilise 'product_brand' pour les marques
+      apiParams.product_brand = brands.join(",");
+    }
+
+    const response = await WooCommerce.get("products", apiParams);
 
     // Extraire les informations de pagination depuis les headers
     const result = {
@@ -255,6 +264,226 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
       );
     }
     throw error;
+  }
+};
+
+// Service pour récupérer les marques d'une catégorie spécifique
+export const getBrandsByCategory = async (categoryId) => {
+  try {
+    const cacheKey = `axemusique_brands_category_${categoryId}`;
+
+    // Vérifier le cache
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
+      if (cached) {
+        console.log("📦 Marques depuis le cache");
+        return cached;
+      }
+    }
+
+    const WooCommerce = createWooCommerceAPI();
+
+    // Essayer d'abord avec l'endpoint des attributs de produit
+    try {
+      // Utiliser 'product_brand' pour les marques
+      const response = await WooCommerce.get("products/brands", {
+        per_page: 100,
+        hide_empty: true,
+      });
+
+      // Filtrer par catégorie en récupérant les produits
+      const productsResponse = await WooCommerce.get("products", {
+        category: categoryId,
+        per_page: 100,
+        status: "publish",
+      });
+
+      // === DEBUG : Voir la structure réelle des produits ===
+      console.log("=== DEBUG STRUCTURE PRODUITS ===");
+      if (productsResponse.data.length > 0) {
+        const firstProduct = productsResponse.data[0];
+        console.log("📦 Premier produit:", {
+          id: firstProduct.id,
+          name: firstProduct.name,
+          attributes: firstProduct.attributes,
+          brands: firstProduct.brands,
+          product_brand: firstProduct.product_brand,
+          meta_data: firstProduct.meta_data?.filter((m) =>
+            m.key.includes("brand")
+          ),
+          allKeys: Object.keys(firstProduct),
+        });
+      }
+      console.log("=== FIN DEBUG ===");
+
+      // Extraire les marques uniques des produits
+      const brandsSet = new Set();
+      const brandCounts = {};
+
+      productsResponse.data.forEach((product) => {
+        let brandNames = [];
+
+        // Méthode 1 : Chercher dans les attributs
+        const brandAttr = product.attributes?.find(
+          (attr) =>
+            attr.name === "Brand" ||
+            attr.name === "Marque" ||
+            attr.slug === "product_brand" ||
+            attr.id === "product_brand" ||
+            attr.name.toLowerCase().includes("brand")
+        );
+
+        if (brandAttr && brandAttr.options) {
+          brandNames.push(...brandAttr.options);
+        }
+
+        // Méthode 2 : Chercher dans les taxonomies brands
+        if (product.brands && product.brands.length > 0) {
+          product.brands.forEach((brand) => {
+            brandNames.push(brand.name);
+          });
+        }
+
+        // Méthode 3 : Propriété directe product_brand
+        if (product.product_brand) {
+          if (Array.isArray(product.product_brand)) {
+            brandNames.push(...product.product_brand);
+          } else if (typeof product.product_brand === "string") {
+            brandNames.push(product.product_brand);
+          } else if (product.product_brand.name) {
+            brandNames.push(product.product_brand.name);
+          }
+        }
+
+        // Méthode 4 : Chercher dans meta_data
+        if (product.meta_data) {
+          const brandMeta = product.meta_data.find(
+            (meta) =>
+              meta.key === "product_brand" ||
+              meta.key === "_product_brand" ||
+              meta.key === "brand"
+          );
+          if (brandMeta && brandMeta.value) {
+            if (Array.isArray(brandMeta.value)) {
+              brandNames.push(...brandMeta.value);
+            } else {
+              brandNames.push(brandMeta.value);
+            }
+          }
+        }
+
+        // Compter les marques trouvées
+        brandNames.forEach((brandName) => {
+          if (brandName && typeof brandName === "string") {
+            brandsSet.add(brandName);
+            brandCounts[brandName] = (brandCounts[brandName] || 0) + 1;
+          }
+        });
+      });
+
+      // Créer le tableau final avec les comptes
+      const brands = Array.from(brandsSet)
+        .map((brandName) => {
+          // Trouver l'objet complet depuis la réponse des termes
+          const brandTerm = response.data.find(
+            (term) => term.name === brandName
+          );
+          return {
+            id: brandTerm?.id || brandName,
+            name: brandName,
+            slug:
+              brandTerm?.slug || brandName.toLowerCase().replace(/\s+/g, "-"),
+            count: brandCounts[brandName] || 0,
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      console.log(
+        `📊 ${brands.length} marques trouvées pour la catégorie ${categoryId}`
+      );
+
+      // Mettre en cache
+      if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+        cacheUtils.setWithTTL(cacheKey, brands, CACHE_DURATIONS.DEFAULT);
+      }
+
+      return brands;
+    } catch (attrError) {
+      console.warn(
+        "Impossible de récupérer les marques via l'endpoint brands, utilisation du fallback"
+      );
+
+      // Fallback: extraire depuis les produits uniquement
+      const productsResponse = await WooCommerce.get("products", {
+        category: categoryId,
+        per_page: 100,
+        status: "publish",
+      });
+
+      const brandsMap = new Map();
+
+      productsResponse.data.forEach((product) => {
+        // Chercher product_brand dans les attributs
+        const brandAttr = product.attributes?.find(
+          (attr) =>
+            attr.name === "Brand" ||
+            attr.name === "Marque" ||
+            attr.slug === "product_brand" ||
+            attr.id === "product_brand"
+        );
+
+        if (brandAttr && brandAttr.options) {
+          brandAttr.options.forEach((brandName) => {
+            const slug = brandName.toLowerCase().replace(/\s+/g, "-");
+            if (brandsMap.has(slug)) {
+              brandsMap.get(slug).count++;
+            } else {
+              brandsMap.set(slug, {
+                id: slug,
+                name: brandName,
+                slug: slug,
+                count: 1,
+              });
+            }
+          });
+        }
+
+        // Fallback : chercher dans les taxonomies
+        if (product.brands && product.brands.length > 0) {
+          product.brands.forEach((brand) => {
+            const slug =
+              brand.slug || brand.name.toLowerCase().replace(/\s+/g, "-");
+            if (brandsMap.has(slug)) {
+              brandsMap.get(slug).count++;
+            } else {
+              brandsMap.set(slug, {
+                id: brand.id || slug,
+                name: brand.name,
+                slug: slug,
+                count: 1,
+              });
+            }
+          });
+        }
+      });
+
+      const brands = Array.from(brandsMap.values()).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+      console.log(
+        `📊 ${brands.length} marques trouvées (fallback) pour la catégorie ${categoryId}`
+      );
+
+      if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+        cacheUtils.setWithTTL(cacheKey, brands, CACHE_DURATIONS.DEFAULT);
+      }
+
+      return brands;
+    }
+  } catch (error) {
+    console.error("Erreur lors de la récupération des marques:", error);
+    return [];
   }
 };
 // Fonction utilitaire pour vider le cache des catégories
@@ -309,4 +538,5 @@ export default {
   getTotalProductsCount,
   getBrands,
   clearCategoriesCache,
+  getBrandsByCategory,
 };

@@ -2,10 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
-import { getProductsByCategory, getCategories } from "../services/woocommerce";
+import {
+  getProductsByCategory,
+  getCategories,
+  getBrandsByCategory,
+} from "../services/woocommerce";
 import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
 import PriceFilter from "../components/UI/PriceFilter";
+import BrandFilter from "../components/UI/BrandFilter";
 
 const CategoryPage = () => {
   const params = useParams();
@@ -22,12 +27,15 @@ const CategoryPage = () => {
   const productsPerPage = 12;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
-  // États pour le filtre de prix
+  // États pour les filtres
   const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
   const [activePriceFilter, setActivePriceFilter] = useState({
     min: 0,
     max: 2000,
   });
+  const [brands, setBrands] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -35,15 +43,10 @@ const CategoryPage = () => {
         setProductsLoading(true);
         setError(null);
 
-        console.log("🔍 Chemin complet reçu:", fullPath);
-
         const pathSegments = fullPath
           ? fullPath.split("/").filter(Boolean)
           : [];
         const finalSlug = pathSegments[pathSegments.length - 1] || fullPath;
-
-        console.log("📂 Segments du chemin:", pathSegments);
-        console.log("🎯 Slug final à rechercher:", finalSlug);
 
         let allCategories = categories;
         if (!allCategories || allCategories.length === 0) {
@@ -86,30 +89,91 @@ const CategoryPage = () => {
         console.log("✅ Catégorie trouvée:", matchingCategory);
         setCategory(matchingCategory);
 
-        // Récupérer les produits avec pagination et filtres de prix
+        // Charger les marques disponibles pour cette catégorie
+        console.log(
+          "🏷️ Chargement des marques pour catégorie:",
+          matchingCategory.id
+        );
+        setBrandsLoading(true);
+        try {
+          const brandsData = await getBrandsByCategory(matchingCategory.id);
+          setBrands(brandsData);
+          console.log("✅ Marques chargées:", brandsData.length, brandsData);
+        } catch (brandError) {
+          console.warn("⚠️ Impossible de charger les marques:", brandError);
+          setBrands([]);
+        } finally {
+          setBrandsLoading(false);
+        }
+
+        // Récupérer les produits avec pagination et filtres
         console.log(
           "🛍️ Chargement des produits pour catégorie ID:",
           matchingCategory.id,
           "- Page:",
           currentPage,
           "- Prix:",
-          activePriceFilter
+          activePriceFilter,
+          "- Marques:",
+          selectedBrands
         );
 
         const response = await getProductsByCategory(matchingCategory.id, {
-          per_page: productsPerPage,
-          page: currentPage,
+          per_page: 100, // Récupérer plus de produits pour filtrer côté client
+          page: 1,
           min_price: activePriceFilter.min,
           max_price:
-            activePriceFilter.max === 2000 ? undefined : activePriceFilter.max, // Ne pas limiter si max
+            activePriceFilter.max === 2000 ? undefined : activePriceFilter.max,
         });
 
-        // La réponse contient maintenant data, headers et pagination
-        const productsData = response.data || response;
-        const total = response.pagination?.total || productsData.length;
+        let productsData = response.data || response;
+
+        // Filtrer par marques côté client si des marques sont sélectionnées
+        if (selectedBrands.length > 0) {
+          productsData = productsData.filter((product) => {
+            // Méthode 1 : Chercher dans product.brands (taxonomie)
+            if (product.brands && product.brands.length > 0) {
+              return product.brands.some(
+                (brand) =>
+                  selectedBrands.includes(brand.slug) ||
+                  selectedBrands.includes(
+                    brand.name.toLowerCase().replace(/\s+/g, "-")
+                  )
+              );
+            }
+
+            // Méthode 2 : Chercher dans les attributs
+            const brandAttr = product.attributes?.find(
+              (attr) =>
+                attr.name === "Brand" ||
+                attr.name === "Marque" ||
+                attr.slug === "product_brand" ||
+                attr.name.toLowerCase().includes("brand")
+            );
+
+            if (brandAttr && brandAttr.options) {
+              return brandAttr.options.some((option) =>
+                selectedBrands.includes(
+                  option.toLowerCase().replace(/\s+/g, "-")
+                )
+              );
+            }
+
+            return false;
+          });
+          console.log(
+            `🔍 Filtrage marques: ${response.data.length} → ${productsData.length} produits`
+          );
+        }
+
+        // Pagination côté client
+        const total = productsData.length;
+        const startIndex = (currentPage - 1) * productsPerPage;
+        const endIndex = startIndex + productsPerPage;
+        const paginatedProducts = productsData.slice(startIndex, endIndex);
 
         setTotalProducts(total);
-        setProducts(productsData);
+        setProducts(paginatedProducts);
 
         console.log(
           "✅ Produits trouvés:",
@@ -140,13 +204,33 @@ const CategoryPage = () => {
     loading.categories,
     currentPage,
     activePriceFilter,
+    selectedBrands,
   ]);
 
   // Gestionnaire de changement de filtre de prix
   const handlePriceChange = (newPriceRange) => {
     setActivePriceFilter(newPriceRange);
-    setCurrentPage(1); // Réinitialiser à la page 1 lors du changement de filtre
+    setCurrentPage(1);
   };
+
+  // Gestionnaire de changement de marques
+  const handleBrandsChange = (newSelectedBrands) => {
+    setSelectedBrands(newSelectedBrands);
+    setCurrentPage(1);
+  };
+
+  // Réinitialiser tous les filtres
+  const resetAllFilters = () => {
+    setActivePriceFilter({ min: 0, max: 2000 });
+    setSelectedBrands([]);
+    setCurrentPage(1);
+  };
+
+  // Vérifier si des filtres sont actifs
+  const hasActiveFilters =
+    activePriceFilter.min !== 0 ||
+    activePriceFilter.max !== 2000 ||
+    selectedBrands.length > 0;
 
   // Fonction pour changer de page
   const handlePageChange = (pageNumber) => {
@@ -323,6 +407,7 @@ const CategoryPage = () => {
             {/* Sidebar avec filtres */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="sticky top-4 space-y-4">
+                {/* Filtre de prix */}
                 <PriceFilter
                   minPrice={0}
                   maxPrice={2000}
@@ -331,23 +416,42 @@ const CategoryPage = () => {
                   onChange={handlePriceChange}
                 />
 
+                {/* Filtre de marques */}
+                <BrandFilter
+                  brands={brands}
+                  selectedBrands={selectedBrands}
+                  onChange={handleBrandsChange}
+                />
+
                 {/* Indicateur de filtres actifs */}
-                {(activePriceFilter.min !== 0 ||
-                  activePriceFilter.max !== 2000) && (
+                {hasActiveFilters && (
                   <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-pink-800">
                         Filtres actifs
                       </span>
                       <button
-                        onClick={() => handlePriceChange({ min: 0, max: 2000 })}
+                        onClick={resetAllFilters}
                         className="text-xs text-pink-600 hover:text-pink-700 font-medium"
                       >
                         Tout effacer
                       </button>
                     </div>
-                    <div className="text-xs text-pink-700">
-                      Prix: {activePriceFilter.min}€ - {activePriceFilter.max}€
+                    <div className="space-y-1 text-xs text-pink-700">
+                      {(activePriceFilter.min !== 0 ||
+                        activePriceFilter.max !== 2000) && (
+                        <div>
+                          Prix: {activePriceFilter.min}€ -{" "}
+                          {activePriceFilter.max}€
+                        </div>
+                      )}
+                      {selectedBrands.length > 0 && (
+                        <div>
+                          {selectedBrands.length} marque
+                          {selectedBrands.length > 1 ? "s" : ""} sélectionnée
+                          {selectedBrands.length > 1 ? "s" : ""}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -443,11 +547,18 @@ const CategoryPage = () => {
                     Aucun produit disponible
                   </h3>
                   <p className="text-gray-600">
-                    {activePriceFilter.min !== 0 ||
-                    activePriceFilter.max !== 2000
-                      ? "Aucun produit ne correspond aux filtres sélectionnés."
+                    {hasActiveFilters
+                      ? "Aucun produit ne correspond aux filtres sélectionnés. Essayez de modifier vos critères de recherche."
                       : "Cette catégorie ne contient actuellement aucun produit."}
                   </p>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={resetAllFilters}
+                      className="mt-4 bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors"
+                    >
+                      Réinitialiser les filtres
+                    </button>
+                  )}
                 </div>
               )}
             </div>
