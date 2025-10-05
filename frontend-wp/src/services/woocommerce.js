@@ -62,12 +62,23 @@ export const getCategories = async () => {
     }
 
     const WooCommerce = createWooCommerceAPI();
-    const response = await WooCommerce.get("products/categories", {
+
+    // Page 1
+    const response1 = await WooCommerce.get("products/categories", {
       per_page: 100,
-      hide_empty: true,
+      page: 1,
+      hide_empty: false,
     });
 
-    const categories = decodeObject(response.data);
+    // Page 2
+    const response2 = await WooCommerce.get("products/categories", {
+      per_page: 100,
+      page: 2,
+      hide_empty: false,
+    });
+
+    // Combiner les résultats
+    const categories = decodeObject([...response1.data, ...response2.data]);
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       cacheUtils.set(CACHE_KEYS.CATEGORIES, categories);
@@ -78,45 +89,6 @@ export const getCategories = async () => {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur catégories:",
-        error.response?.data || error.message
-      );
-    }
-    throw error;
-  }
-};
-
-// Récupérer les catégories parentes
-export const getParentCategories = async () => {
-  try {
-    const cacheKey = `${CACHE_KEYS.CATEGORIES}_parent`;
-
-    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      const cached = cacheUtils.get(cacheKey);
-      if (cached) return cached;
-    }
-
-    const WooCommerce = createWooCommerceAPI();
-    const response = await WooCommerce.get("products/categories", {
-      per_page: 100,
-      hide_empty: true,
-      parent: 0,
-      orderby: "id",
-      order: "asc",
-    });
-
-    const sortedCategories = decodeObject(response.data).sort(
-      (a, b) => a.id - b.id
-    );
-
-    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      cacheUtils.set(cacheKey, sortedCategories);
-    }
-
-    return sortedCategories;
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error(
-        "Erreur catégories parentes:",
         error.response?.data || error.message
       );
     }
@@ -346,7 +318,6 @@ export const clearCategoriesCache = () => {
 export default {
   getProducts,
   getCategories,
-  getParentCategories,
   getProduct,
   getProductBySlug,
   searchProducts,
