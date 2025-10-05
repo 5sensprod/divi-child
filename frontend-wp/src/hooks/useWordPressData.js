@@ -1,11 +1,7 @@
 // src/hooks/useWordPressData.js
 
 import { useState, useEffect } from "react";
-import {
-  getProducts,
-  getParentCategories,
-  getCategories,
-} from "../services/woocommerce";
+import { getProducts, getParentCategories } from "../services/woocommerce";
 import { wordpressService } from "../services/wordpress";
 import { DEFAULT_DATA, FALLBACK_PRODUCTS } from "../utils/constants";
 import { cacheUtils, CACHE_KEYS } from "../utils/cache";
@@ -25,7 +21,7 @@ export const useWordPressData = () => {
       const cachedMenu = cacheUtils.get(CACHE_KEYS.MENU);
       const cachedCategories =
         import.meta.env.VITE_DISABLE_CACHE !== "true"
-          ? cacheUtils.get(CACHE_KEYS.CATEGORIES) // 👈 Enlever le _parent
+          ? cacheUtils.get(`${CACHE_KEYS.CATEGORIES}_parent`)
           : null;
 
       // Mise à jour immédiate avec les données en cache
@@ -73,7 +69,7 @@ export const useWordPressData = () => {
         }
 
         // Charger toutes les données en parallèle
-        const promises = [getProducts({ per_page: 20 }), getCategories()]; // 👈 getCategories au lieu de getParentCategories
+        const promises = [getProducts({ per_page: 20 }), getParentCategories()];
 
         // N'ajouter les promesses WordPress que si l'API est disponible
         if (wordpressAvailable) {

@@ -18,46 +18,37 @@ const CategoryPage = () => {
   const params = useParams();
   const navigate = useNavigate();
   const fullPath = params["*"] || params.slug;
-  const { categories, loading, siteData } = useWordPress();
+  const { categories, loading } = useWordPress();
+
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState(null);
   const [productsLoading, setProductsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // États pour la pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const productsPerPage = 12;
-  const totalPages = Math.ceil(totalProducts / productsPerPage);
-
-  // États pour les filtres
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 });
+  const [brands, setBrands] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState([]);
   const [activePriceFilter, setActivePriceFilter] = useState({
     min: 0,
     max: 2000,
   });
-  const [brands, setBrands] = useState([]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [brandsLoading, setBrandsLoading] = useState(false);
   const [sortOrder, setSortOrder] = useState("default");
 
-  // Fonction pour trier les produits
+  const productsPerPage = 12;
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
+
+  // Fonction de tri
   const sortProducts = (productsToSort, sortType) => {
     const sorted = [...productsToSort];
-
     switch (sortType) {
       case "price-asc":
-        return sorted.sort((a, b) => {
-          const priceA = parseFloat(a.price) || 0;
-          const priceB = parseFloat(b.price) || 0;
-          return priceA - priceB;
-        });
+        return sorted.sort(
+          (a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0)
+        );
       case "price-desc":
-        return sorted.sort((a, b) => {
-          const priceA = parseFloat(a.price) || 0;
-          const priceB = parseFloat(b.price) || 0;
-          return priceB - priceA;
-        });
+        return sorted.sort(
+          (a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0)
+        );
       case "name-asc":
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
       case "name-desc":
@@ -67,107 +58,78 @@ const CategoryPage = () => {
     }
   };
 
+  // Fonction de filtrage par marques
+  const filterByBrands = (productsData) => {
+    if (selectedBrands.length === 0) return productsData;
+
+    return productsData.filter((product) =>
+      product.brands?.some(
+        (brand) =>
+          selectedBrands.includes(brand.slug) ||
+          selectedBrands.includes(brand.name.toLowerCase().replace(/\s+/g, "-"))
+      )
+    );
+  };
+
+  // Trouver la catégorie correspondante
+  const findMatchingCategory = async () => {
+    const pathSegments = fullPath?.split("/").filter(Boolean) || [];
+    const finalSlug = pathSegments[pathSegments.length - 1] || fullPath;
+
+    let allCategories = categories;
+    if (!allCategories || allCategories.length === 0) {
+      allCategories = await getCategories();
+    }
+
+    // Recherche par slug exact
+    let match = allCategories.find((cat) => cat.slug === finalSlug);
+
+    // Recherche dans les segments
+    if (!match && pathSegments.length > 1) {
+      for (const segment of pathSegments) {
+        match = allCategories.find((cat) => cat.slug === segment);
+        if (match) break;
+      }
+    }
+
+    // Recherche flexible
+    if (!match) {
+      match = allCategories.find(
+        (cat) =>
+          cat.slug.includes(finalSlug) ||
+          finalSlug.includes(cat.slug) ||
+          cat.name.toLowerCase().includes(finalSlug.toLowerCase())
+      );
+    }
+
+    if (!match) {
+      throw new Error(`Catégorie "${finalSlug}" non trouvée`);
+    }
+
+    return match;
+  };
+
   useEffect(() => {
     const fetchCategoryProducts = async () => {
       try {
         setProductsLoading(true);
         setError(null);
 
-        const pathSegments = fullPath
-          ? fullPath.split("/").filter(Boolean)
-          : [];
-        const finalSlug = pathSegments[pathSegments.length - 1] || fullPath;
-
-        let allCategories = categories;
-        if (!allCategories || allCategories.length === 0) {
-          console.log("⚠️ Pas de catégories en contexte, chargement direct...");
-          allCategories = await getCategories();
-        }
-
-        let matchingCategory = allCategories.find(
-          (cat) => cat.slug === finalSlug
-        );
-
-        if (!matchingCategory && pathSegments.length > 1) {
-          for (const segment of pathSegments) {
-            matchingCategory = allCategories.find(
-              (cat) => cat.slug === segment
-            );
-            if (matchingCategory) {
-              console.log(`✅ Catégorie trouvée avec le segment: ${segment}`);
-              break;
-            }
-          }
-        }
-
-        if (!matchingCategory) {
-          matchingCategory = allCategories.find(
-            (cat) =>
-              cat.slug.includes(finalSlug) ||
-              finalSlug.includes(cat.slug) ||
-              cat.name.toLowerCase().includes(finalSlug.toLowerCase()) ||
-              finalSlug.toLowerCase().includes(cat.name.toLowerCase())
-          );
-        }
-
-        if (!matchingCategory) {
-          throw new Error(
-            `Catégorie "${finalSlug}" non trouvée dans le chemin "${fullPath}".`
-          );
-        }
-
-        // 👇 METTRE LES CONSOLE.LOG ICI
-        console.log("📂 Chemin complet:", fullPath);
-        console.log("📂 Segments:", pathSegments);
-        console.log("📂 Slug final utilisé:", finalSlug);
-        console.log("📂 Catégorie trouvée:", matchingCategory);
-        console.log(
-          "📂 ID catégorie utilisé pour les produits:",
-          matchingCategory.id
-        );
-        console.log("📂 Slug de la catégorie trouvée:", matchingCategory.slug); // 👈 AJOUTE CETTE LIGNE
-        console.log("📂 Nom catégorie:", matchingCategory.name);
-        console.log("📂 Parent ID:", matchingCategory.parent);
-
-        console.log("✅ Catégorie trouvée:", matchingCategory);
+        const matchingCategory = await findMatchingCategory();
         setCategory(matchingCategory);
 
-        console.log("✅ Catégorie trouvée:", matchingCategory);
-        setCategory(matchingCategory);
-
-        // Charger les marques disponibles pour cette catégorie
-        console.log(
-          "🏷️ Chargement des marques pour catégorie:",
-          matchingCategory.id
-        );
-        setBrandsLoading(true);
+        // Charger les marques
         try {
           const brandsData = await getBrandsByCategory(matchingCategory.id);
           setBrands(brandsData);
-          console.log("✅ Marques chargées:", brandsData.length, brandsData);
         } catch (brandError) {
-          console.warn("⚠️ Impossible de charger les marques:", brandError);
+          console.error("Erreur chargement marques:", brandError);
           setBrands([]);
-        } finally {
-          setBrandsLoading(false);
         }
 
-        // Récupérer les produits avec pagination et filtres
-        console.log(
-          "🛍️ Chargement des produits pour catégorie ID:",
-          matchingCategory.id,
-          "- Page:",
-          currentPage,
-          "- Prix:",
-          activePriceFilter,
-          "- Marques:",
-          selectedBrands,
-          "- Tri:",
-          sortOrder
-        );
-
+        // Charger les produits
         const response = await getProductsByCategory(matchingCategory.id, {
-          per_page: 100, // Récupérer plus de produits pour filtrer côté client
+          per_page: 100,
           page: 1,
           min_price: activePriceFilter.min,
           max_price:
@@ -175,79 +137,28 @@ const CategoryPage = () => {
         });
 
         let productsData = response.data || response;
-
-        // Filtrer par marques côté client si des marques sont sélectionnées
-        if (selectedBrands.length > 0) {
-          productsData = productsData.filter((product) => {
-            // Méthode 1 : Chercher dans product.brands (taxonomie)
-            if (product.brands && product.brands.length > 0) {
-              return product.brands.some(
-                (brand) =>
-                  selectedBrands.includes(brand.slug) ||
-                  selectedBrands.includes(
-                    brand.name.toLowerCase().replace(/\s+/g, "-")
-                  )
-              );
-            }
-
-            // Méthode 2 : Chercher dans les attributs
-            const brandAttr = product.attributes?.find(
-              (attr) =>
-                attr.name === "Brand" ||
-                attr.name === "Marque" ||
-                attr.slug === "product_brand" ||
-                attr.name.toLowerCase().includes("brand")
-            );
-
-            if (brandAttr && brandAttr.options) {
-              return brandAttr.options.some((option) =>
-                selectedBrands.includes(
-                  option.toLowerCase().replace(/\s+/g, "-")
-                )
-              );
-            }
-
-            return false;
-          });
-          console.log(
-            `🔍 Filtrage marques: ${response.data.length} → ${productsData.length} produits`
-          );
-        }
-
-        // Trier les produits
+        productsData = filterByBrands(productsData);
         productsData = sortProducts(productsData, sortOrder);
 
-        // Pagination côté client
         const total = productsData.length;
         const startIndex = (currentPage - 1) * productsPerPage;
-        const endIndex = startIndex + productsPerPage;
-        const paginatedProducts = productsData.slice(startIndex, endIndex);
+        const paginatedProducts = productsData.slice(
+          startIndex,
+          startIndex + productsPerPage
+        );
 
         setTotalProducts(total);
         setProducts(paginatedProducts);
-
-        console.log(
-          "✅ Produits trouvés:",
-          productsData.length,
-          "/ Total:",
-          total
-        );
-        console.log(
-          "📄 Pages disponibles:",
-          response.pagination?.totalPages || "inconnu"
-        );
       } catch (error) {
-        console.error("❌ Erreur lors du chargement:", error);
+        console.error("Erreur chargement:", error);
         setError(error.message);
       } finally {
         setProductsLoading(false);
       }
     };
 
-    if (fullPath) {
-      if (!loading.categories || categories.length > 0) {
-        fetchCategoryProducts();
-      }
+    if (fullPath && (!loading.categories || categories.length > 0)) {
+      fetchCategoryProducts();
     }
   }, [
     fullPath,
@@ -259,25 +170,21 @@ const CategoryPage = () => {
     sortOrder,
   ]);
 
-  // Gestionnaire de changement de filtre de prix
   const handlePriceChange = (newPriceRange) => {
     setActivePriceFilter(newPriceRange);
     setCurrentPage(1);
   };
 
-  // Gestionnaire de changement de marques
   const handleBrandsChange = (newSelectedBrands) => {
     setSelectedBrands(newSelectedBrands);
     setCurrentPage(1);
   };
 
-  // Gestionnaire de changement de tri
   const handleSortChange = (newSort) => {
     setSortOrder(newSort);
     setCurrentPage(1);
   };
 
-  // Réinitialiser tous les filtres
   const resetAllFilters = () => {
     setActivePriceFilter({ min: 0, max: 2000 });
     setSelectedBrands([]);
@@ -285,14 +192,12 @@ const CategoryPage = () => {
     setCurrentPage(1);
   };
 
-  // Vérifier si des filtres sont actifs
   const hasActiveFilters =
     activePriceFilter.min !== 0 ||
     activePriceFilter.max !== 2000 ||
     selectedBrands.length > 0 ||
     sortOrder !== "default";
 
-  // Fonction pour changer de page
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -307,27 +212,23 @@ const CategoryPage = () => {
       const maxVisible = 5;
 
       if (totalPages <= maxVisible) {
-        for (let i = 1; i <= totalPages; i++) {
-          pages.push(i);
-        }
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, "...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
       } else {
-        if (currentPage <= 3) {
-          for (let i = 1; i <= 4; i++) pages.push(i);
-          pages.push("...");
-          pages.push(totalPages);
-        } else if (currentPage >= totalPages - 2) {
-          pages.push(1);
-          pages.push("...");
-          for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-        } else {
-          pages.push(1);
-          pages.push("...");
-          pages.push(currentPage - 1);
-          pages.push(currentPage);
-          pages.push(currentPage + 1);
-          pages.push("...");
-          pages.push(totalPages);
-        }
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages
+        );
       }
 
       return pages;
@@ -426,7 +327,7 @@ const CategoryPage = () => {
 
   return (
     <div>
-      {/* HERO Section */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[400px] page-content">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-10">
@@ -464,16 +365,13 @@ const CategoryPage = () => {
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar avec filtres */}
+            {/* Sidebar filtres */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="sticky top-4 space-y-4">
-                {/* Filtre de tri */}
                 <SortFilter
                   currentSort={sortOrder}
                   onChange={handleSortChange}
                 />
-
-                {/* Filtre de prix */}
                 <PriceFilter
                   minPrice={0}
                   maxPrice={2000}
@@ -481,15 +379,12 @@ const CategoryPage = () => {
                   currentMax={activePriceFilter.max}
                   onChange={handlePriceChange}
                 />
-
-                {/* Filtre de marques */}
                 <BrandFilter
                   brands={brands}
                   selectedBrands={selectedBrands}
                   onChange={handleBrandsChange}
                 />
 
-                {/* Indicateur de filtres actifs */}
                 {hasActiveFilters && (
                   <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -571,9 +466,9 @@ const CategoryPage = () => {
                             }
                             alt={product.name}
                             className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = "/placeholder-product.jpg";
-                            }}
+                            onError={(e) =>
+                              (e.target.src = "/placeholder-product.jpg")
+                            }
                           />
                         </div>
                         <div className="p-4">
@@ -623,7 +518,6 @@ const CategoryPage = () => {
                     ))}
                   </div>
 
-                  {/* Pagination */}
                   <Pagination />
                 </>
               ) : (
@@ -634,7 +528,7 @@ const CategoryPage = () => {
                   </h3>
                   <p className="text-gray-600">
                     {hasActiveFilters
-                      ? "Aucun produit ne correspond aux filtres sélectionnés. Essayez de modifier vos critères de recherche."
+                      ? "Aucun produit ne correspond aux filtres sélectionnés."
                       : "Cette catégorie ne contient actuellement aucun produit."}
                   </p>
                   {hasActiveFilters && (

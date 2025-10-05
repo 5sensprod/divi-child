@@ -7,16 +7,12 @@
  * @returns {string} - Prix formaté (ex: "84,00 €")
  */
 export const formatPrice = (price, currency = "€") => {
-  // Convertir en nombre
   const numPrice = typeof price === "string" ? parseFloat(price) : price;
 
-  // Vérifier si c'est un nombre valide
   if (isNaN(numPrice)) {
     return `0,00 ${currency}`;
   }
 
-  // Formater avec 2 décimales, virgule comme séparateur décimal
-  // et espace comme séparateur de milliers
   const formatted = numPrice.toLocaleString("fr-FR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -38,7 +34,6 @@ export const formatPriceShort = (price, currency = "€") => {
     return `0 ${currency}`;
   }
 
-  // Vérifier si le prix est un nombre entier
   const isInteger = numPrice % 1 === 0;
 
   const formatted = numPrice.toLocaleString("fr-FR", {
@@ -62,6 +57,25 @@ export const decodeHTMLEntities = (text) => {
 };
 
 /**
+ * Décode récursivement les entités HTML dans un objet, tableau ou chaîne
+ * @param {*} obj - L'objet à décoder
+ * @returns {*} - Objet décodé
+ */
+export const decodeObject = (obj) => {
+  if (!obj) return obj;
+  if (typeof obj === "string") return decodeHTMLEntities(obj);
+  if (Array.isArray(obj)) return obj.map(decodeObject);
+  if (typeof obj === "object") {
+    const decoded = {};
+    for (const [key, value] of Object.entries(obj)) {
+      decoded[key] = decodeObject(value);
+    }
+    return decoded;
+  }
+  return obj;
+};
+
+/**
  * Formate un nombre avec séparateurs de milliers français
  * @param {number} num - Le nombre à formater
  * @returns {string} - Nombre formaté (ex: "1 234")
@@ -75,5 +89,6 @@ export default {
   formatPrice,
   formatPriceShort,
   decodeHTMLEntities,
+  decodeObject,
   formatNumber,
 };

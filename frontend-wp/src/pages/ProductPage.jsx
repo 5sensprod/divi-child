@@ -1,11 +1,10 @@
 // src/pages/ProductPage.jsx
-// Ajouter cette fonction utilitaire en haut du composant
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCategories } from "../services/woocommerce";
 import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
+import Breadcrumb from "../components/UI/Breadcrumb";
 import { formatPrice } from "../utils/format";
 
 const ProductPage = () => {
@@ -16,20 +15,30 @@ const ProductPage = () => {
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [categoryPath, setCategoryPath] = useState(null); // 👈 NOUVEAU
+  const [breadcrumbItems, setBreadcrumbItems] = useState([]);
 
-  // Fonction pour construire le chemin complet d'une catégorie
-  const buildCategoryPath = async (categoryId, allCategories) => {
-    const path = [];
+  // Construire le chemin hiérarchique complet des catégories
+  const buildCategoryHierarchy = async (categoryId, allCategories) => {
+    const hierarchy = [];
     let currentCat = allCategories.find((cat) => cat.id === categoryId);
 
     while (currentCat) {
-      path.unshift(currentCat.slug);
+      hierarchy.unshift({
+        id: currentCat.id,
+        name: currentCat.name,
+        slug: currentCat.slug,
+      });
+
       if (currentCat.parent === 0) break;
       currentCat = allCategories.find((cat) => cat.id === currentCat.parent);
     }
 
-    return path.join("/");
+    return hierarchy;
+  };
+
+  // Construire le chemin URL complet
+  const buildCategoryPath = (hierarchy) => {
+    return hierarchy.map((cat) => cat.slug).join("/");
   };
 
   useEffect(() => {
@@ -37,47 +46,52 @@ const ProductPage = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("🔍 Chargement du produit:", slug);
+
         const data = await getProductBySlug(slug);
         setProduct(data);
-        console.log("✅ Produit chargé:", data);
 
-        // 👇 NOUVEAU : Construire le chemin de catégorie
+        // Construire le fil d'ariane
+        const items = [{ label: "Accueil", path: "/" }];
+
         if (data.categories && data.categories[0]) {
           try {
             const allCategories = await getCategories();
-            const fullPath = await buildCategoryPath(
+            const hierarchy = await buildCategoryHierarchy(
               data.categories[0].id,
               allCategories
             );
-            setCategoryPath(fullPath);
-            console.log("📂 Chemin catégorie:", fullPath);
+
+            // Ajouter chaque catégorie de la hiérarchie au fil d'ariane
+            hierarchy.forEach((cat, index) => {
+              const pathUpToThis = hierarchy.slice(0, index + 1);
+              const fullPath = buildCategoryPath(pathUpToThis);
+
+              items.push({
+                label: cat.name,
+                path: `/categorie-produit/${fullPath}`,
+              });
+            });
           } catch (err) {
-            console.warn(
-              "Impossible de construire le chemin de catégorie:",
-              err
-            );
-            setCategoryPath(data.categories[0].slug);
+            console.error("Erreur construction hiérarchie:", err);
           }
         }
+
+        // Ajouter le produit en dernier
+        items.push({ label: data.name, path: null });
+        setBreadcrumbItems(items);
       } catch (err) {
-        console.error("❌ Erreur chargement produit:", err);
+        console.error("Erreur chargement produit:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (slug) {
-      loadProduct();
-    }
+    if (slug) loadProduct();
   }, [slug]);
 
   const handleQuantityChange = (increment) => {
-    setQuantity((prev) => {
-      const newValue = prev + increment;
-      return newValue < 1 ? 1 : newValue;
-    });
+    setQuantity((prev) => Math.max(1, prev + increment));
   };
 
   if (loading) {
@@ -116,10 +130,10 @@ const ProductPage = () => {
                 {error || "Ce produit n'existe pas ou n'est plus disponible"}
               </p>
               <button
-                onClick={() => navigate("/shop")}
+                onClick={() => navigate("/")}
                 className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition-colors"
               >
-                Retour à la boutique
+                Retour à l'accueil
               </button>
             </div>
           </div>
@@ -133,52 +147,12 @@ const ProductPage = () => {
 
   return (
     <div>
-      {/* HERO Section avec nom du produit */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[300px] page-content">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-10">
           <div className="py-12 lg:py-16">
-            {/* Fil d'Ariane */}
-            <nav className="mb-6 text-sm">
-              <ol className="flex items-center space-x-2 text-white/70">
-                <li>
-                  <button
-                    onClick={() => navigate("/")}
-                    className="hover:text-white transition-colors"
-                  >
-                    Accueil
-                  </button>
-                </li>
-                <li>/</li>
-                <li>
-                  <button
-                    onClick={() => navigate("/shop")}
-                    className="hover:text-white transition-colors"
-                  >
-                    Boutique
-                  </button>
-                </li>
-                {product.categories &&
-                  product.categories[0] &&
-                  categoryPath && (
-                    <>
-                      <li>/</li>
-                      <li>
-                        <button
-                          onClick={() =>
-                            navigate(`/categorie-produit/${categoryPath}`)
-                          }
-                          className="hover:text-white transition-colors"
-                        >
-                          {product.categories[0].name}
-                        </button>
-                      </li>
-                    </>
-                  )}
-                <li>/</li>
-                <li className="text-white font-medium">{product.name}</li>
-              </ol>
-            </nav>
+            <Breadcrumb items={breadcrumbItems} className="mb-6" />
 
             <Title
               tag="h1"
@@ -194,7 +168,7 @@ const ProductPage = () => {
         </div>
       </section>
 
-      {/* Section produit - RESTE IDENTIQUE */}
+      {/* Section produit */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
@@ -205,9 +179,7 @@ const ProductPage = () => {
                   src={mainImage}
                   alt={product.name}
                   className="w-full h-full object-contain"
-                  onError={(e) => {
-                    e.target.src = "/placeholder-product.jpg";
-                  }}
+                  onError={(e) => (e.target.src = "/placeholder-product.jpg")}
                 />
               </div>
 
@@ -227,9 +199,9 @@ const ProductPage = () => {
                         src={image.src}
                         alt={`${product.name} ${index + 1}`}
                         className="w-full h-full object-contain"
-                        onError={(e) => {
-                          e.target.src = "/placeholder-product.jpg";
-                        }}
+                        onError={(e) =>
+                          (e.target.src = "/placeholder-product.jpg")
+                        }
                       />
                     </button>
                   ))}
@@ -342,11 +314,12 @@ const ProductPage = () => {
                         {product.categories.map((cat) => (
                           <button
                             key={cat.id}
-                            onClick={() =>
-                              navigate(
-                                `/categorie-produit/${categoryPath || cat.slug}`
-                              )
-                            }
+                            onClick={() => {
+                              const item = breadcrumbItems.find(
+                                (b) => b.label === cat.name
+                              );
+                              if (item) navigate(item.path);
+                            }}
                             className="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-700 transition-colors"
                           >
                             {cat.name}

@@ -1,12 +1,22 @@
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
 import { cacheUtils, CACHE_KEYS, CACHE_DURATIONS } from "../utils/cache";
+import { decodeHTMLEntities } from "../utils/format";
 
-const decodeHTMLEntities = (text) => {
-  if (typeof text !== "string") return text;
-  const textarea = document.createElement("textarea");
-  textarea.innerHTML = text;
-  return textarea.value;
+// Décoder récursivement les entités dans un objet
+const decodeObject = (obj) => {
+  if (!obj) return obj;
+  if (typeof obj === "string") return decodeHTMLEntities(obj);
+  if (Array.isArray(obj)) return obj.map(decodeObject);
+  if (typeof obj === "object") {
+    const decoded = {};
+    for (const [key, value] of Object.entries(obj)) {
+      decoded[key] = decodeObject(value);
+    }
+    return decoded;
+  }
+  return obj;
 };
+
 // Configuration WooCommerce
 const createWooCommerceAPI = () => {
   const consumerKey = import.meta.env.VITE_WC_CONSUMER_KEY;
@@ -15,27 +25,24 @@ const createWooCommerceAPI = () => {
 
   return new WooCommerceRestApi({
     url: siteURL,
-    consumerKey: consumerKey,
-    consumerSecret: consumerSecret,
+    consumerKey,
+    consumerSecret,
     version: "wc/v3",
     queryStringAuth: true,
   });
 };
 
-// Service pour récupérer les produits
+// Récupérer les produits
 export const getProducts = async (params = {}) => {
   try {
     const WooCommerce = createWooCommerceAPI();
-    const defaultParams = {
+    const response = await WooCommerce.get("products", {
       per_page: 20,
       status: "publish",
       ...params,
-    };
-
-    const response = await WooCommerce.get("products", defaultParams);
-    return response.data;
+    });
+    return decodeObject(response.data);
   } catch (error) {
-    // Log seulement les erreurs importantes en mode développement
     if (import.meta.env.DEV) {
       console.error(
         "Erreur WooCommerce:",
@@ -46,46 +53,27 @@ export const getProducts = async (params = {}) => {
   }
 };
 
-// Service pour récupérer TOUTES les catégories AVEC CACHE
+// Récupérer toutes les catégories
 export const getCategories = async () => {
   try {
-    // Vérifier le cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       const cached = cacheUtils.get(CACHE_KEYS.CATEGORIES);
-      if (cached) {
-        console.log("=== CATÉGORIES DEPUIS LE CACHE ===");
-        console.log("Nombre de catégories (cache):", cached.length);
-        return cached;
-      }
+      if (cached) return cached;
     }
 
-    // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products/categories", {
       per_page: 100,
       hide_empty: true,
     });
 
-    // Console.log pour voir les catégories récupérées
-    console.log("=== TOUTES LES CATÉGORIES (API) ===");
-    console.log("Nombre de catégories:", response.data.length);
-    console.log("Données complètes:", response.data);
+    const categories = decodeObject(response.data);
 
-    // Affichage simplifié des catégories
-    console.log("Liste des catégories:");
-    response.data.forEach((category) => {
-      console.log(
-        `- ID: ${category.id}, Nom: ${category.name}, Slug: ${category.slug}, Parent: ${category.parent}`
-      );
-    });
-
-    // Sauvegarder en cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      cacheUtils.set(CACHE_KEYS.CATEGORIES, response.data);
-      console.log("Catégories sauvegardées en cache");
+      cacheUtils.set(CACHE_KEYS.CATEGORIES, categories);
     }
 
-    return response.data;
+    return categories;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
@@ -97,18 +85,14 @@ export const getCategories = async () => {
   }
 };
 
-// Service pour récupérer UNIQUEMENT les catégories PARENTES AVEC CACHE
+// Récupérer les catégories parentes
 export const getParentCategories = async () => {
   try {
-    const parentCategoriesCacheKey = `${CACHE_KEYS.CATEGORIES}_parent`;
+    const cacheKey = `${CACHE_KEYS.CATEGORIES}_parent`;
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      const cached = cacheUtils.get(parentCategoriesCacheKey);
-      if (cached) {
-        console.log("=== CATÉGORIES PARENTES DEPUIS LE CACHE ===");
-        console.log("Nombre de catégories parentes (cache):", cached.length);
-        return cached;
-      }
+      const cached = cacheUtils.get(cacheKey);
+      if (cached) return cached;
     }
 
     const WooCommerce = createWooCommerceAPI();
@@ -116,32 +100,16 @@ export const getParentCategories = async () => {
       per_page: 100,
       hide_empty: true,
       parent: 0,
-      orderby: "id", // Tri par ID (ordre de création)
-      order: "asc", // Ordre croissant (du plus ancien au plus récent)
+      orderby: "id",
+      order: "asc",
     });
 
-    // Tri supplémentaire côté client si nécessaire
-    const sortedCategories = response.data.sort((a, b) => {
-      // Tri par ID (ordre de création)
-      return a.id - b.id;
-
-      // OU tri par date de création si disponible
-      // return new Date(a.date_created) - new Date(b.date_created);
-    });
-
-    console.log("=== CATÉGORIES PARENTES TRIÉES ===");
-    console.log("Nombre de catégories parentes:", sortedCategories.length);
-    sortedCategories.forEach((category, index) => {
-      console.log(
-        `${index + 1}. ID: ${category.id}, Nom: ${category.name}, Date: ${
-          category.date_created
-        }`
-      );
-    });
+    const sortedCategories = decodeObject(response.data).sort(
+      (a, b) => a.id - b.id
+    );
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      cacheUtils.set(parentCategoriesCacheKey, sortedCategories);
-      console.log("Catégories parentes triées sauvegardées en cache");
+      cacheUtils.set(cacheKey, sortedCategories);
     }
 
     return sortedCategories;
@@ -156,12 +124,12 @@ export const getParentCategories = async () => {
   }
 };
 
-// Service pour récupérer un produit spécifique
+// Récupérer un produit par ID
 export const getProduct = async (productId) => {
   try {
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get(`products/${productId}`);
-    return response.data;
+    return decodeObject(response.data);
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error("Erreur produit:", error.response?.data || error.message);
@@ -170,11 +138,48 @@ export const getProduct = async (productId) => {
   }
 };
 
-// SERVICE CORRIGÉ : Recherche avec filtres
+// Récupérer un produit par slug
+export const getProductBySlug = async (slug) => {
+  try {
+    const cacheKey = `axemusique_product_${slug}`;
+
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
+      if (cached) return cached;
+    }
+
+    const WooCommerce = createWooCommerceAPI();
+    const response = await WooCommerce.get("products", {
+      slug,
+      status: "publish",
+    });
+
+    if (!response.data || response.data.length === 0) {
+      throw new Error("Produit non trouvé");
+    }
+
+    const product = decodeObject(response.data[0]);
+
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.setWithTTL(cacheKey, product, CACHE_DURATIONS.DEFAULT);
+    }
+
+    return product;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(
+        "Erreur produit par slug:",
+        error.response?.data || error.message
+      );
+    }
+    throw error;
+  }
+};
+
+// Rechercher des produits
 export const searchProducts = async (searchTerm = "", searchParams = {}) => {
   try {
     const WooCommerce = createWooCommerceAPI();
-
     const params = {
       per_page: 20,
       status: "publish",
@@ -186,10 +191,7 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
     }
 
     const response = await WooCommerce.get("products", params);
-
-    // ✅ Supprimer ou modifier cette logique de fallback
-    // Ne pas faire de fallback automatique qui ignore le terme de recherche
-    return response.data;
+    return decodeObject(response.data);
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
@@ -201,47 +203,29 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
   }
 };
 
+// Récupérer les produits par catégorie
 export const getProductsByCategory = async (categoryId, params = {}) => {
   try {
     const page = params.page || 1;
     const per_page = params.per_page || 12;
-    const brands = params.brands || [];
+    const cacheKey = `axemusique_category_${categoryId}_page_${page}_perpage_${per_page}`;
 
-    // Créer une clé de cache unique pour chaque page et filtres
-    const brandsKey = brands.length > 0 ? `_brands_${brands.join("-")}` : "";
-    const cacheKey = `axemusique_category_${categoryId}_page_${page}_perpage_${per_page}${brandsKey}`;
-
-    // Vérifier le cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
-      if (cached) {
-        console.log(`📦 Produits de la page ${page} depuis le cache`);
-        return cached;
-      }
+      if (cached) return cached;
     }
 
-    // Si pas en cache, récupérer depuis l'API
     const WooCommerce = createWooCommerceAPI();
-
-    const apiParams = {
+    const response = await WooCommerce.get("products", {
       category: categoryId,
-      per_page: per_page,
-      page: page,
+      per_page,
+      page,
       status: "publish",
       ...params,
-    };
+    });
 
-    // Ajouter le filtre de marques si présent
-    if (brands.length > 0) {
-      // WooCommerce utilise 'product_brand' pour les marques
-      apiParams.product_brand = brands.join(",");
-    }
-
-    const response = await WooCommerce.get("products", apiParams);
-
-    // Extraire les informations de pagination depuis les headers
     const result = {
-      data: response.data,
+      data: decodeObject(response.data),
       headers: {
         "x-wp-total": response.headers["x-wp-total"],
         "x-wp-totalpages": response.headers["x-wp-totalpages"],
@@ -254,9 +238,6 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
       },
     };
 
-    console.log(`📊 Pagination info:`, result.pagination);
-
-    // Sauvegarder en cache si activé
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       cacheUtils.setWithTTL(cacheKey, result, CACHE_DURATIONS.DEFAULT);
     }
@@ -273,240 +254,79 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
   }
 };
 
-// Service pour récupérer les marques d'une catégorie spécifique
+// Récupérer les marques d'une catégorie
 export const getBrandsByCategory = async (categoryId) => {
   try {
     const cacheKey = `axemusique_brands_category_${categoryId}`;
 
-    // Vérifier le cache
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
-      if (cached) {
-        console.log("📦 Marques depuis le cache");
-        return cached;
-      }
+      if (cached) return cached;
     }
 
     const WooCommerce = createWooCommerceAPI();
+    const { data } = await WooCommerce.get("products", {
+      category: categoryId,
+      per_page: 100,
+      status: "publish",
+    });
 
-    // Essayer d'abord avec l'endpoint des attributs de produit
-    try {
-      // Utiliser 'product_brand' pour les marques
-      const response = await WooCommerce.get("products/brands", {
-        per_page: 100,
-        hide_empty: true,
+    const brandsMap = new Map();
+    data.forEach((product) => {
+      product.brands?.forEach((brand) => {
+        const decodedName = decodeHTMLEntities(brand.name);
+        const slug =
+          brand.slug || decodedName.toLowerCase().replace(/\s+/g, "-");
+
+        brandsMap.has(slug)
+          ? brandsMap.get(slug).count++
+          : brandsMap.set(slug, {
+              id: brand.id || slug,
+              name: decodedName,
+              slug,
+              count: 1,
+            });
       });
+    });
 
-      // Filtrer par catégorie en récupérant les produits
-      const productsResponse = await WooCommerce.get("products", {
-        category: categoryId,
-        per_page: 100,
-        status: "publish",
-      });
+    const brands = Array.from(brandsMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
 
-      // === DEBUG : Voir la structure réelle des produits ===
-      console.log("=== DEBUG STRUCTURE PRODUITS ===");
-      if (productsResponse.data.length > 0) {
-        const firstProduct = productsResponse.data[0];
-        console.log("📦 Premier produit:", {
-          id: firstProduct.id,
-          name: firstProduct.name,
-          attributes: firstProduct.attributes,
-          brands: firstProduct.brands,
-          product_brand: firstProduct.product_brand,
-          meta_data: firstProduct.meta_data?.filter((m) =>
-            m.key.includes("brand")
-          ),
-          allKeys: Object.keys(firstProduct),
-        });
-      }
-      console.log("=== FIN DEBUG ===");
-
-      // Extraire les marques uniques des produits
-      const brandsSet = new Set();
-      const brandCounts = {};
-
-      productsResponse.data.forEach((product) => {
-        let brandNames = [];
-
-        // Méthode 1 : Chercher dans les attributs
-        const brandAttr = product.attributes?.find(
-          (attr) =>
-            attr.name === "Brand" ||
-            attr.name === "Marque" ||
-            attr.slug === "product_brand" ||
-            attr.id === "product_brand" ||
-            attr.name.toLowerCase().includes("brand")
-        );
-
-        if (brandAttr && brandAttr.options) {
-          brandNames.push(...brandAttr.options);
-        }
-
-        // Méthode 2 : Chercher dans les taxonomies brands
-        if (product.brands && product.brands.length > 0) {
-          product.brands.forEach((brand) => {
-            brandNames.push(brand.name);
-          });
-        }
-
-        // Méthode 3 : Propriété directe product_brand
-        if (product.product_brand) {
-          if (Array.isArray(product.product_brand)) {
-            brandNames.push(...product.product_brand);
-          } else if (typeof product.product_brand === "string") {
-            brandNames.push(product.product_brand);
-          } else if (product.product_brand.name) {
-            brandNames.push(product.product_brand.name);
-          }
-        }
-
-        // Méthode 4 : Chercher dans meta_data
-        if (product.meta_data) {
-          const brandMeta = product.meta_data.find(
-            (meta) =>
-              meta.key === "product_brand" ||
-              meta.key === "_product_brand" ||
-              meta.key === "brand"
-          );
-          if (brandMeta && brandMeta.value) {
-            if (Array.isArray(brandMeta.value)) {
-              brandNames.push(...brandMeta.value);
-            } else {
-              brandNames.push(brandMeta.value);
-            }
-          }
-        }
-
-        // Compter les marques trouvées
-        brandNames.forEach((brandName) => {
-          if (brandName && typeof brandName === "string") {
-            brandsSet.add(brandName);
-            brandCounts[brandName] = (brandCounts[brandName] || 0) + 1;
-          }
-        });
-      });
-
-      // Créer le tableau final avec les comptes
-      const brands = Array.from(brandsSet)
-        .map((brandName) => {
-          const brandTerm = response.data.find(
-            (term) => term.name === brandName
-          );
-          return {
-            id: brandTerm?.id || brandName,
-            name: decodeHTMLEntities(brandName), // 👈 Décoder ici
-            slug:
-              brandTerm?.slug || brandName.toLowerCase().replace(/\s+/g, "-"),
-            count: brandCounts[brandName] || 0,
-          };
-        })
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      console.log(
-        `📊 ${brands.length} marques trouvées pour la catégorie ${categoryId}`
-      );
-
-      // Mettre en cache
-      if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-        cacheUtils.setWithTTL(cacheKey, brands, CACHE_DURATIONS.DEFAULT);
-      }
-
-      return brands;
-    } catch (attrError) {
-      console.warn(
-        "Impossible de récupérer les marques via l'endpoint brands, utilisation du fallback"
-      );
-
-      // Fallback: extraire depuis les produits uniquement
-      const productsResponse = await WooCommerce.get("products", {
-        category: categoryId,
-        per_page: 100,
-        status: "publish",
-      });
-
-      const brandsMap = new Map();
-
-      productsResponse.data.forEach((product) => {
-        // Chercher product_brand dans les attributs
-        const brandAttr = product.attributes?.find(
-          (attr) =>
-            attr.name === "Brand" ||
-            attr.name === "Marque" ||
-            attr.slug === "product_brand" ||
-            attr.id === "product_brand"
-        );
-
-        if (brandAttr && brandAttr.options) {
-          brandAttr.options.forEach((brandName) => {
-            const slug = brandName.toLowerCase().replace(/\s+/g, "-");
-            if (brandsMap.has(slug)) {
-              brandsMap.get(slug).count++;
-            } else {
-              brandsMap.set(slug, {
-                id: slug,
-                name: brandName,
-                slug: slug,
-                count: 1,
-              });
-            }
-          });
-        }
-
-        // Fallback : chercher dans les taxonomies
-        if (product.brands && product.brands.length > 0) {
-          product.brands.forEach((brand) => {
-            const slug =
-              brand.slug || brand.name.toLowerCase().replace(/\s+/g, "-");
-            if (brandsMap.has(slug)) {
-              brandsMap.get(slug).count++;
-            } else {
-              brandsMap.set(slug, {
-                id: brand.id || slug,
-                name: brand.name,
-                slug: slug,
-                count: 1,
-              });
-            }
-          });
-        }
-      });
-
-      const brands = Array.from(brandsMap.values()).sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
-
-      console.log(
-        `📊 ${brands.length} marques trouvées (fallback) pour la catégorie ${categoryId}`
-      );
-
-      if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-        cacheUtils.setWithTTL(cacheKey, brands, CACHE_DURATIONS.DEFAULT);
-      }
-
-      return brands;
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.setWithTTL(cacheKey, brands, CACHE_DURATIONS.DEFAULT);
     }
+
+    return brands;
   } catch (error) {
-    console.error("Erreur lors de la récupération des marques:", error);
+    console.error("Erreur récupération marques:", error);
     return [];
   }
 };
-// Fonction utilitaire pour vider le cache des catégories
-export const clearCategoriesCache = () => {
-  cacheUtils.remove(CACHE_KEYS.CATEGORIES);
-  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent`);
-  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);
+
+// Récupérer toutes les marques
+export const getBrands = async () => {
+  try {
+    const WooCommerce = createWooCommerceAPI();
+    const response = await WooCommerce.get("products/brands", {
+      per_page: 100,
+    });
+    return decodeObject(response.data);
+  } catch (error) {
+    console.log("Pas d'endpoint brands disponible");
+    return [];
+  }
 };
 
+// Récupérer le nombre total de produits
 export const getTotalProductsCount = async () => {
   try {
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get("products", {
-      per_page: 1, // On récupère juste 1 produit pour avoir les headers
+      per_page: 1,
       status: "publish",
     });
 
-    // Le nombre total est dans les headers de la réponse
     const totalCount =
       response.headers["x-wp-total"] || response.headers["X-WP-Total"];
     return parseInt(totalCount) || 0;
@@ -516,77 +336,23 @@ export const getTotalProductsCount = async () => {
   }
 };
 
-// Service pour récupérer toutes les marques uniques
-export const getBrands = async () => {
-  try {
-    const WooCommerce = createWooCommerceAPI();
-    // Si vous avez un plugin de marques, utilisez l'endpoint approprié
-    const response = await WooCommerce.get("products/brands", {
-      per_page: 100,
-    });
-    return response.data;
-  } catch (error) {
-    // Fallback : extraire les marques depuis les produits
-    console.log("Pas d'endpoint brands, extraction depuis les produits...");
-    return [];
-  }
-};
-
-export const getProductBySlug = async (slug) => {
-  try {
-    const cacheKey = `axemusique_product_${slug}`;
-
-    // Vérifier le cache si activé
-    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-      const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
-      if (cached) {
-        console.log("📦 Produit depuis le cache");
-        return cached;
-      }
-    }
-
-    const WooCommerce = createWooCommerceAPI();
-    const response = await WooCommerce.get("products", {
-      slug: slug,
-      status: "publish",
-    });
-
-    if (response.data && response.data.length > 0) {
-      const product = response.data[0];
-
-      console.log("✅ Produit trouvé:", product.name);
-
-      // Sauvegarder en cache si activé
-      if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
-        cacheUtils.setWithTTL(cacheKey, product, CACHE_DURATIONS.DEFAULT);
-      }
-
-      return product;
-    }
-
-    throw new Error("Produit non trouvé");
-  } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error(
-        "Erreur produit par slug:",
-        error.response?.data || error.message
-      );
-    }
-    throw error;
-  }
+// Vider le cache des catégories
+export const clearCategoriesCache = () => {
+  cacheUtils.remove(CACHE_KEYS.CATEGORIES);
+  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent`);
+  cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);
 };
 
 export default {
-  // Fonctions existantes
   getProducts,
   getCategories,
   getParentCategories,
-  getProductBySlug,
   getProduct,
+  getProductBySlug,
   searchProducts,
   getProductsByCategory,
-  getTotalProductsCount,
-  getBrands,
-  clearCategoriesCache,
   getBrandsByCategory,
+  getBrands,
+  getTotalProductsCount,
+  clearCategoriesCache,
 };
