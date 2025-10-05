@@ -2,9 +2,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { API_CONFIG } from "../../utils/constants";
+import { useWordPress } from "../../context/WordPressContext";
 
 export const useNavigation = (menuItems = []) => {
   const location = useLocation();
+  const { categories } = useWordPress();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState(new Set());
@@ -57,34 +59,50 @@ export const useNavigation = (menuItems = []) => {
   const organizedMenu = useMemo(() => {
     if (!menuItems?.length) return [];
 
-    // Fonction pour déterminer si une URL est gérée par React
     const isReactRoute = (url) => {
       if (!url || url === "/" || url === "" || url === "#") return true;
-
       if (API_CONFIG.useReactCategories) {
         return url.includes("/categorie-produit/") || url.includes("/shop");
       }
-
       const reactRoutes = ["/contact", "/about", "/mentions-legales"];
       return reactRoutes.some((route) => url.includes(route));
     };
 
-    // Fonction pour convertir une URL WordPress en route React
     const convertToReactUrl = (url) => {
       if (!url || url === "/" || url === "" || url === "#") return "/";
-
       if (
         API_CONFIG.useReactCategories &&
         url.includes("/categorie-produit/")
       ) {
         const match = url.match(/\/categorie-produit\/([^\/]+)/);
-        if (match) {
-          return `/categorie-produit/${match[1]}`;
-        }
+        if (match) return `/categorie-produit/${match[1]}`;
       }
-
       if (url.includes("/shop")) return "/shop";
       return url;
+    };
+
+    // 👇 NOUVELLE FONCTION : Construire les sous-catégories depuis WooCommerce
+    const buildCategoryChildren = (parentCategory) => {
+      if (!categories?.length) return [];
+
+      // Trouver toutes les catégories enfants
+      return categories
+        .filter((cat) => cat.parent === parentCategory.id)
+        .map((cat) => {
+          // Construire le chemin complet parent/enfant
+          const fullPath = `${parentCategory.slug}/${cat.slug}`;
+
+          return {
+            id: `cat-${cat.id}`,
+            title: cat.name,
+            url: `/categorie-produit/${fullPath}`,
+            parent: `cat-${parentCategory.id}`,
+            isReactRoute: true,
+            reactUrl: `/categorie-produit/${fullPath}`,
+            isActive: location.pathname === `/categorie-produit/${fullPath}`,
+            children: buildCategoryChildren(cat), // Récursif pour sous-sous-catégories
+          };
+        });
     };
 
     // Construction récursive de l'arbre
@@ -95,18 +113,39 @@ export const useNavigation = (menuItems = []) => {
           const isReact = isReactRoute(item.url);
           const reactUrl = isReact ? convertToReactUrl(item.url) : item.url;
 
+          let children = buildMenuTree(item.id);
+
+          // 👇 NOUVEAU : Si c'est un lien vers une catégorie parente, ajouter ses enfants
+          if (
+            API_CONFIG.useReactCategories &&
+            item.url.includes("/categorie-produit/")
+          ) {
+            const categorySlug = item.url.match(
+              /\/categorie-produit\/([^\/]+)/
+            )?.[1];
+            if (categorySlug && categories?.length) {
+              const parentCat = categories.find(
+                (cat) => cat.slug === categorySlug && cat.parent === 0
+              );
+              if (parentCat) {
+                const categoryChildren = buildCategoryChildren(parentCat);
+                children = [...children, ...categoryChildren];
+              }
+            }
+          }
+
           return {
             ...item,
             isReactRoute: isReact,
             reactUrl,
             isActive: isReact && location.pathname === reactUrl,
-            children: buildMenuTree(item.id),
+            children,
           };
         });
     };
 
     return buildMenuTree();
-  }, [menuItems, location.pathname]);
+  }, [menuItems, categories, location.pathname]);
 
   // Actions
   const toggleDropdown = (itemId) => {
