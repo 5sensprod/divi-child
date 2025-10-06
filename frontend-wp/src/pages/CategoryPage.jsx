@@ -22,6 +22,7 @@ const CategoryPage = () => {
 
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState(null);
+  const [categoryHierarchy, setCategoryHierarchy] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,6 +37,20 @@ const CategoryPage = () => {
 
   const productsPerPage = 12;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
+
+  // Fonction pour construire la hiérarchie complète
+  const buildCategoryHierarchy = async (categoryId, allCategories) => {
+    const hierarchy = [];
+    let currentCat = allCategories.find((cat) => cat.id === categoryId);
+
+    while (currentCat) {
+      hierarchy.unshift(currentCat);
+      if (currentCat.parent === 0) break;
+      currentCat = allCategories.find((cat) => cat.id === currentCat.parent);
+    }
+
+    return hierarchy;
+  };
 
   // Fonction de tri
   const sortProducts = (productsToSort, sortType) => {
@@ -117,6 +132,17 @@ const CategoryPage = () => {
 
         const matchingCategory = await findMatchingCategory();
         setCategory(matchingCategory);
+
+        // Construire la hiérarchie complète
+        let allCategories = categories;
+        if (!allCategories || allCategories.length === 0) {
+          allCategories = await getCategories();
+        }
+        const hierarchy = await buildCategoryHierarchy(
+          matchingCategory.id,
+          allCategories
+        );
+        setCategoryHierarchy(hierarchy);
 
         // Charger les marques
         try {
@@ -335,12 +361,22 @@ const CategoryPage = () => {
             <Title
               tag="h1"
               className="mb-4 text-white drop-shadow-lg"
-              animationType="none"
-              gradient="ocean"
+              animationType="equalizer"
               mode="oceanNight"
-              bold="true"
+              bold={true}
             >
-              {category?.name || "Catégorie"}
+              {categoryHierarchy.length > 1 ? (
+                <>
+                  {categoryHierarchy.map((cat, index) => (
+                    <React.Fragment key={cat.id}>
+                      {index > 0 && " "}
+                      {cat.name}
+                    </React.Fragment>
+                  ))}
+                </>
+              ) : (
+                category?.name || "Catégorie"
+              )}
             </Title>
 
             {category?.description && (
@@ -360,7 +396,6 @@ const CategoryPage = () => {
           </div>
         </div>
       </section>
-
       {/* Section des produits avec filtres */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
