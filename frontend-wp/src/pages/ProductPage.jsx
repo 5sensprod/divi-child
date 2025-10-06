@@ -6,6 +6,7 @@ import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
 import Breadcrumb from "../components/UI/Breadcrumb";
 import { formatPrice } from "../utils/format";
+import RelatedProductsCarousel from "../components/Product/RelatedProductsCarousel";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -400,6 +401,12 @@ const ProductPage = () => {
                 ))}
               </div>
             </div>
+          )}
+          {product.categories?.[0] && (
+            <RelatedProductsCarousel
+              currentProductId={product.id}
+              categoryId={product.categories[0].id}
+            />
           )}
         </div>
       </section>
