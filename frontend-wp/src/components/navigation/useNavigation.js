@@ -160,6 +160,10 @@ export const useNavigation = (menuItems = []) => {
     });
   };
 
+  const openSingleDropdown = (itemId) => {
+    setOpenDropdowns(new Set([itemId]));
+  };
+
   const closeMobileMenu = () => setMobileMenuOpen(false);
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
@@ -172,6 +176,7 @@ export const useNavigation = (menuItems = []) => {
 
     // Actions
     toggleDropdown,
+    openSingleDropdown,
     closeMobileMenu,
     toggleMobileMenu,
   };

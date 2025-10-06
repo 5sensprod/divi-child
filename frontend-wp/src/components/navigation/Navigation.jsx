@@ -33,6 +33,7 @@ const Navigation = ({
     openDropdowns,
     organizedMenu,
     toggleDropdown,
+    openSingleDropdown,
     closeMobileMenu,
     toggleMobileMenu,
   } = useNavigation(menuItems);
@@ -98,7 +99,7 @@ const Navigation = ({
                       key={item.id}
                       item={item}
                       isOpen={openDropdowns.has(item.id)}
-                      onToggle={() => toggleDropdown(item.id)}
+                      onToggle={() => openSingleDropdown(item.id)}
                       onClose={() => toggleDropdown(item.id)}
                     />
                   ))
