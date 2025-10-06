@@ -4,6 +4,7 @@ import { WordPressProvider } from "./context/WordPressContext";
 import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
 import { ThemeProvider } from "./context/ThemeContext";
+import { WishlistProvider } from "./context/WishlistContext";
 import { API_CONFIG } from "./utils/constants";
 
 // Pages React
@@ -51,70 +52,72 @@ const App = () => {
   );
 
   return (
-    <WordPressProvider>
-      <ThemeProvider initial="neon">
-        <Router>
-          <Routes>
-            {/* Page d'accueil - toujours React */}
-            <Route
-              path="/"
-              element={
-                <Layout>
-                  <Home />
-                </Layout>
-              }
-            />
-
-            {/* Pages catégories - conditionnel selon l'env */}
-            {API_CONFIG.useReactCategories ? (
-              <>
-                <Route
-                  path="/categorie-produit/*"
-                  element={
-                    <Layout>
-                      <CategoryPage />
-                    </Layout>
-                  }
-                />
-                <Route
-                  path="/shop"
-                  element={
-                    <Layout>
-                      <ShopPage />
-                    </Layout>
-                  }
-                />
-              </>
-            ) : (
-              <>
-                <Route
-                  path="/categorie-produit/*"
-                  element={<RedirectToWordPress />}
-                />
-                <Route path="/shop" element={<RedirectToWordPress />} />
-              </>
-            )}
-
-            {/* 👇 NOUVEAU : Pages produits - conditionnel selon l'env */}
-            {API_CONFIG.useReactProducts ? (
+    <WishlistProvider>
+      <WordPressProvider>
+        <ThemeProvider initial="neon">
+          <Router>
+            <Routes>
+              {/* Page d'accueil - toujours React */}
               <Route
-                path="/produit/:slug"
+                path="/"
                 element={
                   <Layout>
-                    <ProductPage />
+                    <Home />
                   </Layout>
                 }
               />
-            ) : (
-              <Route path="/produit/*" element={<RedirectToWordPress />} />
-            )}
 
-            {/* Toutes les autres routes -> WordPress */}
-            <Route path="*" element={<RedirectToWordPress />} />
-          </Routes>
-        </Router>
-      </ThemeProvider>
-    </WordPressProvider>
+              {/* Pages catégories - conditionnel selon l'env */}
+              {API_CONFIG.useReactCategories ? (
+                <>
+                  <Route
+                    path="/categorie-produit/*"
+                    element={
+                      <Layout>
+                        <CategoryPage />
+                      </Layout>
+                    }
+                  />
+                  <Route
+                    path="/shop"
+                    element={
+                      <Layout>
+                        <ShopPage />
+                      </Layout>
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  <Route
+                    path="/categorie-produit/*"
+                    element={<RedirectToWordPress />}
+                  />
+                  <Route path="/shop" element={<RedirectToWordPress />} />
+                </>
+              )}
+
+              {/* 👇 NOUVEAU : Pages produits - conditionnel selon l'env */}
+              {API_CONFIG.useReactProducts ? (
+                <Route
+                  path="/produit/:slug"
+                  element={
+                    <Layout>
+                      <ProductPage />
+                    </Layout>
+                  }
+                />
+              ) : (
+                <Route path="/produit/*" element={<RedirectToWordPress />} />
+              )}
+
+              {/* Toutes les autres routes -> WordPress */}
+              <Route path="*" element={<RedirectToWordPress />} />
+            </Routes>
+          </Router>
+        </ThemeProvider>
+      </WordPressProvider>
+    </WishlistProvider>
   );
 };
 

@@ -7,6 +7,7 @@ import Title from "../components/UI/Title";
 import Breadcrumb from "../components/UI/Breadcrumb";
 import { formatPrice } from "../utils/format";
 import RelatedProductsCarousel from "../components/Product/RelatedProductsCarousel";
+import WishlistButton from "../components/UI/WishlistButton";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -249,7 +250,10 @@ const ProductPage = () => {
                     </span>
                   )}
                 </div>
-
+                <WishlistButton
+                  product={product}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                />
                 <div className="flex items-center gap-2 mt-4">
                   <span
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${

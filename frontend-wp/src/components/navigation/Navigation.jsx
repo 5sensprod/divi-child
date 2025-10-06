@@ -15,6 +15,7 @@ import {
   MobileMenuButton,
 } from "../navigation/MenuItems";
 import MegaMenu from "./MegaMenu";
+import HeaderWishlistButton from "../navigation/HeaderWishlistButton";
 
 const Navigation = ({
   menuItems = [],
@@ -116,6 +117,7 @@ const Navigation = ({
                   onClick={onSearchClick}
                 />
               )}
+              <HeaderWishlistButton />
               {showCart && <CartButton count={cartCount} />}
             </div>
           </div>
