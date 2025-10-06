@@ -99,7 +99,7 @@ export const HEADER_CONFIG = {
       {
         title: "ACHETEZ, RÉPAREZ, RÉGLEZ VOTRE MATÉRIEL",
         description:
-          "Vente d'instruments neufs et d'occasion, réparations expertes et réglages de précision. Notre atelier spécialisé redonne vie à votre matériel musical avec le savoir-faire de vrais passionnés.",
+          "Vente d'instruments neufs et d'occasion, réparations expertes et réglages de précision. Notre atelier redonne vie à votre matériel avec le savoir-faire de vrais passionnés.",
         image: "/assets/images/bassiste_.png",
         theme: "neon",
       },

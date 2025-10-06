@@ -67,14 +67,14 @@ export const getCategories = async () => {
     const response1 = await WooCommerce.get("products/categories", {
       per_page: 100,
       page: 1,
-      hide_empty: false,
+      hide_empty: true,
     });
 
     // Page 2
     const response2 = await WooCommerce.get("products/categories", {
       per_page: 100,
       page: 2,
-      hide_empty: false,
+      hide_empty: true,
     });
 
     // Combiner les résultats
