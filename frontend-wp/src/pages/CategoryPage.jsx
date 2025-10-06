@@ -13,6 +13,7 @@ import PriceFilter from "../components/UI/PriceFilter";
 import BrandFilter from "../components/UI/BrandFilter";
 import SortFilter from "../components/UI/SortFilter";
 import { formatPrice } from "../utils/format";
+import RelatedCategories from "../components/UI/RelatedCategories";
 
 const CategoryPage = () => {
   const params = useParams();
@@ -403,6 +404,10 @@ const CategoryPage = () => {
             {/* Sidebar filtres */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="sticky top-4 space-y-4">
+                <RelatedCategories
+                  currentCategory={category}
+                  allCategories={categories}
+                />
                 <SortFilter
                   currentSort={sortOrder}
                   onChange={handleSortChange}
