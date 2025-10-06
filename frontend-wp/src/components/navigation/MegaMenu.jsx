@@ -6,7 +6,6 @@ const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
   const menuRef = useRef(null);
   const [columns, setColumns] = useState([]);
 
-  // Organiser les enfants en colonnes (max 4 colonnes)
   useEffect(() => {
     if (!item.children?.length) return;
 
@@ -32,11 +31,15 @@ const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
     );
   }
 
+  const handleMouseEnter = () => {
+    if (!isOpen) onToggle();
+  };
+
   return (
     <div className="relative" ref={menuRef}>
       <button
         onClick={onToggle}
-        onMouseEnter={onToggle}
+        onMouseEnter={handleMouseEnter}
         className={`nav-link nav-link-inactive flex items-center space-x-1 ${
           isOpen ? "text-pink-300" : ""
         }`}
@@ -88,6 +91,11 @@ const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
 const MegaMenuItem = ({ item, onClose }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = item.children?.length > 0;
+  const hasImage = item.image?.src;
+  // Vérifier si c'est une catégorie via l'URL
+  const isCategory =
+    item.reactUrl?.includes("/categorie-produit/") ||
+    item.url?.includes("/categorie-produit/");
 
   if (!hasChildren) {
     return (
@@ -103,11 +111,22 @@ const MegaMenuItem = ({ item, onClose }) => {
 
   return (
     <div>
+      {/* Bouton pour déplier les sous-catégories */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-white/90 hover:bg-white/10 hover:text-pink-300 transition-colors rounded-md"
       >
-        <span>{item.title}</span>
+        <div className="flex items-center gap-2">
+          {hasImage && (
+            <img
+              src={item.image.src}
+              alt={item.title}
+              className="w-10 h-10 object-cover rounded-md border border-white/10 transition-colors flex-shrink-0"
+              onError={(e) => (e.target.style.display = "none")}
+            />
+          )}
+          <span>{item.title}</span>
+        </div>
         <svg
           className={`w-3 h-3 transition-transform ${
             isExpanded ? "rotate-180" : ""
@@ -127,6 +146,18 @@ const MegaMenuItem = ({ item, onClose }) => {
 
       {isExpanded && (
         <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-2">
+          {/* Lien "Voir tout" seulement si c'est une catégorie */}
+          {isCategory && (
+            <MenuLink
+              item={item}
+              className="block px-3 py-2 text-xs text-pink-300 hover:bg-white/5 hover:text-pink-400 transition-colors rounded-md font-medium"
+              onClick={onClose}
+            >
+              ↗ Voir tout
+            </MenuLink>
+          )}
+
+          {/* Liste des sous-catégories */}
           {item.children.map((child) => (
             <MenuLink
               key={child.id}
