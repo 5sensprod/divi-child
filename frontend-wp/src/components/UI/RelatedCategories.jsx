@@ -1,5 +1,6 @@
 // src/components/UI/RelatedCategories.jsx
 import { useNavigate } from "react-router-dom";
+import { capitalize } from "../../utils/format";
 
 const RelatedCategories = ({ currentCategory, allCategories = [] }) => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const RelatedCategories = ({ currentCategory, allCategories = [] }) => {
                 onError={(e) => (e.target.style.display = "none")}
               />
             )}
-            <span>{cat.name}</span>
+            <span>{capitalize(cat.name)}</span>
             <span className="text-xs text-gray-500">({cat.count})</span>
           </button>
         ))}

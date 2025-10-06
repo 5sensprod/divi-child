@@ -85,10 +85,21 @@ export const formatNumber = (num) => {
   return num.toLocaleString("fr-FR");
 };
 
+/**
+ * Met en minuscule avec majuscule en première lettre
+ * @param {string} text - Le texte à formater
+ * @returns {string} - Texte formaté
+ */
+export const capitalize = (text) => {
+  if (!text || typeof text !== "string") return "";
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
+
 export default {
   formatPrice,
   formatPriceShort,
   decodeHTMLEntities,
   decodeObject,
   formatNumber,
+  capitalize,
 };

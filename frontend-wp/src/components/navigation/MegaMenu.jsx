@@ -1,6 +1,7 @@
 // src/components/navigation/MegaMenu.jsx
 import { useState, useRef, useEffect } from "react";
 import { MenuLink } from "./MenuItems";
+import { capitalize } from "../../utils/format";
 
 const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
   const menuRef = useRef(null);
@@ -68,6 +69,20 @@ const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
           onMouseLeave={onClose}
           style={{ minWidth: `${columns.length * 200}px`, maxWidth: "800px" }}
         >
+          {/* Lien "Voir tout" si le parent est une catégorie */}
+          {(item.reactUrl?.includes("/categorie-produit/") ||
+            item.url?.includes("/categorie-produit/")) && (
+            <div className="border-b border-white/10 p-4">
+              <MenuLink
+                item={item}
+                className="block w-full text-center px-4 py-2 text-sm text-pink-300 hover:bg-white/10 hover:text-pink-400 transition-colors rounded-md font-medium"
+                onClick={onClose}
+              >
+                ↗ Voir tout {item.title}
+              </MenuLink>
+            </div>
+          )}
+
           <div
             className={`grid grid-cols-${Math.min(
               columns.length,
@@ -104,11 +119,10 @@ const MegaMenuItem = ({ item, onClose }) => {
         className="block px-4 py-2.5 text-sm text-white/90 hover:bg-white/10 hover:text-pink-300 transition-colors rounded-md"
         onClick={onClose}
       >
-        {item.title}
+        {capitalize(item.title)}
       </MenuLink>
     );
   }
-
   return (
     <div>
       {/* Bouton pour déplier les sous-catégories */}
@@ -165,7 +179,7 @@ const MegaMenuItem = ({ item, onClose }) => {
               className="block px-3 py-2 text-xs text-white/80 hover:bg-white/5 hover:text-pink-300 transition-colors rounded-md"
               onClick={onClose}
             >
-              {child.title}
+              {capitalize(child.title)}
             </MenuLink>
           ))}
         </div>
