@@ -14,6 +14,7 @@ import {
   CartButton,
   MobileMenuButton,
 } from "../navigation/MenuItems";
+import MegaMenu from "./MegaMenu";
 
 const Navigation = ({
   menuItems = [],
@@ -93,11 +94,12 @@ const Navigation = ({
                   <MenuSkeleton />
                 ) : (
                   organizedMenu.map((item) => (
-                    <DesktopMenuItem
+                    <MegaMenu
                       key={item.id}
                       item={item}
-                      openDropdowns={openDropdowns}
-                      toggleDropdown={toggleDropdown}
+                      isOpen={openDropdowns.has(item.id)}
+                      onToggle={() => toggleDropdown(item.id)}
+                      onClose={() => toggleDropdown(item.id)}
                     />
                   ))
                 )}
