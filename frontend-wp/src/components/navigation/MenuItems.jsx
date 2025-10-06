@@ -156,6 +156,9 @@ export const MobileMenuItem = ({
   const hasChildren = item.children?.length > 0;
   const isSubmenuOpen = openMenus.has(item.id);
   const indentClass = level > 1 ? `ml-${level * 2}` : "";
+  const isCategory =
+    item.reactUrl?.includes("/categorie-produit/") ||
+    item.url?.includes("/categorie-produit/");
 
   if (!hasChildren) {
     return (
@@ -180,16 +183,37 @@ export const MobileMenuItem = ({
         }`}
       >
         <span>{item.title}</span>
-        <ChevronDown
-          size={16}
-          className={`transition-transform duration-150 ${
+        <svg
+          className={`w-4 h-4 transition-transform duration-150 ${
             isSubmenuOpen ? "rotate-180 text-pink-300" : ""
           }`}
-        />
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
       </button>
 
       {isSubmenuOpen && (
         <div className="mt-1 space-y-1 animate-slide-down">
+          {/* Lien "Voir tout" si c'est une catégorie */}
+          {isCategory && (
+            <MenuLink
+              item={item}
+              className={`mobile-menu-item mobile-menu-item-inactive ${indentClass} ml-4 text-pink-300 font-medium`}
+              onClick={onClose}
+            >
+              ↗ Voir tout
+            </MenuLink>
+          )}
+
+          {/* Liste des enfants */}
           {item.children.map((child) => (
             <MobileMenuItem
               key={child.id}
