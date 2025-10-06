@@ -53,11 +53,28 @@ const ProductPage = () => {
         // Construire le fil d'ariane
         const items = [{ label: "Accueil", path: "/" }];
 
-        if (data.categories && data.categories[0]) {
+        if (data.categories && data.categories.length > 0) {
           try {
             const allCategories = await getCategories();
+
+            // 🔥 FIX : Trouver la catégorie la plus profonde (niveau le plus bas)
+            let deepestCategory = data.categories[0];
+            let maxDepth = 0;
+
+            for (const cat of data.categories) {
+              const hierarchy = await buildCategoryHierarchy(
+                cat.id,
+                allCategories
+              );
+              if (hierarchy.length > maxDepth) {
+                maxDepth = hierarchy.length;
+                deepestCategory = cat;
+              }
+            }
+
+            // Construire la hiérarchie complète de la catégorie la plus profonde
             const hierarchy = await buildCategoryHierarchy(
-              data.categories[0].id,
+              deepestCategory.id,
               allCategories
             );
 

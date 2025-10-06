@@ -12,6 +12,7 @@ export const useWordPressData = () => {
     ...DEFAULT_DATA,
     products: [],
     categories: [],
+    parentCategories: [],
     error: null,
   });
 
@@ -21,8 +22,13 @@ export const useWordPressData = () => {
       const cachedMenu = cacheUtils.get(CACHE_KEYS.MENU);
       const cachedCategories =
         import.meta.env.VITE_DISABLE_CACHE !== "true"
-          ? cacheUtils.get(CACHE_KEYS.CATEGORIES) // 👈 Enlever le _parent
+          ? cacheUtils.get(CACHE_KEYS.CATEGORIES)
           : null;
+
+      // Filtrer les catégories parentes du cache si disponibles
+      const cachedParentCategories = cachedCategories
+        ? cachedCategories.filter((cat) => cat.parent === 0)
+        : null;
 
       // Mise à jour immédiate avec les données en cache
       if (cachedMenu || cachedCategories) {
@@ -30,6 +36,7 @@ export const useWordPressData = () => {
           ...prev,
           menus: cachedMenu || prev.menus,
           categories: cachedCategories || prev.categories,
+          parentCategories: cachedParentCategories || prev.parentCategories,
           loading: {
             ...prev.loading,
             menus: !cachedMenu,
@@ -41,6 +48,7 @@ export const useWordPressData = () => {
         console.log("=== CHARGEMENT DEPUIS LE CACHE ===");
         console.log("Menu en cache:", !!cachedMenu);
         console.log("Catégories en cache:", !!cachedCategories);
+        console.log("Catégories parentes en cache:", !!cachedParentCategories);
       } else {
         setData((prev) => ({
           ...prev,
@@ -57,7 +65,7 @@ export const useWordPressData = () => {
 
     const loadProductionData = async () => {
       try {
-        // 👇 MODIFICATION : Ne pas bloquer si testConnection échoue
+        // Ne pas bloquer si testConnection échoue
         let wordpressAvailable = true;
         try {
           await wordpressService.testConnection();
@@ -91,9 +99,16 @@ export const useWordPressData = () => {
           ? results[3]
           : { status: "rejected" };
 
+        // Filtrer les catégories parentes côté client
+        const allCategories =
+          categoriesResult.status === "fulfilled" ? categoriesResult.value : [];
+
+        const parentCats = allCategories.filter((cat) => cat.parent === 0);
+
         console.log("=== RÉSULTATS DU CHARGEMENT ===");
         console.log("Menu structure:", menuDataResult.value);
-        console.log("Categories loaded:", categoriesResult.value);
+        console.log("Categories loaded:", allCategories.length);
+        console.log("Parent categories:", parentCats.length);
 
         // Mise à jour du state avec les résultats
         setData((prev) => ({
@@ -110,10 +125,8 @@ export const useWordPressData = () => {
             productsResult.status === "fulfilled"
               ? productsResult.value
               : FALLBACK_PRODUCTS,
-          categories:
-            categoriesResult.status === "fulfilled"
-              ? categoriesResult.value
-              : prev.categories,
+          categories: allCategories,
+          parentCategories: parentCats,
           loading: {
             initial: false,
             menus: false,
@@ -125,7 +138,6 @@ export const useWordPressData = () => {
         }));
 
         console.log("=== CHARGEMENT TERMINÉ ===");
-        console.log("Catégories finales:", categoriesResult.value?.length || 0);
       } catch (error) {
         // Fallback complet en cas d'erreur
         console.error("=== ERREUR LORS DU CHARGEMENT ===", error);
@@ -133,6 +145,8 @@ export const useWordPressData = () => {
           ...prev,
           products: FALLBACK_PRODUCTS,
           categories: prev.categories.length > 0 ? prev.categories : [],
+          parentCategories:
+            prev.parentCategories.length > 0 ? prev.parentCategories : [],
           loading: {
             initial: false,
             menus: false,
@@ -140,7 +154,7 @@ export const useWordPressData = () => {
             categories: false,
             siteData: false,
           },
-          error: null, // 👈 Ne plus afficher d'erreur bloquante
+          error: null,
         }));
       }
     };
@@ -159,7 +173,7 @@ export const useWordPressData = () => {
           categories: false,
           siteData: false,
         },
-        error: null, // 👈 Ne plus bloquer l'app
+        error: null,
       }));
     };
 

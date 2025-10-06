@@ -10,7 +10,8 @@ import Background from "../components/UI/Background";
 import HeroSlider from "../components/UI/HeroSlider";
 
 const Home = () => {
-  const { siteData, products, categories, loading } = useWordPress();
+  const { siteData, products, categories, parentCategories, loading } =
+    useWordPress();
   const productFilterRef = useRef(null);
 
   // Fonction pour gérer le clic sur une catégorie
@@ -64,7 +65,7 @@ const Home = () => {
           </div>
 
           <CategoryGrid
-            categories={categories}
+            categories={parentCategories}
             loading={loading.categories}
             className="my-8"
             onCategoryClick={handleCategoryClick}
