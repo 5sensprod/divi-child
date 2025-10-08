@@ -13,7 +13,6 @@ import PriceFilter from "../components/UI/PriceFilter";
 import BrandFilter from "../components/UI/BrandFilter";
 import SortFilter from "../components/UI/SortFilter";
 import { formatPrice } from "../utils/format";
-import RelatedCategories from "../components/UI/RelatedCategories";
 
 const CategoryPage = () => {
   const params = useParams();
@@ -23,7 +22,6 @@ const CategoryPage = () => {
 
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState(null);
-  const [categoryHierarchy, setCategoryHierarchy] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,19 +37,19 @@ const CategoryPage = () => {
   const productsPerPage = 12;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
-  // Fonction pour construire la hiérarchie complète
-  const buildCategoryHierarchy = async (categoryId, allCategories) => {
-    const hierarchy = [];
-    let currentCat = allCategories.find((cat) => cat.id === categoryId);
+  // IMPORTANT : Réinitialiser les filtres AVANT tout le reste quand on change de catégorie
+  useEffect(() => {
+    // Reset complet des filtres
+    setSelectedBrands([]);
+    setActivePriceFilter({ min: 0, max: 2000 });
+    setSortOrder("default");
+    setCurrentPage(1);
 
-    while (currentCat) {
-      hierarchy.unshift(currentCat);
-      if (currentCat.parent === 0) break;
-      currentCat = allCategories.find((cat) => cat.id === currentCat.parent);
-    }
-
-    return hierarchy;
-  };
+    // Reset aussi les produits et marques pour éviter l'affichage de données obsolètes
+    setProducts([]);
+    setBrands([]);
+    setCategory(null);
+  }, [location.pathname]); // Se déclenche dès que l'URL change
 
   // Fonction de tri
   const sortProducts = (productsToSort, sortType) => {
@@ -133,17 +131,6 @@ const CategoryPage = () => {
 
         const matchingCategory = await findMatchingCategory();
         setCategory(matchingCategory);
-
-        // Construire la hiérarchie complète
-        let allCategories = categories;
-        if (!allCategories || allCategories.length === 0) {
-          allCategories = await getCategories();
-        }
-        const hierarchy = await buildCategoryHierarchy(
-          matchingCategory.id,
-          allCategories
-        );
-        setCategoryHierarchy(hierarchy);
 
         // Charger les marques
         try {
@@ -362,22 +349,12 @@ const CategoryPage = () => {
             <Title
               tag="h1"
               className="mb-4 text-white drop-shadow-lg"
-              animationType="equalizer"
+              animationType="none"
+              gradient="ocean"
               mode="oceanNight"
-              bold={true}
+              bold="true"
             >
-              {categoryHierarchy.length > 1 ? (
-                <>
-                  {categoryHierarchy.map((cat, index) => (
-                    <React.Fragment key={cat.id}>
-                      {index > 0 && " "}
-                      {cat.name}
-                    </React.Fragment>
-                  ))}
-                </>
-              ) : (
-                category?.name || "Catégorie"
-              )}
+              {category?.name || "Catégorie"}
             </Title>
 
             {category?.description && (
@@ -397,6 +374,7 @@ const CategoryPage = () => {
           </div>
         </div>
       </section>
+
       {/* Section des produits avec filtres */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
@@ -404,10 +382,6 @@ const CategoryPage = () => {
             {/* Sidebar filtres */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="sticky top-4 space-y-4">
-                <RelatedCategories
-                  currentCategory={category}
-                  allCategories={categories}
-                />
                 <SortFilter
                   currentSort={sortOrder}
                   onChange={handleSortChange}
