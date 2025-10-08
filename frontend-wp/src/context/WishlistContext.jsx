@@ -11,25 +11,29 @@ export const useWishlist = () => {
   return context;
 };
 
+// Clé pour le localStorage
+const STORAGE_KEY = "axemusique_wishlist";
+
 export const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState([]);
+  const [wishlist, setWishlist] = useState(() => {
+    // Initialisation avec le localStorage
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error("Erreur lecture localStorage:", error);
+      return [];
+    }
+  });
   const [notification, setNotification] = useState(null);
 
-  // Charger depuis localStorage
+  // Sauvegarder dans localStorage à chaque changement
   useEffect(() => {
-    const saved = localStorage.getItem("axemusique_wishlist");
-    if (saved) {
-      try {
-        setWishlist(JSON.parse(saved));
-      } catch (error) {
-        console.error("Erreur chargement wishlist:", error);
-      }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlist));
+    } catch (error) {
+      console.error("Erreur sauvegarde localStorage:", error);
     }
-  }, []);
-
-  // Sauvegarder dans localStorage
-  useEffect(() => {
-    localStorage.setItem("axemusique_wishlist", JSON.stringify(wishlist));
   }, [wishlist]);
 
   const addToWishlist = (product) => {
