@@ -14,7 +14,7 @@ const CTASection = ({
     coordinates: [48.955809129233145, 4.360563031008535],
   },
   hours = {
-    monday: "15h – 19h",
+    monday: "15h30 – 19h",
     tuesdayToSaturday: "10h – 12h, 14h – 19h",
   },
   highlights = [

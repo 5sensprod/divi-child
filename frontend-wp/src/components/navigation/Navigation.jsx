@@ -54,7 +54,7 @@ const Navigation = ({
 
   return (
     <>
-      <nav className={navClasses}>
+      <nav className={navClasses} translate="no">
         <div className="container-divi">
           <div
             className={`grid items-center gap-4 ${heightClasses} grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
