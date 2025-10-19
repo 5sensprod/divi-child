@@ -8,6 +8,7 @@ import Breadcrumb from "../components/UI/Breadcrumb";
 import { formatPrice } from "../utils/format";
 import RelatedProductsCarousel from "../components/Product/RelatedProductsCarousel";
 import WishlistButton from "../components/UI/WishlistButton";
+import StockBadge from "../components/Product/StockBadge";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -258,7 +259,26 @@ const ProductPage = () => {
                   />
                 </div>
 
-                {/* Ligne 2 : Catégories */}
+                {/* Ligne 2 : Marque */}
+                {product.brands?.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                      Marque
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {product.brands.map((brand) => (
+                        <span
+                          key={brand.id}
+                          className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-sm font-medium text-blue-700"
+                        >
+                          {brand.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Ligne 3 : Catégories */}
                 {product.categories?.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -284,26 +304,13 @@ const ProductPage = () => {
                 )}
 
                 {/* Stock */}
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                      product.stock_status === "instock"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full mr-2 ${
-                        product.stock_status === "instock"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></span>
-                    {product.stock_status === "instock"
-                      ? "En stock"
-                      : "Rupture de stock"}
-                  </span>
-                </div>
+                <StockBadge
+                  stockStatus={product.stock_status}
+                  manageStock={product.manage_stock}
+                  stockQuantity={product.stock_quantity}
+                  size="md"
+                  showQuantity={true}
+                />
               </div>
 
               {/* Description courte */}

@@ -1,4 +1,4 @@
-// src/components/Product/RelatedProductsCarousel.jsx
+// frontend-wp/src/components/Product/RelatedProductsCarousel.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProductsByCategory } from "../../services/woocommerce";
@@ -70,6 +70,27 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // ✅ Helper pour obtenir le badge de stock selon manage_stock
+  const getStockBadge = (stockStatus, manageStock = false) => {
+    if (manageStock) {
+      // Suivi automatique
+      const badges = {
+        instock: null,
+        outofstock: { text: "Rupture", bgColor: "bg-gray-600/90" },
+        onbackorder: { text: "Rupture", bgColor: "bg-gray-600/90" },
+      };
+      return badges[stockStatus];
+    } else {
+      // Gestion manuelle
+      const badges = {
+        instock: null,
+        outofstock: { text: "Sur commande", bgColor: "bg-yellow-500/90" },
+        onbackorder: { text: "Réappro", bgColor: "bg-orange-500/90" },
+      };
+      return badges[stockStatus];
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-8">
@@ -124,52 +145,78 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
               }%)`,
             }}
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="flex-shrink-0 px-2"
-                style={{ width: `${100 / productsPerView}%` }}
-              >
+            {products.map((product) => {
+              // ✅ Calculer le badge pour ce produit
+              const stockBadge = getStockBadge(
+                product.stock_status,
+                product.manage_stock
+              );
+
+              return (
                 <div
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full"
-                  onClick={() => handleProductClick(product.slug)}
+                  key={product.id}
+                  className="flex-shrink-0 px-2"
+                  style={{ width: `${100 / productsPerView}%` }}
                 >
-                  <div className="aspect-square bg-gray-100">
-                    <img
-                      src={
-                        product.images?.[0]?.src || "/placeholder-product.jpg"
-                      }
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) =>
-                        (e.target.src = "/placeholder-product.jpg")
-                      }
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      {product.on_sale && product.sale_price ? (
-                        <div className="flex flex-col">
-                          <span className="text-lg font-bold text-pink-600">
-                            {formatPrice(product.sale_price)}
-                          </span>
-                          <span className="text-xs text-gray-500 line-through">
-                            {formatPrice(product.regular_price)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-lg font-bold text-gray-900">
-                          {formatPrice(product.regular_price)}
+                  <div
+                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full"
+                    onClick={() => handleProductClick(product.slug)}
+                  >
+                    {/* ✅ IMAGE AVEC BADGES */}
+                    <div className="aspect-square bg-gray-100 relative">
+                      <img
+                        src={
+                          product.images?.[0]?.src || "/placeholder-product.jpg"
+                        }
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) =>
+                          (e.target.src = "/placeholder-product.jpg")
+                        }
+                      />
+
+                      {/* Badge Promo */}
+                      {product.on_sale && product.sale_price && (
+                        <span className="absolute top-2 left-2 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
+                          Promo
+                        </span>
+                      )}
+
+                      {/* ✅ Badge de stock (si applicable) */}
+                      {stockBadge && (
+                        <span
+                          className={`absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full text-white shadow ${stockBadge.bgColor}`}
+                        >
+                          {stockBadge.text}
                         </span>
                       )}
                     </div>
+
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        {product.on_sale && product.sale_price ? (
+                          <div className="flex flex-col">
+                            <span className="text-lg font-bold text-pink-600">
+                              {formatPrice(product.sale_price)}
+                            </span>
+                            <span className="text-xs text-gray-500 line-through">
+                              {formatPrice(product.regular_price)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-lg font-bold text-gray-900">
+                            {formatPrice(product.regular_price)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

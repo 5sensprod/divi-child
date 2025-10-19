@@ -1,3 +1,4 @@
+// frontend-wp/src/components/Product/ProductCard.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -69,7 +70,26 @@ const ProductCard = ({ product }) => {
     product?.regular_price &&
     product.sale_price !== product.regular_price;
 
-  const isInStock = product?.stock_status === "instock";
+  // ✅ GESTION DU STOCK AVEC LOGIQUE CONDITIONNELLE
+  const stockStatus = product?.stock_status || "outofstock";
+  const manageStock = product?.manage_stock || false;
+
+  let isInStock, isOnOrder, isBackorder, isOutOfStock;
+
+  if (manageStock) {
+    // Suivi automatique
+    isInStock = stockStatus === "instock";
+    isOnOrder = false;
+    isBackorder = false;
+    isOutOfStock =
+      stockStatus === "outofstock" || stockStatus === "onbackorder";
+  } else {
+    // Gestion manuelle
+    isInStock = stockStatus === "instock";
+    isOnOrder = stockStatus === "outofstock";
+    isBackorder = stockStatus === "onbackorder";
+    isOutOfStock = false;
+  }
 
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden hover:shadow-md transition-all">
@@ -95,15 +115,27 @@ const ProductCard = ({ product }) => {
             </div>
           )}
 
+          {/* Badge Promo */}
           {hasPromo && (
             <span className="absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
               Promo
             </span>
           )}
 
-          {!isInStock && (
-            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-gray-800/80 text-white shadow">
+          {/* ✅ BADGES DE STOCK CONDITIONNELS */}
+          {manageStock && isOutOfStock && (
+            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-red-600/90 text-white shadow">
               Rupture
+            </span>
+          )}
+          {!manageStock && isOnOrder && (
+            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-yellow-500/90 text-white shadow">
+              Sur commande
+            </span>
+          )}
+          {!manageStock && isBackorder && (
+            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-orange-500/90 text-white shadow">
+              Réappro
             </span>
           )}
         </div>
@@ -138,17 +170,21 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
 
+        {/* ✅ BOUTON TOUJOURS CLIQUABLE - Seul le dégradé change selon le statut */}
         <Link
-          to={isInStock ? url : "#"}
-          aria-disabled={!isInStock}
-          className={`mt-3 inline-flex w-full items-center justify-center h-10 rounded-xl text-sm font-medium shadow-sm transition
+          to={url}
+          className={`mt-3 inline-flex w-full items-center justify-center h-10 rounded-xl text-sm font-medium text-white shadow-sm transition
             ${
               isInStock
-                ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-fuchsia-500 hover:to-sky-400"
-                : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-fuchsia-500 hover:to-sky-400"
+                : isOnOrder
+                ? "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                : isBackorder
+                ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"
             }`}
         >
-          {isInStock ? "Voir le produit" : "Non disponible"}
+          Voir le produit
         </Link>
       </div>
     </div>
