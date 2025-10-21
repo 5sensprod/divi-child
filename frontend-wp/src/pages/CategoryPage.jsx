@@ -342,10 +342,11 @@ const CategoryPage = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[400px] page-content">
+      <section className="relative overflow-hidden page-content pt-32 pb-20 md:pt-40 md:pb-20">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-10">
-          <div className="text-center py-20 lg:py-24">
+          <div className="text-center">
+            {/* Reste du contenu sans les classes py-20 lg:py-24 */}
             <Title
               tag="h1"
               className="mb-4 text-white drop-shadow-lg"

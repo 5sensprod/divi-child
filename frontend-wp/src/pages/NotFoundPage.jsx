@@ -44,7 +44,7 @@ const NotFoundPage = () => {
 
             <p className="text-lg md:text-xl text-gray-200 mb-8 leading-relaxed">
               Oups ! La page que vous recherchez semble avoir disparu dans les
-              coulisses. Peut-être qu'elle est partie en tournée ? 🎸
+              coulisses. Peut-être qu'elle est partie en tournée ?
             </p>
 
             {/* Boutons d'action */}
@@ -54,13 +54,6 @@ const NotFoundPage = () => {
                 className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
               >
                 Retour à l'accueil
-              </Link>
-
-              <Link
-                to="/shop"
-                className="px-8 py-4 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
-              >
-                Voir la boutique
               </Link>
             </div>
 
