@@ -10,10 +10,6 @@ import RelatedProductsCarousel from "../components/Product/RelatedProductsCarous
 import WishlistButton from "../components/UI/WishlistButton";
 import StockBadge from "../components/Product/StockBadge";
 
-// ✅ IMAGE PAR DÉFAUT
-const FALLBACK_IMAGE =
-  "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
-
 const ProductPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -23,18 +19,6 @@ const ProductPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [breadcrumbItems, setBreadcrumbItems] = useState([]);
-
-  // ✅ Gestion d'erreur d'image sécurisée
-  const [imageErrors, setImageErrors] = useState({});
-
-  const handleImageError = (index) => {
-    setImageErrors((prev) => ({ ...prev, [index]: true }));
-  };
-
-  const getImageSrc = (index) => {
-    if (imageErrors[index]) return FALLBACK_IMAGE;
-    return product?.images?.[index]?.src || FALLBACK_IMAGE;
-  };
 
   const buildCategoryHierarchy = async (categoryId, allCategories) => {
     const hierarchy = [];
@@ -170,7 +154,9 @@ const ProductPage = () => {
     );
   }
 
+  // ✅ Vérifier si le produit a des images
   const images = product.images || [];
+  const hasImages = images.length > 0 && images[0]?.src;
 
   return (
     <div>
@@ -197,43 +183,47 @@ const ProductPage = () => {
       {/* Section produit */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* ✅ Galerie d'images avec fallback simple */}
-            <div className="space-y-4">
-              <div className="aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
-                <img
-                  src={getImageSrc(selectedImage)}
-                  alt={product.name}
-                  className="w-full h-full object-contain"
-                  onError={() => handleImageError(selectedImage)}
-                  loading="eager"
-                />
-              </div>
-
-              {images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === index
-                          ? "border-pink-500 shadow-md"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <img
-                        src={getImageSrc(index)}
-                        alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-contain"
-                        onError={() => handleImageError(index)}
-                        loading="lazy"
-                      />
-                    </button>
-                  ))}
+          <div
+            className={`grid ${
+              hasImages ? "lg:grid-cols-2" : "lg:grid-cols-1"
+            } gap-8 lg:gap-12`}
+          >
+            {/* ✅ GALERIE D'IMAGES - Affichée uniquement si des images existent */}
+            {hasImages && (
+              <div className="space-y-4">
+                <div className="aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
+                  <img
+                    src={images[selectedImage]?.src}
+                    alt={product.name}
+                    className="w-full h-full object-contain"
+                    loading="eager"
+                  />
                 </div>
-              )}
-            </div>
+
+                {images.length > 1 && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedImage === index
+                            ? "border-pink-500 shadow-md"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <img
+                          src={image.src}
+                          alt={`${product.name} ${index + 1}`}
+                          className="w-full h-full object-contain"
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Informations produit */}
             <div className="space-y-6">

@@ -14,6 +14,10 @@ import BrandFilter from "../components/UI/BrandFilter";
 import SortFilter from "../components/UI/SortFilter";
 import { formatPrice } from "../utils/format";
 
+// ✅ IMAGE PAR DÉFAUT pour les produits sans image
+const FALLBACK_IMAGE =
+  "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
+
 const CategoryPage = () => {
   const params = useParams();
   const navigate = useNavigate();
@@ -37,21 +41,16 @@ const CategoryPage = () => {
   const productsPerPage = 12;
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
-  // IMPORTANT : Réinitialiser les filtres AVANT tout le reste quand on change de catégorie
   useEffect(() => {
-    // Reset complet des filtres
     setSelectedBrands([]);
     setActivePriceFilter({ min: 0, max: 2000 });
     setSortOrder("default");
     setCurrentPage(1);
-
-    // Reset aussi les produits et marques pour éviter l'affichage de données obsolètes
     setProducts([]);
     setBrands([]);
     setCategory(null);
-  }, [location.pathname]); // Se déclenche dès que l'URL change
+  }, [location.pathname]);
 
-  // Fonction de tri
   const sortProducts = (productsToSort, sortType) => {
     const sorted = [...productsToSort];
     switch (sortType) {
@@ -72,7 +71,6 @@ const CategoryPage = () => {
     }
   };
 
-  // Fonction de filtrage par marques
   const filterByBrands = (productsData) => {
     if (selectedBrands.length === 0) return productsData;
 
@@ -85,7 +83,6 @@ const CategoryPage = () => {
     );
   };
 
-  // Trouver la catégorie correspondante
   const findMatchingCategory = async () => {
     const pathSegments = fullPath?.split("/").filter(Boolean) || [];
     const finalSlug = pathSegments[pathSegments.length - 1] || fullPath;
@@ -95,10 +92,8 @@ const CategoryPage = () => {
       allCategories = await getCategories();
     }
 
-    // Recherche par slug exact
     let match = allCategories.find((cat) => cat.slug === finalSlug);
 
-    // Recherche dans les segments
     if (!match && pathSegments.length > 1) {
       for (const segment of pathSegments) {
         match = allCategories.find((cat) => cat.slug === segment);
@@ -106,7 +101,6 @@ const CategoryPage = () => {
       }
     }
 
-    // Recherche flexible
     if (!match) {
       match = allCategories.find(
         (cat) =>
@@ -132,7 +126,6 @@ const CategoryPage = () => {
         const matchingCategory = await findMatchingCategory();
         setCategory(matchingCategory);
 
-        // Charger les marques
         try {
           const brandsData = await getBrandsByCategory(matchingCategory.id);
           setBrands(brandsData);
@@ -141,7 +134,6 @@ const CategoryPage = () => {
           setBrands([]);
         }
 
-        // Charger les produits
         const response = await getProductsByCategory(matchingCategory.id, {
           per_page: 100,
           page: 1,
@@ -151,6 +143,8 @@ const CategoryPage = () => {
         });
 
         let productsData = response.data || response;
+
+        // ✅ PAS DE FILTRAGE - On garde tous les produits avec fallback
         productsData = filterByBrands(productsData);
         productsData = sortProducts(productsData, sortOrder);
 
@@ -217,7 +211,30 @@ const CategoryPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Composant Pagination
+  // ✅ Composant ProductImage avec fallback
+  const ProductImage = ({ src, alt, onError }) => {
+    const [imgSrc, setImgSrc] = useState(src || FALLBACK_IMAGE);
+    const [errorOccurred, setErrorOccurred] = useState(false);
+
+    const handleError = () => {
+      if (!errorOccurred) {
+        setImgSrc(FALLBACK_IMAGE);
+        setErrorOccurred(true);
+        if (onError) onError();
+      }
+    };
+
+    return (
+      <img
+        src={imgSrc}
+        alt={alt}
+        className="w-full h-full object-cover"
+        onError={handleError}
+        loading="lazy"
+      />
+    );
+  };
+
   const Pagination = () => {
     if (totalPages <= 1) return null;
 
@@ -341,12 +358,10 @@ const CategoryPage = () => {
 
   return (
     <div>
-      {/* Hero Section */}
       <section className="relative overflow-hidden page-content pt-32 pb-20 md:pt-40 md:pb-20">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-10">
           <div className="text-center">
-            {/* Reste du contenu sans les classes py-20 lg:py-24 */}
             <Title
               tag="h1"
               className="mb-4 text-white drop-shadow-lg"
@@ -376,11 +391,9 @@ const CategoryPage = () => {
         </div>
       </section>
 
-      {/* Section des produits avec filtres */}
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar filtres */}
             <aside className="w-full lg:w-64 flex-shrink-0">
               <div className="sticky top-4 space-y-4">
                 <SortFilter
@@ -447,7 +460,6 @@ const CategoryPage = () => {
               </div>
             </aside>
 
-            {/* Grille de produits */}
             <div className="flex-1">
               {productsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -473,17 +485,11 @@ const CategoryPage = () => {
                         className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => navigate(`/produit/${product.slug}`)}
                       >
+                        {/* ✅ Image avec fallback */}
                         <div className="aspect-square bg-gray-100">
-                          <img
-                            src={
-                              product.images?.[0]?.src ||
-                              "/placeholder-product.jpg"
-                            }
+                          <ProductImage
+                            src={product.images?.[0]?.src}
                             alt={product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) =>
-                              (e.target.src = "/placeholder-product.jpg")
-                            }
                           />
                         </div>
                         <div className="p-4">

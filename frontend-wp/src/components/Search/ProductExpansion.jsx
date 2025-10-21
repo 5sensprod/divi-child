@@ -7,12 +7,13 @@ import {
   Info,
   ExternalLink,
   Heart,
-  Share2,
   Truck,
   Shield,
   ChevronLeft,
   ChevronRight,
+  Tag,
 } from "lucide-react";
+import { useBreadcrumb } from "../../hooks/useBreadcrumb";
 
 const ProductExpansion = ({
   product,
@@ -22,6 +23,10 @@ const ProductExpansion = ({
   const [imageError, setImageError] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
+
+  const displayProduct = fullProduct || product;
+  const { breadcrumbItems, loading: loadingBreadcrumb } =
+    useBreadcrumb(displayProduct);
 
   const formatPrice = (price) => {
     if (!price) return null;
@@ -87,7 +92,6 @@ const ProductExpansion = ({
     );
   }
 
-  const displayProduct = fullProduct || product;
   const images = displayProduct.images || [];
   const mainImage = images[selectedImageIndex] || images[0];
   const stockInfo = getStockStatus(displayProduct.stock_status);
@@ -191,14 +195,9 @@ const ProductExpansion = ({
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                   {displayProduct.name}
                 </h1>
-                <div className="flex gap-2 ml-4">
-                  <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                    <Heart size={20} />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors">
-                    <Share2 size={20} />
-                  </button>
-                </div>
+                <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                  <Heart size={20} />
+                </button>
               </div>
 
               {/* Prix */}
@@ -226,13 +225,32 @@ const ProductExpansion = ({
               </div>
 
               {/* Statut et métadonnées */}
-              <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex flex-wrap items-center gap-3 text-sm">
                 <span
                   className={`inline-flex items-center gap-1 px-3 py-1 rounded-full font-medium ${stockInfo.bg} ${stockInfo.color}`}
                 >
                   <span>{stockInfo.icon}</span>
                   {stockInfo.text}
                 </span>
+
+                {displayProduct.brands?.length > 0 && (
+                  <>
+                    {displayProduct.brands.map((brand) => {
+                      const formattedName =
+                        brand.name.charAt(0).toUpperCase() +
+                        brand.name.slice(1).toLowerCase();
+                      return (
+                        <span
+                          key={brand.id}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full font-medium bg-blue-50 text-blue-600 border border-blue-200"
+                        >
+                          <Tag size={14} />
+                          {formattedName}
+                        </span>
+                      );
+                    })}
+                  </>
+                )}
 
                 {displayProduct.sku && (
                   <div className="flex items-center gap-1 text-gray-600">
@@ -313,21 +331,42 @@ const ProductExpansion = ({
               </div>
             )}
 
-            {/* Catégories */}
-            {displayProduct.categories?.length > 0 && (
+            {/* Catégories avec breadcrumb */}
+            {loadingBreadcrumb ? (
               <div>
-                <span className="text-sm text-gray-500">Catégories: </span>
-                <div className="inline-flex flex-wrap gap-1 mt-1">
-                  {displayProduct.categories.map((category, index) => (
-                    <span
-                      key={category.id}
-                      className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs"
-                    >
-                      {category.name}
-                    </span>
-                  ))}
+                <span className="text-sm text-gray-500 mb-2 block">
+                  Catégories:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <div className="h-6 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+                  <div className="h-6 w-20 bg-gray-200 rounded-md animate-pulse"></div>
                 </div>
               </div>
+            ) : (
+              breadcrumbItems.length > 1 && (
+                <div>
+                  <span className="text-sm text-gray-500 mb-2 block">
+                    Catégories:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {breadcrumbItems
+                      .filter((item) => item.label !== "Accueil" && item.path)
+                      .map((item, index) => (
+                        <a
+                          key={index}
+                          href={item.path}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.location.href = item.path;
+                          }}
+                          className="px-2 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-purple-600 border border-purple-200 hover:bg-purple-100 transition-colors"
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                  </div>
+                </div>
+              )
             )}
           </div>
         </div>

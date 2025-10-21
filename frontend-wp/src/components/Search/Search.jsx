@@ -363,13 +363,6 @@ const SearchResult = ({ product, onClose, onToggleProduct, isExpanded }) => {
     }
   };
 
-  const handleNavigateToProduct = (e) => {
-    e.stopPropagation();
-    onClose();
-    // Navigation vers le produit
-    console.log("Navigation vers produit:", product.id);
-  };
-
   const formatPrice = (price) => {
     if (!price) return null;
     return new Intl.NumberFormat("fr-FR", {
@@ -422,22 +415,6 @@ const SearchResult = ({ product, onClose, onToggleProduct, isExpanded }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleNavigateToProduct}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            title="Voir le produit"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="text-gray-400"
-            >
-              <path d="M6 3l5 5-5 5V3z" />
-            </svg>
-          </button>
-
           <ChevronDown
             size={20}
             className={`text-gray-400 transition-transform duration-200 ${

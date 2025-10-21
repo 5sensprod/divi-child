@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-// ✅ IMAGE PAR DÉFAUT - Service externe fiable
+// ✅ IMAGE PAR DÉFAUT - Uniquement pour ProductFilter
 const FALLBACK_IMAGE =
   "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
 
@@ -59,9 +59,9 @@ const Stars = ({ value = 0, size = 14 }) => {
   );
 };
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, allowFallback = false }) => {
   const [imgSrc, setImgSrc] = useState(
-    product?.images?.[0]?.src || FALLBACK_IMAGE
+    product?.images?.[0]?.src || (allowFallback ? FALLBACK_IMAGE : null)
   );
   const [loaded, setLoaded] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
@@ -93,9 +93,9 @@ const ProductCard = ({ product }) => {
     isOutOfStock = false;
   }
 
-  // ✅ GESTION D'ERREUR SÉCURISÉE - Une seule tentative de fallback
+  // ✅ Gestion d'erreur - Fallback seulement si allowFallback=true
   const handleImageError = () => {
-    if (!errorOccurred) {
+    if (!errorOccurred && allowFallback) {
       console.warn(`Image non trouvée pour: ${product?.name || "produit"}`);
       setImgSrc(FALLBACK_IMAGE);
       setErrorOccurred(true);
@@ -103,11 +103,15 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  // ✅ Si pas d'image et fallback non autorisé, ne rien afficher
+  if (!imgSrc && !allowFallback) {
+    return null;
+  }
+
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden hover:shadow-md transition-all">
       <Link to={url} className="block">
         <div className="relative h-52 bg-white">
-          {/* ✅ IMAGE AVEC GESTION D'ERREUR SIMPLE */}
           <img
             src={imgSrc}
             alt={alt}
@@ -119,21 +123,18 @@ const ProductCard = ({ product }) => {
             }`}
           />
 
-          {/* Loader */}
           {!loaded && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
-          {/* Badge Promo */}
           {hasPromo && (
             <span className="absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
               Promo
             </span>
           )}
 
-          {/* Badges de stock */}
           {manageStock && isOutOfStock && (
             <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-red-600/90 text-white shadow">
               Rupture
