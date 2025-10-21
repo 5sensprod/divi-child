@@ -88,12 +88,28 @@ const PriceFilter = ({
               setLocalMin(value);
             }}
             onBlur={handleMouseUp}
-            className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+            className={`w-20 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
+              isFiltered
+                ? "border-gray-300 focus:ring-pink-500 bg-white"
+                : "border-gray-200 bg-gray-50 text-gray-400"
+            }`}
           />
-          <span className="text-gray-600">€</span>
+          <span
+            className={`transition-colors ${
+              isFiltered ? "text-gray-600" : "text-gray-400"
+            }`}
+          >
+            €
+          </span>
         </div>
 
-        <span className="text-gray-500">-</span>
+        <span
+          className={`transition-colors ${
+            isFiltered ? "text-gray-500" : "text-gray-300"
+          }`}
+        >
+          -
+        </span>
 
         <div className="flex items-center gap-2">
           <input
@@ -107,20 +123,42 @@ const PriceFilter = ({
               setLocalMax(value);
             }}
             onBlur={handleMouseUp}
-            className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+            className={`w-20 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
+              isFiltered
+                ? "border-gray-300 focus:ring-pink-500 bg-white"
+                : "border-gray-200 bg-gray-50 text-gray-400"
+            }`}
           />
-          <span className="text-gray-600">€</span>
+          <span
+            className={`transition-colors ${
+              isFiltered ? "text-gray-600" : "text-gray-400"
+            }`}
+          >
+            €
+          </span>
         </div>
       </div>
 
       {/* Double slider */}
-      <div className="relative h-2 mb-8">
+      <div
+        className={`relative h-2 mb-8 transition-opacity ${
+          isFiltered ? "opacity-100" : "opacity-40"
+        }`}
+      >
         {/* Track de fond */}
-        <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
+        <div
+          className={`absolute w-full h-2 rounded-full transition-colors ${
+            isFiltered ? "bg-gray-200" : "bg-gray-100"
+          }`}
+        ></div>
 
         {/* Track actif (entre les deux curseurs) */}
         <div
-          className="absolute h-2 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full"
+          className={`absolute h-2 rounded-full transition-all ${
+            isFiltered
+              ? "bg-gradient-to-r from-pink-400 to-pink-600"
+              : "bg-gray-300"
+          }`}
           style={{
             left: `${calculatePercentage(localMin)}%`,
             right: `${100 - calculatePercentage(localMax)}%`,
@@ -137,7 +175,11 @@ const PriceFilter = ({
           onMouseDown={handleMouseDown}
           onTouchStart={handleMouseDown}
           onTouchEnd={handleMouseUp}
-          className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-pink-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-pink-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md hover:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:transition-transform"
+          className={`absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md hover:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:transition-transform ${
+            isFiltered
+              ? "[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-pink-500 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-pink-500"
+              : "[&::-webkit-slider-thumb]:bg-gray-200 [&::-webkit-slider-thumb]:border-gray-300 [&::-moz-range-thumb]:bg-gray-200 [&::-moz-range-thumb]:border-gray-300"
+          }`}
         />
 
         {/* Slider pour le maximum */}
@@ -150,7 +192,11 @@ const PriceFilter = ({
           onMouseDown={handleMouseDown}
           onTouchStart={handleMouseDown}
           onTouchEnd={handleMouseUp}
-          className="absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-pink-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-pink-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md hover:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:transition-transform"
+          className={`absolute w-full h-2 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-moz-range-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md hover:[&::-webkit-slider-thumb]:scale-110 [&::-webkit-slider-thumb]:transition-transform [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md hover:[&::-moz-range-thumb]:scale-110 [&::-moz-range-thumb]:transition-transform ${
+            isFiltered
+              ? "[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-pink-500 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-pink-500"
+              : "[&::-webkit-slider-thumb]:bg-gray-200 [&::-webkit-slider-thumb]:border-gray-300 [&::-moz-range-thumb]:bg-gray-200 [&::-moz-range-thumb]:border-gray-300"
+          }`}
         />
       </div>
 
@@ -160,7 +206,8 @@ const PriceFilter = ({
           { label: "Moins de 50€", min: minPrice, max: 50 },
           { label: "50€ - 200€", min: 50, max: 200 },
           { label: "200€ - 500€", min: 200, max: 500 },
-          { label: "Plus de 500€", min: 500, max: maxPrice },
+          { label: "500€ - 2000€", min: 500, max: 2000 },
+          { label: "Plus de 2000€", min: 2000, max: maxPrice },
         ].map((preset) => (
           <button
             key={preset.label}

@@ -10,7 +10,8 @@ import { API_CONFIG } from "./utils/constants";
 // Pages React
 import CategoryPage from "./pages/CategoryPage";
 import ShopPage from "./pages/ShopPage";
-import ProductPage from "./pages/ProductPage"; // 👈 AJOUTER
+import ProductPage from "./pages/ProductPage";
+import LegalPage from "./pages/LegalPage"; // 👈 AJOUTER
 
 // Composant de redirection optimisé
 const RedirectToWordPress = () => {
@@ -67,6 +68,16 @@ const App = () => {
                 }
               />
 
+              {/* 👇 NOUVEAU : Page mentions légales - toujours React */}
+              <Route
+                path="/mentions-legales"
+                element={
+                  <Layout>
+                    <LegalPage />
+                  </Layout>
+                }
+              />
+
               {/* Pages catégories - conditionnel selon l'env */}
               {API_CONFIG.useReactCategories ? (
                 <>
@@ -97,7 +108,7 @@ const App = () => {
                 </>
               )}
 
-              {/* 👇 NOUVEAU : Pages produits - conditionnel selon l'env */}
+              {/* Pages produits - conditionnel selon l'env */}
               {API_CONFIG.useReactProducts ? (
                 <Route
                   path="/produit/:slug"
