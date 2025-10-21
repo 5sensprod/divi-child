@@ -11,7 +11,8 @@ import { API_CONFIG } from "./utils/constants";
 import CategoryPage from "./pages/CategoryPage";
 import ShopPage from "./pages/ShopPage";
 import ProductPage from "./pages/ProductPage";
-import LegalPage from "./pages/LegalPage"; // 👈 AJOUTER
+import LegalPage from "./pages/LegalPage";
+import NotFoundPage from "./pages/NotFoundPage"; // 👈 AJOUTER
 
 // Composant de redirection optimisé
 const RedirectToWordPress = () => {
@@ -122,8 +123,15 @@ const App = () => {
                 <Route path="/produit/*" element={<RedirectToWordPress />} />
               )}
 
-              {/* Toutes les autres routes -> WordPress */}
-              <Route path="*" element={<RedirectToWordPress />} />
+              {/* Page 404 React pour toutes les routes inconnues */}
+              <Route
+                path="*"
+                element={
+                  <Layout>
+                    <NotFoundPage />
+                  </Layout>
+                }
+              />
             </Routes>
           </Router>
         </ThemeProvider>
