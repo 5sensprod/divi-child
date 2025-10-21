@@ -79,7 +79,7 @@ const CTASection = ({
                 className="w-20 h-20 object-contain md:w-24 md:h-24 lg:w-28 lg:h-28"
               />
               <div>
-                <h3 className="text-2xl md:text-3xl font-bold">
+                <h3 className="text-2xl md:text-3xl">
                   {renderStoreName(storeInfo.name)}
                 </h3>
                 <p className="text-base md:text-lg text-white/70 flex items-center gap-1.5">

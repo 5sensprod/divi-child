@@ -5,6 +5,10 @@ import { getProductsByCategory } from "../../services/woocommerce";
 import { formatPrice } from "../../utils/format";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// ✅ IMAGE PAR DÉFAUT
+const FALLBACK_IMAGE =
+  "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
+
 const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -12,15 +16,14 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [productsPerView, setProductsPerView] = useState(4);
 
-  // Détection responsive
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setProductsPerView(1); // Mobile
+        setProductsPerView(1);
       } else if (window.innerWidth < 1024) {
-        setProductsPerView(2); // Tablette
+        setProductsPerView(2);
       } else {
-        setProductsPerView(4); // Desktop
+        setProductsPerView(4);
       }
     };
 
@@ -41,7 +44,6 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
         });
 
         const allProducts = response.data || response;
-        // Exclure le produit actuel
         const filtered = allProducts.filter((p) => p.id !== currentProductId);
         setProducts(filtered);
       } catch (error) {
@@ -70,10 +72,8 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ✅ Helper pour obtenir le badge de stock selon manage_stock
   const getStockBadge = (stockStatus, manageStock = false) => {
     if (manageStock) {
-      // Suivi automatique
       const badges = {
         instock: null,
         outofstock: { text: "Rupture", bgColor: "bg-gray-600/90" },
@@ -81,7 +81,6 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
       };
       return badges[stockStatus];
     } else {
-      // Gestion manuelle
       const badges = {
         instock: null,
         outofstock: { text: "Sur commande", bgColor: "bg-yellow-500/90" },
@@ -89,6 +88,47 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
       };
       return badges[stockStatus];
     }
+  };
+
+  // ✅ Composant Image avec gestion d'erreur
+  const ProductImage = ({ src, alt, promo, stockBadge }) => {
+    const [imgSrc, setImgSrc] = useState(src || FALLBACK_IMAGE);
+    const [errorOccurred, setErrorOccurred] = useState(false);
+
+    const handleError = () => {
+      if (!errorOccurred) {
+        setImgSrc(FALLBACK_IMAGE);
+        setErrorOccurred(true);
+      }
+    };
+
+    return (
+      <div className="aspect-square bg-gray-100 relative">
+        <img
+          src={imgSrc}
+          alt={alt}
+          className="w-full h-full object-cover"
+          onError={handleError}
+          loading="lazy"
+        />
+
+        {/* Badge Promo */}
+        {promo && (
+          <span className="absolute top-2 left-2 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
+            Promo
+          </span>
+        )}
+
+        {/* Badge de stock */}
+        {stockBadge && (
+          <span
+            className={`absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full text-white shadow ${stockBadge.bgColor}`}
+          >
+            {stockBadge.text}
+          </span>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -124,7 +164,6 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
       </h2>
 
       <div className="relative">
-        {/* Bouton précédent - masqué sur mobile */}
         {canGoPrev && (
           <button
             onClick={handlePrev}
@@ -135,7 +174,6 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
           </button>
         )}
 
-        {/* Carrousel */}
         <div className="overflow-hidden">
           <div
             className="flex transition-transform duration-300 ease-in-out"
@@ -146,7 +184,6 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
             }}
           >
             {products.map((product) => {
-              // ✅ Calculer le badge pour ce produit
               const stockBadge = getStockBadge(
                 product.stock_status,
                 product.manage_stock
@@ -162,35 +199,13 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full"
                     onClick={() => handleProductClick(product.slug)}
                   >
-                    {/* ✅ IMAGE AVEC BADGES */}
-                    <div className="aspect-square bg-gray-100 relative">
-                      <img
-                        src={
-                          product.images?.[0]?.src || "/placeholder-product.jpg"
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) =>
-                          (e.target.src = "/placeholder-product.jpg")
-                        }
-                      />
-
-                      {/* Badge Promo */}
-                      {product.on_sale && product.sale_price && (
-                        <span className="absolute top-2 left-2 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
-                          Promo
-                        </span>
-                      )}
-
-                      {/* ✅ Badge de stock (si applicable) */}
-                      {stockBadge && (
-                        <span
-                          className={`absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full text-white shadow ${stockBadge.bgColor}`}
-                        >
-                          {stockBadge.text}
-                        </span>
-                      )}
-                    </div>
+                    {/* ✅ Image avec fallback */}
+                    <ProductImage
+                      src={product.images?.[0]?.src}
+                      alt={product.name}
+                      promo={product.on_sale && product.sale_price}
+                      stockBadge={stockBadge}
+                    />
 
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
@@ -220,7 +235,6 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
           </div>
         </div>
 
-        {/* Bouton suivant - masqué sur mobile */}
         {canGoNext && (
           <button
             onClick={handleNext}
@@ -232,7 +246,7 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
         )}
       </div>
 
-      {/* Navigation mobile - boutons en bas */}
+      {/* Navigation mobile */}
       <div className="flex sm:hidden justify-center gap-4 mt-4">
         <button
           onClick={handlePrev}

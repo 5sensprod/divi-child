@@ -10,6 +10,10 @@ import RelatedProductsCarousel from "../components/Product/RelatedProductsCarous
 import WishlistButton from "../components/UI/WishlistButton";
 import StockBadge from "../components/Product/StockBadge";
 
+// ✅ IMAGE PAR DÉFAUT
+const FALLBACK_IMAGE =
+  "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
+
 const ProductPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -20,7 +24,18 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [breadcrumbItems, setBreadcrumbItems] = useState([]);
 
-  // Construire le chemin hiérarchique complet des catégories
+  // ✅ Gestion d'erreur d'image sécurisée
+  const [imageErrors, setImageErrors] = useState({});
+
+  const handleImageError = (index) => {
+    setImageErrors((prev) => ({ ...prev, [index]: true }));
+  };
+
+  const getImageSrc = (index) => {
+    if (imageErrors[index]) return FALLBACK_IMAGE;
+    return product?.images?.[index]?.src || FALLBACK_IMAGE;
+  };
+
   const buildCategoryHierarchy = async (categoryId, allCategories) => {
     const hierarchy = [];
     let currentCat = allCategories.find((cat) => cat.id === categoryId);
@@ -39,7 +54,6 @@ const ProductPage = () => {
     return hierarchy;
   };
 
-  // Construire le chemin URL complet
   const buildCategoryPath = (hierarchy) => {
     return hierarchy.map((cat) => cat.slug).join("/");
   };
@@ -53,14 +67,11 @@ const ProductPage = () => {
         const data = await getProductBySlug(slug);
         setProduct(data);
 
-        // Construire le fil d'ariane
         const items = [{ label: "Accueil", path: "/" }];
 
         if (data.categories && data.categories.length > 0) {
           try {
             const allCategories = await getCategories();
-
-            // 🔥 FIX : Trouver la catégorie la plus profonde (niveau le plus bas)
             let deepestCategory = data.categories[0];
             let maxDepth = 0;
 
@@ -75,13 +86,11 @@ const ProductPage = () => {
               }
             }
 
-            // Construire la hiérarchie complète de la catégorie la plus profonde
             const hierarchy = await buildCategoryHierarchy(
               deepestCategory.id,
               allCategories
             );
 
-            // Ajouter chaque catégorie de la hiérarchie au fil d'ariane
             hierarchy.forEach((cat, index) => {
               const pathUpToThis = hierarchy.slice(0, index + 1);
               const fullPath = buildCategoryPath(pathUpToThis);
@@ -96,7 +105,6 @@ const ProductPage = () => {
           }
         }
 
-        // Ajouter le produit en dernier
         items.push({ label: data.name, path: null });
         setBreadcrumbItems(items);
       } catch (err) {
@@ -163,7 +171,6 @@ const ProductPage = () => {
   }
 
   const images = product.images || [];
-  const mainImage = images[selectedImage]?.src || "/placeholder-product.jpg";
 
   return (
     <div>
@@ -173,7 +180,6 @@ const ProductPage = () => {
         <div className="container-divi relative z-10">
           <div className="py-12 lg:py-16">
             <Breadcrumb items={breadcrumbItems} className="mb-6" />
-
             <Title
               tag="h1"
               className="text-white drop-shadow-lg"
@@ -192,14 +198,15 @@ const ProductPage = () => {
       <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Galerie d'images */}
+            {/* ✅ Galerie d'images avec fallback simple */}
             <div className="space-y-4">
               <div className="aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
                 <img
-                  src={mainImage}
+                  src={getImageSrc(selectedImage)}
                   alt={product.name}
                   className="w-full h-full object-contain"
-                  onError={(e) => (e.target.src = "/placeholder-product.jpg")}
+                  onError={() => handleImageError(selectedImage)}
+                  loading="eager"
                 />
               </div>
 
@@ -216,12 +223,11 @@ const ProductPage = () => {
                       }`}
                     >
                       <img
-                        src={image.src}
+                        src={getImageSrc(index)}
                         alt={`${product.name} ${index + 1}`}
                         className="w-full h-full object-contain"
-                        onError={(e) =>
-                          (e.target.src = "/placeholder-product.jpg")
-                        }
+                        onError={() => handleImageError(index)}
+                        loading="lazy"
                       />
                     </button>
                   ))}
@@ -232,7 +238,6 @@ const ProductPage = () => {
             {/* Informations produit */}
             <div className="space-y-6">
               <div className="bg-white rounded-lg p-6 shadow-md">
-                {/* Ligne 1 : Prix + Wishlist */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-baseline gap-3">
                     {product.on_sale && product.sale_price ? (
@@ -259,7 +264,6 @@ const ProductPage = () => {
                   />
                 </div>
 
-                {/* Ligne 2 : Marque */}
                 {product.brands?.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -278,7 +282,6 @@ const ProductPage = () => {
                   </div>
                 )}
 
-                {/* Ligne 3 : Catégories */}
                 {product.categories?.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -303,7 +306,6 @@ const ProductPage = () => {
                   </div>
                 )}
 
-                {/* Stock */}
                 <StockBadge
                   stockStatus={product.stock_status}
                   manageStock={product.manage_stock}
@@ -313,7 +315,6 @@ const ProductPage = () => {
                 />
               </div>
 
-              {/* Description courte */}
               {product.short_description && (
                 <div className="bg-white rounded-lg p-6 shadow-md">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">
@@ -328,7 +329,6 @@ const ProductPage = () => {
                 </div>
               )}
 
-              {/* Tags */}
               {product.tags?.length > 0 && (
                 <div className="bg-white rounded-lg p-6 shadow-md">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -349,7 +349,6 @@ const ProductPage = () => {
             </div>
           </div>
 
-          {/* Description complète */}
           {product.description && (
             <div className="mt-12 bg-white rounded-lg p-8 shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
@@ -362,7 +361,6 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Caractéristiques */}
           {product.attributes?.length > 0 && (
             <div className="mt-8 bg-white rounded-lg p-8 shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
@@ -385,7 +383,6 @@ const ProductPage = () => {
             </div>
           )}
 
-          {/* Carrousel produits similaires */}
           {product.categories?.[0] && (
             <RelatedProductsCarousel
               currentProductId={product.id}

@@ -2,8 +2,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-const fallback =
-  "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800";
+// ✅ IMAGE PAR DÉFAUT - Service externe fiable
+const FALLBACK_IMAGE =
+  "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
 
 const fmt = (v) => (v ? `${String(v).replace(".", ",")}€` : "");
 
@@ -59,9 +60,12 @@ const Stars = ({ value = 0, size = 14 }) => {
 };
 
 const ProductCard = ({ product }) => {
+  const [imgSrc, setImgSrc] = useState(
+    product?.images?.[0]?.src || FALLBACK_IMAGE
+  );
   const [loaded, setLoaded] = useState(false);
+  const [errorOccurred, setErrorOccurred] = useState(false);
 
-  const img = product?.images?.[0]?.src || fallback;
   const alt = product?.images?.[0]?.alt || product?.name || "Produit";
   const url = `/produit/${product.slug || product.id}`;
 
@@ -70,45 +74,52 @@ const ProductCard = ({ product }) => {
     product?.regular_price &&
     product.sale_price !== product.regular_price;
 
-  // ✅ GESTION DU STOCK AVEC LOGIQUE CONDITIONNELLE
+  // Gestion du stock
   const stockStatus = product?.stock_status || "outofstock";
   const manageStock = product?.manage_stock || false;
 
   let isInStock, isOnOrder, isBackorder, isOutOfStock;
 
   if (manageStock) {
-    // Suivi automatique
     isInStock = stockStatus === "instock";
     isOnOrder = false;
     isBackorder = false;
     isOutOfStock =
       stockStatus === "outofstock" || stockStatus === "onbackorder";
   } else {
-    // Gestion manuelle
     isInStock = stockStatus === "instock";
     isOnOrder = stockStatus === "outofstock";
     isBackorder = stockStatus === "onbackorder";
     isOutOfStock = false;
   }
 
+  // ✅ GESTION D'ERREUR SÉCURISÉE - Une seule tentative de fallback
+  const handleImageError = () => {
+    if (!errorOccurred) {
+      console.warn(`Image non trouvée pour: ${product?.name || "produit"}`);
+      setImgSrc(FALLBACK_IMAGE);
+      setErrorOccurred(true);
+      setLoaded(true);
+    }
+  };
+
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden hover:shadow-md transition-all">
       <Link to={url} className="block">
         <div className="relative h-52 bg-white">
+          {/* ✅ IMAGE AVEC GESTION D'ERREUR SIMPLE */}
           <img
-            src={img}
+            src={imgSrc}
             alt={alt}
             loading="lazy"
             onLoad={() => setLoaded(true)}
-            onError={(e) => {
-              e.currentTarget.src = fallback;
-              setLoaded(true);
-            }}
+            onError={handleImageError}
             className={`h-full w-full object-contain p-3 transition-opacity duration-300 ${
               loaded ? "opacity-100" : "opacity-0"
             }`}
           />
 
+          {/* Loader */}
           {!loaded && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
@@ -122,7 +133,7 @@ const ProductCard = ({ product }) => {
             </span>
           )}
 
-          {/* ✅ BADGES DE STOCK CONDITIONNELS */}
+          {/* Badges de stock */}
           {manageStock && isOutOfStock && (
             <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-red-600/90 text-white shadow">
               Rupture
@@ -170,7 +181,6 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
 
-        {/* ✅ BOUTON TOUJOURS CLIQUABLE - Seul le dégradé change selon le statut */}
         <Link
           to={url}
           className={`mt-3 inline-flex w-full items-center justify-center h-10 rounded-xl text-sm font-medium text-white shadow-sm transition
