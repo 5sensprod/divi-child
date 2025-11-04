@@ -1,6 +1,7 @@
 // src/components/Product/ProductList.jsx
 import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
+import Pagination from "../UI/Pagination";
 
 /**
  * Composant réutilisable pour afficher une liste de produits avec filtres, tri et pagination
@@ -226,7 +227,11 @@ const ProductList = ({
         ))}
       </div>
 
-      <Pagination />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onChange={(p) => handlePageChange(p)}
+      />
 
       {/* Informations de pagination */}
       {showPagination && totalPages > 1 && (

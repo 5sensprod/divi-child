@@ -14,10 +14,7 @@ import Modal from "../UI/Modal";
 import SearchFilters from "./SearchFilters";
 import { getProduct } from "../../services/woocommerce";
 import ProductExpansion from "./ProductExpansion";
-import {
-  ProductListSkeleton,
-  ProductDetailSkeleton,
-} from "../UI/LoadingSkeleton";
+import Pagination from "../UI/Pagination";
 import { SearchListSkeleton } from "./SearchSkeletons";
 
 const Search = ({ isOpen, onClose }) => {
@@ -381,83 +378,16 @@ const SearchResults = ({
 
     {totalPages > 1 && (
       <Pagination
-        page={page}
+        currentPage={page}
         totalPages={totalPages}
-        gotoPage={gotoPage}
-        nextPage={nextPage}
-        prevPage={prevPage}
+        onChange={(p) => gotoPage(p)}
       />
     )}
   </div>
 );
 
 // ➕ Composant Pagination (numérotation compacte avec ellipses)
-const Pagination = ({ page, totalPages, gotoPage, nextPage, prevPage }) => {
-  const makePages = () => {
-    const pages = [];
-    const add = (p) =>
-      pages.push(
-        <button
-          key={p}
-          onClick={() => gotoPage(p)}
-          className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
-            p === page
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-          }`}
-        >
-          {p}
-        </button>
-      );
 
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) add(i);
-      return pages;
-    }
-
-    add(1);
-    if (page > 4)
-      pages.push(
-        <span key="l-ell" className="px-2 text-gray-400">
-          …
-        </span>
-      );
-
-    const start = Math.max(2, page - 1);
-    const end = Math.min(totalPages - 1, page + 1);
-    for (let i = start; i <= end; i++) add(i);
-
-    if (page < totalPages - 3)
-      pages.push(
-        <span key="r-ell" className="px-2 text-gray-400">
-          …
-        </span>
-      );
-    add(totalPages);
-
-    return pages;
-  };
-
-  return (
-    <div className="flex items-center justify-center gap-2 pt-2">
-      <button
-        onClick={prevPage}
-        disabled={page <= 1}
-        className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-50"
-      >
-        Précédent
-      </button>
-      {makePages()}
-      <button
-        onClick={nextPage}
-        disabled={page >= totalPages}
-        className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-50"
-      >
-        Suivant
-      </button>
-    </div>
-  );
-};
 const SearchResult = ({
   product,
   onClose,

@@ -1,4 +1,4 @@
-// src/components/Product/ProductFilter.jsx
+// frontend-wp/src/components/Product/ProductFilter.jsx
 import React, {
   useState,
   useEffect,
@@ -10,6 +10,7 @@ import { useWordPress } from "../../context/WordPressContext";
 import { useSearch } from "../../hooks/useSearch";
 import SearchFilters from "../Search/SearchFilters";
 import ProductGrid from "./ProductGrid";
+import Pagination from "../UI/Pagination";
 
 const ProductFilter = forwardRef(
   (
@@ -26,8 +27,9 @@ const ProductFilter = forwardRef(
     const [displayProducts, setDisplayProducts] = useState(initialProducts);
 
     const {
-      query = "", // 🔧 Valeur par défaut pour éviter undefined
-      filters = {}, // 🔧 Objet par défaut pour éviter undefined
+      // search & filters
+      query = "",
+      filters = {},
       results,
       loading,
       error,
@@ -37,23 +39,24 @@ const ProductFilter = forwardRef(
       updateFilters,
       resetFilters,
       clearQuery,
+
+      // pagination (serveur) exposée par useSearch / useProductSearch
+      page,
+      perPage,
+      total,
+      totalPages,
+      gotoPage,
     } = useSearch();
 
     // Exposer des méthodes pour contrôler le composant depuis l'extérieur
     useImperativeHandle(ref, () => ({
       setCategory: (categoryId) => {
-        console.log("📦 ProductFilter reçoit categoryId:", categoryId);
         updateFilters({ category: categoryId });
-
         // Scroll vers la section des produits vedettes
         setTimeout(() => {
-          console.log("🎯 Tentative de scroll vers #ProduitsVedettes");
           const element = document.getElementById("ProduitsVedettes");
-          console.log("🔍 Élément trouvé:", !!element);
-
           if (element) {
             element.scrollIntoView({ behavior: "smooth", block: "start" });
-            console.log("✅ Scroll effectué");
           }
         }, 100);
       },
@@ -75,10 +78,10 @@ const ProductFilter = forwardRef(
     // Mettre à jour les produits affichés selon les résultats de recherche
     useEffect(() => {
       if (query.trim() || hasActiveFilters) {
-        // Si on a une recherche ou des filtres actifs, afficher les résultats
+        // Si on a une recherche ou des filtres actifs, afficher les résultats serveur
         setDisplayProducts(results);
       } else {
-        // Sinon, afficher les produits initiaux
+        // Sinon, afficher les produits initiaux (vedettes)
         setDisplayProducts(initialProducts);
       }
     }, [results, query, hasActiveFilters, initialProducts]);
@@ -92,7 +95,15 @@ const ProductFilter = forwardRef(
     const isLoading = initialLoading || loading;
     const hasAnyFilter = query.trim() || hasActiveFilters;
 
-    // Afficher le skeleton pendant le chargement initial complet
+    // Bornes d'affichage "X à Y sur Z" (pour la recherche/filtres actifs)
+    const currentPerPage = perPage || 12;
+    const startIndex = (Math.max(1, page || 1) - 1) * currentPerPage;
+    const endIndex = Math.min(
+      startIndex + currentPerPage,
+      total || displayProducts.length
+    );
+
+    // Afficher le skeleton pendant le chargement initial complet (sans filtre)
     if (initialLoading && !hasAnyFilter) {
       return (
         <div className={`space-y-8 ${className}`}>
@@ -113,11 +124,11 @@ const ProductFilter = forwardRef(
                 <SearchIcon className="text-gray-400 ml-4" size={20} />
                 <input
                   type="text"
-                  value="" // 🔧 Valeur contrôlée même en loading
+                  value=""
                   placeholder="Rechercher des instruments, accessoires..."
                   className="flex-1 p-4 text-lg outline-none bg-transparent placeholder-gray-500 rounded-xl"
                   disabled
-                  readOnly // 🔧 Ajout de readOnly pour éviter les warnings
+                  readOnly
                 />
               </div>
             </div>
@@ -161,7 +172,7 @@ const ProductFilter = forwardRef(
               <SearchIcon className="text-gray-400 ml-4" size={20} />
               <input
                 type="text"
-                value={query || ""} // 🔧 Fallback vers string vide si query est undefined
+                value={query || ""}
                 onChange={(e) => updateQuery(e.target.value)}
                 placeholder="Rechercher des instruments, accessoires..."
                 className="flex-1 p-4 text-lg outline-none bg-transparent placeholder-gray-500 rounded-xl"
@@ -196,9 +207,19 @@ const ProductFilter = forwardRef(
         {hasAnyFilter && (
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              <span className="font-semibold">{displayProducts.length}</span>{" "}
-              produit{displayProducts.length > 1 ? "s" : ""} trouvé
-              {displayProducts.length > 1 ? "s" : ""}
+              <span className="font-semibold">
+                {typeof total === "number" && total >= 0
+                  ? total
+                  : displayProducts.length}
+              </span>{" "}
+              produit
+              {(typeof total === "number" ? total : displayProducts.length) > 1
+                ? "s"
+                : ""}{" "}
+              trouvé
+              {(typeof total === "number" ? total : displayProducts.length) > 1
+                ? "s"
+                : ""}
               {query.trim() && (
                 <>
                   {" "}
@@ -250,18 +271,39 @@ const ProductFilter = forwardRef(
           ) : (
             // Afficher les produits normalement
             <ProductGrid
-              products={displayProducts}
+              products={hasAnyFilter ? results : displayProducts}
               loading={false}
               className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             />
           )}
         </div>
 
+        {/* Pagination & infos quand filtres/recherche actifs */}
+        {hasAnyFilter && totalPages > 1 && (
+          <>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onChange={(p) => {
+                gotoPage(p);
+                // remonter visuellement à la section produits
+                const el = document.getElementById("ProduitsVedettes");
+                if (el)
+                  el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            />
+            <div className="text-center mt-4 text-sm text-gray-600">
+              Affichage de {startIndex + 1} à {endIndex} sur {total} produit
+              {total > 1 ? "s" : ""}
+            </div>
+          </>
+        )}
+
         {/* Indicateur de recherche active */}
         {hasAnyFilter && (
           <div className="text-center">
             <p className="text-sm text-gray-500">
-              Recherche et filtres actifs -{" "}
+              Recherche et filtres actifs —{" "}
               <button
                 onClick={handleClearAll}
                 className="text-blue-600 hover:text-blue-800 underline"
