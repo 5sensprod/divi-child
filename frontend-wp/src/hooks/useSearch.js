@@ -61,7 +61,9 @@ export const useSearch = () => {
 
   const clearQuery = useCallback(() => {
     setQuery("");
-  }, []);
+    // Réinitialiser aussi les résultats quand on efface la recherche
+    clearSearch();
+  }, [clearSearch]);
 
   const openSearch = useCallback(() => {
     setIsOpen(true);
@@ -69,11 +71,9 @@ export const useSearch = () => {
 
   const closeSearch = useCallback(() => {
     setIsOpen(false);
-    setQuery("");
-    setFilters(DEFAULT_FILTERS);
     setExpandedProduct(null);
-    clearSearch();
-  }, [clearSearch]);
+    // Ne pas réinitialiser query, filters et results pour garder l'état
+  }, []);
 
   const toggleProductExpansion = useCallback((productId) => {
     setExpandedProduct((prev) => (prev === productId ? null : productId));

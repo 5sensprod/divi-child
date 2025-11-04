@@ -1,65 +1,19 @@
 // frontend-wp/src/components/Product/ProductCard.jsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import WishlistButton from "../UI/WishlistButton";
+import { formatPrice } from "../../utils/format";
 
 // ✅ IMAGE PAR DÉFAUT - Uniquement pour ProductFilter
 const FALLBACK_IMAGE =
   "https://placehold.co/800x800/f3f4f6/9ca3af?text=Produit";
 
-const fmt = (v) => (v ? `${String(v).replace(".", ",")}€` : "");
-
-const Stars = ({ value = 0, size = 14 }) => {
-  const full = Math.floor(Number(value) || 0);
-  const half = Number(value) - full >= 0.5;
-  return (
-    <div
-      className="flex items-center gap-0.5 text-amber-500"
-      aria-label={`Note ${value}/5`}
-    >
-      {Array.from({ length: 5 }).map((_, i) => {
-        const state = i < full ? "full" : i === full && half ? "half" : "empty";
-        return (
-          <svg
-            key={i}
-            width={size}
-            height={size}
-            viewBox="0 0 24 24"
-            className="shrink-0"
-          >
-            {state === "full" && (
-              <path
-                fill="currentColor"
-                d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-              />
-            )}
-            {state === "half" && (
-              <>
-                <path
-                  fill="currentColor"
-                  d="M12 2v15.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"
-                />
-                <path
-                  fill="currentColor"
-                  opacity="0.25"
-                  d="M12 17.27V2L9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-                />
-              </>
-            )}
-            {state === "empty" && (
-              <path
-                fill="currentColor"
-                opacity="0.25"
-                d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24z"
-              />
-            )}
-          </svg>
-        );
-      })}
-    </div>
-  );
-};
-
-const ProductCard = ({ product, allowFallback = false }) => {
+const ProductCard = ({
+  product,
+  allowFallback = false,
+  showCategory = true,
+}) => {
+  const navigate = useNavigate();
   const [imgSrc, setImgSrc] = useState(
     product?.images?.[0]?.src || (allowFallback ? FALLBACK_IMAGE : null)
   );
@@ -103,6 +57,12 @@ const ProductCard = ({ product, allowFallback = false }) => {
     }
   };
 
+  // ✅ Construire le chemin de la catégorie
+  const getCategoryPath = (category) => {
+    if (!category) return null;
+    return `/categorie-produit/${category.slug}`;
+  };
+
   // ✅ Si pas d'image et fallback non autorisé, ne rien afficher
   if (!imgSrc && !allowFallback) {
     return null;
@@ -130,8 +90,8 @@ const ProductCard = ({ product, allowFallback = false }) => {
           )}
 
           {hasPromo && (
-            <span className="absolute top-3 left-3 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
-              Promo
+            <span className="absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded bg-red-500 text-white shadow">
+              PROMO
             </span>
           )}
 
@@ -153,33 +113,60 @@ const ProductCard = ({ product, allowFallback = false }) => {
         </div>
       </Link>
 
-      <div className="p-4">
-        <Link to={url} title={product?.name}>
-          <h3 className="line-clamp-2 font-semibold text-gray-900 hover:text-sky-600 transition-colors">
-            {product?.name}
-          </h3>
-        </Link>
-
-        <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-gray-900">
-              {fmt(
-                product?.sale_price || product?.price || product?.regular_price
-              )}
+      <div className="p-4 flex flex-col">
+        {/* Catégorie et Marque */}
+        <div className="flex items-center gap-2 mb-2 min-h-[20px]">
+          {showCategory && product?.categories?.[0] && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(getCategoryPath(product.categories[0]));
+              }}
+              className="text-xs text-sky-600 font-medium bg-sky-50 px-2 py-0.5 rounded hover:bg-sky-100 hover:text-sky-700 transition-colors"
+            >
+              {product.categories[0].name}
+            </button>
+          )}
+          {product?.brands?.[0] && (
+            <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded">
+              {product.brands[0].name}
             </span>
-            {hasPromo && (
-              <span className="text-sm text-gray-500 line-through">
-                {fmt(product?.regular_price)}
-              </span>
-            )}
-          </div>
+          )}
+        </div>
 
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <Stars value={Number(product?.average_rating || 4.5)} />
-            {product?.rating_count ? (
-              <span>({product.rating_count})</span>
-            ) : null}
-          </div>
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <Link to={url} title={product?.name} className="flex-1 min-h-[3rem]">
+            <h3 className="line-clamp-2 font-semibold text-gray-900 hover:text-sky-600 transition-colors h-[3rem]">
+              {product?.name}
+            </h3>
+          </Link>
+
+          {/* ✅ Bouton Wishlist */}
+          <WishlistButton
+            product={product}
+            className="p-1.5 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            iconSize={18}
+          />
+        </div>
+
+        <div className="flex items-baseline gap-2 flex-wrap mt-auto">
+          {hasPromo ? (
+            <>
+              <span className="text-lg font-bold text-pink-600">
+                {formatPrice(product?.sale_price)}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                {formatPrice(product?.regular_price)}
+              </span>
+              <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+                PROMO
+              </span>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-gray-900">
+              {formatPrice(product?.regular_price || product?.price)}
+            </span>
+          )}
         </div>
 
         <Link

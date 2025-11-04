@@ -228,6 +228,13 @@ const ProductPage = () => {
             {/* Informations produit */}
             <div className="space-y-6">
               <div className="bg-white rounded-lg p-6 shadow-md">
+                {/* Nom du produit */}
+                <div className="mb-4 pb-4 border-b border-gray-200">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {product.name}
+                  </h2>
+                </div>
+
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-baseline gap-3">
                     {product.on_sale && product.sale_price ? (

@@ -12,6 +12,7 @@ import Title from "../components/UI/Title";
 import PriceFilter from "../components/UI/PriceFilter";
 import BrandFilter from "../components/UI/BrandFilter";
 import SortFilter from "../components/UI/SortFilter";
+import ProductCard from "../components/Product/ProductCard";
 import { formatPrice } from "../utils/format";
 
 // ✅ IMAGE PAR DÉFAUT pour les produits sans image
@@ -466,12 +467,15 @@ const CategoryPage = () => {
                   {[...Array(productsPerPage)].map((_, i) => (
                     <div
                       key={i}
-                      className="bg-white rounded-lg shadow-md overflow-hidden"
+                      className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden animate-pulse"
                     >
-                      <div className="aspect-square bg-gray-200 animate-pulse"></div>
+                      <div className="h-52 bg-gray-200"></div>
                       <div className="p-4">
-                        <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                        <div className="h-5 bg-gray-300 rounded mb-2"></div>
+                        <div className="h-5 bg-gray-300 rounded w-3/4 mb-3"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-1"></div>
+                        <div className="h-4 bg-gray-200 rounded w-2/3 mb-3"></div>
+                        <div className="h-10 bg-gray-300 rounded-xl"></div>
                       </div>
                     </div>
                   ))}
@@ -480,62 +484,12 @@ const CategoryPage = () => {
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {products.map((product) => (
-                      <div
+                      <ProductCard
                         key={product.id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                        onClick={() => navigate(`/produit/${product.slug}`)}
-                      >
-                        {/* ✅ Image avec fallback */}
-                        <div className="aspect-square bg-gray-100">
-                          <ProductImage
-                            src={product.images?.[0]?.src}
-                            alt={product.name}
-                          />
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                            {product.name}
-                          </h3>
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              {product.on_sale && product.sale_price ? (
-                                <>
-                                  <span className="text-lg font-bold text-pink-600">
-                                    {formatPrice(product.sale_price)}
-                                  </span>
-                                  <span className="text-sm text-gray-500 line-through">
-                                    {product.regular_price}€
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-lg font-bold text-gray-900">
-                                  {formatPrice(product.regular_price)}
-                                </span>
-                              )}
-                            </div>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                product.stock_status === "instock"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {product.stock_status === "instock"
-                                ? "En stock"
-                                : "Rupture"}
-                            </span>
-                          </div>
-                          <button
-                            className="w-full mt-3 bg-pink-500 text-white py-2 px-4 rounded hover:bg-pink-600 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/produit/${product.slug}`);
-                            }}
-                          >
-                            Voir le produit
-                          </button>
-                        </div>
-                      </div>
+                        product={product}
+                        allowFallback={true}
+                        showCategory={false}
+                      />
                     ))}
                   </div>
 
