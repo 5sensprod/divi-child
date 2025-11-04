@@ -15,9 +15,10 @@ const Modal = ({
   className = "",
   backdropClassName = "",
   contentClassName = "",
+  scrollToTopKey,
 }) => {
   const modalRef = useRef(null);
-
+  const contentRef = useRef(null);
   // Gestion de l'échappement
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -37,6 +38,14 @@ const Modal = ({
       };
     }
   }, [isOpen, closeOnEscape, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = contentRef.current;
+    if (el) {
+      el.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [scrollToTopKey, isOpen]);
 
   // Fermeture sur clic backdrop
   const handleBackdropClick = (e) => {
@@ -74,7 +83,6 @@ const Modal = ({
           ref={modalRef}
           className={`w-full h-full bg-white flex flex-col overflow-hidden ${className}`}
         >
-          {/* Header avec titre et bouton fermer */}
           {(title || showCloseButton) && (
             <div
               className={`flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 ${contentClassName}`}
@@ -94,8 +102,10 @@ const Modal = ({
             </div>
           )}
 
-          {/* Contenu - prend tout l'espace disponible */}
-          <div className={`flex-1 overflow-auto ${contentClassName}`}>
+          <div
+            ref={contentRef}
+            className={`flex-1 overflow-auto ${contentClassName}`}
+          >
             {children}
           </div>
         </div>
@@ -103,7 +113,6 @@ const Modal = ({
     );
   }
 
-  // Mode modal standard
   return (
     <div
       className={`fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex ${positionClasses[position]} ${backdropClassName}`}
@@ -112,16 +121,15 @@ const Modal = ({
       <div
         ref={modalRef}
         className={`
-          relative bg-white shadow-2xl 
-          ${sizeClasses[size]} 
-          rounded-lg
-          ${position === "top" ? "max-h-[90vh]" : "max-h-[95vh]"}
-          w-full mx-4
-          flex flex-col
-          ${className}
-        `}
+           relative bg-white shadow-2xl 
+           ${sizeClasses[size]} 
+           rounded-lg
+           ${position === "top" ? "max-h-[90vh]" : "max-h-[95vh]"}
+           w-full mx-4
+           flex flex-col
+           ${className}
+         `}
       >
-        {/* Header avec titre et bouton fermer */}
         {(title || showCloseButton) && (
           <div
             className={`flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 ${contentClassName}`}
@@ -141,13 +149,11 @@ const Modal = ({
           </div>
         )}
 
-        {/* Contenu - avec scroll pour toutes les tailles */}
         <div
-          className={`
-            flex-1 overflow-auto
-            ${title || showCloseButton ? "p-4" : "p-4"}
-            ${contentClassName}
-          `}
+          ref={contentRef}
+          className={` flex-1 overflow-auto ${
+            title || showCloseButton ? "p-4" : "p-4"
+          } ${contentClassName}`}
         >
           {children}
         </div>

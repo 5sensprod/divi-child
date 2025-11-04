@@ -1,267 +1,177 @@
 // src/hooks/useProductSearch.js
-import { useState, useCallback, useMemo } from "react";
-import { debounce } from "lodash";
-import { cacheUtils, CACHE_KEYS, CACHE_DURATIONS } from "../utils/cache";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { searchProducts } from "../services/woocommerce";
+
+const mapFiltersToWooParams = (filters = {}) => {
+  const params = {};
+
+  // Catégorie
+  if (filters.category) {
+    params.category = String(filters.category);
+  }
+
+  // Prix
+  if (filters.priceRange && filters.priceRange !== "all") {
+    const [min, max] = filters.priceRange.split("-");
+    if (min && min !== "0") params.min_price = Number(min);
+    if (max && !max.includes("+")) params.max_price = Number(max);
+    if (filters.priceRange === "500+") params.min_price = 500;
+  }
+
+  // Disponibilité
+  if (filters.availability && filters.availability !== "all") {
+    if (filters.availability === "in-stock") params.stock_status = "instock";
+    if (filters.availability === "pre-order")
+      params.stock_status = "onbackorder";
+  }
+
+  // Tri
+  switch (filters.sortBy) {
+    case "price-asc":
+      params.orderby = "price";
+      params.order = "asc";
+      break;
+    case "price-desc":
+      params.orderby = "price";
+      params.order = "desc";
+      break;
+    case "name-asc":
+      params.orderby = "title";
+      params.order = "asc";
+      break;
+    case "name-desc":
+      params.orderby = "title";
+      params.order = "desc";
+      break;
+    case "date-desc":
+      params.orderby = "date";
+      params.order = "desc";
+      break;
+    case "relevance":
+      // WooCommerce ne classe par pertinence que lorsqu'il y a `search`
+      params.orderby = "relevance";
+      break;
+    default:
+      break;
+  }
+
+  return params;
+};
 
 export const useProductSearch = () => {
-  const [searchState, setSearchState] = useState({
-    query: "",
-    results: [],
-    loading: false,
-    error: null,
-    hasSearched: false,
-    filters: {},
-  });
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  // Générer la clé de cache pour une recherche
-  const getSearchCacheKey = useCallback((query, filters = {}) => {
-    const queryKey = query ? query.toLowerCase().trim() : "no-query";
-    const filtersKey = JSON.stringify(filters);
-    return `${CACHE_KEYS.SEARCH_PREFIX}${queryKey}_${filtersKey}`;
-  }, []);
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Récupérer les résultats depuis le cache
-  const getCachedResults = useCallback(
-    (query, filters) => {
-      const cacheKey = getSearchCacheKey(query, filters);
-      return cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.SEARCH);
+  // garder perPage courant sans recréer les callbacks
+  const perPageRef = useRef(perPage);
+  useEffect(() => {
+    perPageRef.current = perPage;
+  }, [perPage]);
+
+  // Pour relancer la même recherche quand on change uniquement la page
+  const lastQueryRef = useRef({ q: "", filters: {} });
+
+  // ➜ Fonction stable (réf. ne change jamais)
+  const runSearch = useCallback(async (q, filters, pageArg, perPageArg) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {
+        ...mapFiltersToWooParams(filters),
+        page: pageArg ?? 1,
+        per_page: perPageArg ?? perPageRef.current,
+      };
+
+      const res = await searchProducts(q, params);
+
+      setResults(res.data || []);
+      setTotal(res.pagination.total || 0);
+      setTotalPages(res.pagination.totalPages || 0);
+      setPerPage(res.pagination.perPage || perPageRef.current);
+      setHasSearched(true);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          "Une erreur est survenue lors de la recherche."
+      );
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []); // ❗ aucune dépendance (stable)
+
+  // ➜ search stable; ne dépend plus de `page`
+  const search = useCallback(
+    async (q, filters, pageArg = 1) => {
+      lastQueryRef.current = { q, filters };
+      setPage(pageArg);
+      await runSearch(q, filters, pageArg, perPageRef.current);
     },
-    [getSearchCacheKey]
+    [runSearch]
   );
 
-  // Sauvegarder les résultats en cache
-  const setCachedResults = useCallback(
-    (query, filters, results) => {
-      const cacheKey = getSearchCacheKey(query, filters);
-      cacheUtils.setWithTTL(cacheKey, results, CACHE_DURATIONS.SEARCH);
+  const gotoPage = useCallback(
+    async (newPage) => {
+      const { q, filters } = lastQueryRef.current;
+      const pageNum = Math.max(1, newPage);
+      setPage(pageNum);
+      await runSearch(q, filters, pageNum, perPageRef.current);
     },
-    [getSearchCacheKey]
+    [runSearch]
   );
 
-  // Sauvegarder dans l'historique des recherches récentes
-  const saveToRecentSearches = useCallback((query) => {
-    if (!query || !query.trim()) return;
+  const nextPage = useCallback(async () => {
+    if (page < totalPages) {
+      await gotoPage(page + 1);
+    }
+  }, [page, totalPages, gotoPage]);
 
-    const recentSearches =
-      cacheUtils.getWithTTL(
-        CACHE_KEYS.RECENT_SEARCHES,
-        CACHE_DURATIONS.RECENT_SEARCHES
-      ) || [];
+  const prevPage = useCallback(async () => {
+    if (page > 1) {
+      await gotoPage(page - 1);
+    }
+  }, [page, gotoPage]);
 
-    // Supprimer la recherche si elle existe déjà
-    const filteredSearches = recentSearches.filter(
-      (search) => search.toLowerCase() !== query.toLowerCase()
-    );
-
-    // Ajouter en première position
-    const updatedSearches = [query, ...filteredSearches].slice(0, 10); // Garder seulement 10
-
-    cacheUtils.setWithTTL(
-      CACHE_KEYS.RECENT_SEARCHES,
-      updatedSearches,
-      CACHE_DURATIONS.RECENT_SEARCHES
-    );
-  }, []);
-
-  // Vérifier si des filtres sont actifs
-  const hasActiveFilters = useCallback((filters) => {
-    if (!filters) return false;
-
-    return (
-      (filters.category && filters.category !== "") ||
-      (filters.priceRange && filters.priceRange !== "all") ||
-      (filters.availability && filters.availability !== "all") ||
-      (filters.sortBy && filters.sortBy !== "relevance")
-    );
-  }, []);
-
-  // Recherche avec filtres
-  const performSearch = useCallback(
-    async (query = "", searchFilters = {}) => {
-      const trimmedQuery = query.trim();
-      const hasFilters = hasActiveFilters(searchFilters);
-
-      // Si pas de query ET pas de filtres, réinitialiser
-      if (!trimmedQuery && !hasFilters) {
-        setSearchState((prev) => ({
-          ...prev,
-          query: "",
-          results: [],
-          hasSearched: false,
-          error: null,
-          filters: searchFilters,
-          loading: false,
-        }));
-        return;
-      }
-
-      // Vérifier le cache
-      const cachedResults = getCachedResults(trimmedQuery, searchFilters);
-      if (cachedResults) {
-        setSearchState((prev) => ({
-          ...prev,
-          query: trimmedQuery,
-          results: cachedResults,
-          loading: false,
-          hasSearched: true,
-          error: null,
-          filters: searchFilters,
-        }));
-        return;
-      }
-
-      setSearchState((prev) => ({
-        ...prev,
-        loading: true,
-        query: trimmedQuery,
-        error: null,
-        filters: searchFilters,
-      }));
-
-      try {
-        const { searchProducts } = await import("../services/woocommerce");
-
-        // Construire les paramètres de recherche
-        const searchParams = {
-          per_page: 20,
-          search_fields: ["name", "description", "sku"],
-        };
-
-        // Ajouter les filtres aux paramètres
-        if (searchFilters.category && searchFilters.category !== "") {
-          searchParams.category = searchFilters.category;
-        }
-
-        if (searchFilters.priceRange && searchFilters.priceRange !== "all") {
-          // Gérer les prix selon les valeurs définies dans SearchFilters
-          switch (searchFilters.priceRange) {
-            case "0-50":
-              searchParams.min_price = 0;
-              searchParams.max_price = 50;
-              break;
-            case "50-100":
-              searchParams.min_price = 50;
-              searchParams.max_price = 100;
-              break;
-            case "100-300":
-              searchParams.min_price = 100;
-              searchParams.max_price = 300;
-              break;
-            case "300-500":
-              searchParams.min_price = 300;
-              searchParams.max_price = 500;
-              break;
-            case "500+":
-              searchParams.min_price = 500;
-              break;
-          }
-        }
-
-        if (
-          searchFilters.availability &&
-          searchFilters.availability !== "all"
-        ) {
-          searchParams.stock_status =
-            searchFilters.availability === "in-stock"
-              ? "instock"
-              : searchFilters.availability;
-        }
-
-        if (searchFilters.sortBy && searchFilters.sortBy !== "relevance") {
-          switch (searchFilters.sortBy) {
-            case "price-asc":
-              searchParams.orderby = "price";
-              searchParams.order = "asc";
-              break;
-            case "price-desc":
-              searchParams.orderby = "price";
-              searchParams.order = "desc";
-              break;
-            case "name-asc":
-              searchParams.orderby = "title";
-              searchParams.order = "asc";
-              break;
-            case "date-desc":
-              searchParams.orderby = "date";
-              searchParams.order = "desc";
-              break;
-          }
-        }
-
-        // Effectuer la recherche
-        const results = await searchProducts(trimmedQuery, searchParams);
-
-        // Sauvegarder en cache
-        setCachedResults(trimmedQuery, searchFilters, results);
-
-        // Sauvegarder dans les recherches récentes seulement si on a une query
-        if (trimmedQuery) {
-          saveToRecentSearches(trimmedQuery);
-        }
-
-        setSearchState((prev) => ({
-          ...prev,
-          results,
-          loading: false,
-          hasSearched: true,
-          error: null,
-        }));
-      } catch (error) {
-        console.error("Erreur recherche produits:", error);
-
-        setSearchState((prev) => ({
-          ...prev,
-          error: "Erreur lors de la recherche",
-          loading: false,
-          results: [],
-          hasSearched: true,
-        }));
-      }
-    },
-    [getCachedResults, setCachedResults, saveToRecentSearches, hasActiveFilters]
-  );
-
-  // Debouncing pour éviter trop de requêtes
-  const debouncedSearch = useMemo(
-    () => debounce(performSearch, 500),
-    [performSearch]
-  );
-
-  // Nettoyer la recherche
   const clearSearch = useCallback(() => {
-    setSearchState({
-      query: "",
-      results: [],
-      loading: false,
-      error: null,
-      hasSearched: false,
-      filters: {},
-    });
+    setResults([]);
+    setHasSearched(false);
+    setError(null);
+    setTotal(0);
+    setTotalPages(0);
+    setPage(1);
   }, []);
 
-  // Récupérer les recherches récentes
   const getRecentSearches = useCallback(() => {
-    return (
-      cacheUtils.getWithTTL(
-        CACHE_KEYS.RECENT_SEARCHES,
-        CACHE_DURATIONS.RECENT_SEARCHES
-      ) || []
-    );
-  }, []);
-
-  // Nettoyer toutes les recherches en cache
-  const clearSearchCache = useCallback(() => {
-    cacheUtils.clearSearchCache();
-    cacheUtils.remove(CACHE_KEYS.RECENT_SEARCHES);
+    try {
+      const raw = localStorage.getItem("recent_searches");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   }, []);
 
   return {
-    ...searchState,
-    search: debouncedSearch,
+    results,
+    loading,
+    error,
+    hasSearched,
+    page,
+    perPage,
+    total,
+    totalPages,
+    search,
+    gotoPage,
+    nextPage,
+    prevPage,
     clearSearch,
-    performSearch, // Pour recherche immédiate si besoin
     getRecentSearches,
-    clearSearchCache,
-    hasActiveFilters,
   };
 };

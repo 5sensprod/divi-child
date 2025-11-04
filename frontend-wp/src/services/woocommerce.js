@@ -152,8 +152,13 @@ export const getProductBySlug = async (slug) => {
 export const searchProducts = async (searchTerm = "", searchParams = {}) => {
   try {
     const WooCommerce = createWooCommerceAPI();
+
+    const page = searchParams.page || 1;
+    const per_page = searchParams.per_page || 12;
+
     const params = {
-      per_page: 20,
+      per_page,
+      page,
       status: "publish",
       ...searchParams,
     };
@@ -163,7 +168,22 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
     }
 
     const response = await WooCommerce.get("products", params);
-    return decodeObject(response.data);
+
+    const result = {
+      data: decodeObject(response.data),
+      headers: {
+        "x-wp-total": response.headers["x-wp-total"],
+        "x-wp-totalpages": response.headers["x-wp-totalpages"],
+      },
+      pagination: {
+        total: parseInt(response.headers["x-wp-total"]) || 0,
+        totalPages: parseInt(response.headers["x-wp-totalpages"]) || 0,
+        currentPage: page,
+        perPage: per_page,
+      },
+    };
+
+    return result;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(

@@ -14,6 +14,11 @@ import Modal from "../UI/Modal";
 import SearchFilters from "./SearchFilters";
 import { getProduct } from "../../services/woocommerce";
 import ProductExpansion from "./ProductExpansion";
+import {
+  ProductListSkeleton,
+  ProductDetailSkeleton,
+} from "../UI/LoadingSkeleton";
+import { SearchListSkeleton } from "./SearchSkeletons";
 
 const Search = ({ isOpen, onClose }) => {
   const inputRef = useRef(null);
@@ -37,6 +42,14 @@ const Search = ({ isOpen, onClose }) => {
     recentSearches,
     toggleProductExpansion,
     expandedProduct,
+
+    page,
+    perPage,
+    total,
+    totalPages,
+    gotoPage,
+    nextPage,
+    prevPage,
   } = useSearch();
 
   // Focus automatique à l'ouverture
@@ -60,6 +73,7 @@ const Search = ({ isOpen, onClose }) => {
       position="top"
       showCloseButton={false}
       backdropClassName="bg-black/50 backdrop-blur-sm"
+      scrollToTopKey={page}
     >
       <div className="h-full flex flex-col">
         {/* Header */}
@@ -105,6 +119,13 @@ const Search = ({ isOpen, onClose }) => {
               toggleProductExpansion={toggleProductExpansion}
               expandedProduct={expandedProduct}
               getProduct={getProduct}
+              page={page}
+              total={total}
+              totalPages={totalPages}
+              gotoPage={gotoPage}
+              nextPage={nextPage}
+              prevPage={prevPage}
+              perPage={perPage}
             />
           </div>
         </div>
@@ -172,14 +193,18 @@ const SearchContent = ({
   toggleProductExpansion,
   expandedProduct,
   getProduct,
+
+  // ➕ Pagination
+  page,
+  perPage,
+  total,
+  totalPages,
+  gotoPage,
+  nextPage,
+  prevPage,
 }) => {
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Recherche en cours...</span>
-      </div>
-    );
+    return <SearchListSkeleton count={perPage} />;
   }
 
   if (error) {
@@ -219,11 +244,17 @@ const SearchContent = ({
         onClose={onClose}
         toggleProductExpansion={toggleProductExpansion}
         expandedProduct={expandedProduct}
-        getProduct={getProduct} // ✅ Ajouté
+        getProduct={getProduct}
+        // ➕ Pagination
+        page={page}
+        total={total}
+        totalPages={totalPages}
+        gotoPage={gotoPage}
+        nextPage={nextPage}
+        prevPage={prevPage}
       />
     );
   }
-
   return null;
 };
 
@@ -303,13 +334,21 @@ const SearchResults = ({
   onClose,
   toggleProductExpansion,
   expandedProduct,
-  getProduct, // ✅ Ajouté
+  getProduct,
+
+  // ➕ Pagination
+  page,
+  total,
+  totalPages,
+  gotoPage,
+  nextPage,
+  prevPage,
 }) => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
       <p className="text-sm text-gray-600">
-        <span className="font-medium">{results.length}</span> résultat
-        {results.length > 1 ? "s" : ""}
+        <span className="font-medium">{total}</span> résultat
+        {total > 1 ? "s" : ""}
         {query.trim() && (
           <>
             {" "}
@@ -320,6 +359,11 @@ const SearchResults = ({
           <span className="text-blue-600"> (avec filtres)</span>
         )}
       </p>
+      {totalPages > 1 && (
+        <span className="text-xs text-gray-500">
+          Page {page} / {totalPages}
+        </span>
+      )}
     </div>
 
     <div className="grid gap-3">
@@ -330,22 +374,103 @@ const SearchResults = ({
           onClose={onClose}
           onToggleProduct={toggleProductExpansion}
           isExpanded={expandedProduct === product.id}
-          getProduct={getProduct} // ✅ Ajouté
+          getProduct={getProduct} // ✅ passe bien la prop
         />
       ))}
     </div>
+
+    {totalPages > 1 && (
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        gotoPage={gotoPage}
+        nextPage={nextPage}
+        prevPage={prevPage}
+      />
+    )}
   </div>
 );
 
-const SearchResult = ({ product, onClose, onToggleProduct, isExpanded }) => {
+// ➕ Composant Pagination (numérotation compacte avec ellipses)
+const Pagination = ({ page, totalPages, gotoPage, nextPage, prevPage }) => {
+  const makePages = () => {
+    const pages = [];
+    const add = (p) =>
+      pages.push(
+        <button
+          key={p}
+          onClick={() => gotoPage(p)}
+          className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+            p === page
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+          }`}
+        >
+          {p}
+        </button>
+      );
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) add(i);
+      return pages;
+    }
+
+    add(1);
+    if (page > 4)
+      pages.push(
+        <span key="l-ell" className="px-2 text-gray-400">
+          …
+        </span>
+      );
+
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+    for (let i = start; i <= end; i++) add(i);
+
+    if (page < totalPages - 3)
+      pages.push(
+        <span key="r-ell" className="px-2 text-gray-400">
+          …
+        </span>
+      );
+    add(totalPages);
+
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 pt-2">
+      <button
+        onClick={prevPage}
+        disabled={page <= 1}
+        className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-50"
+      >
+        Précédent
+      </button>
+      {makePages()}
+      <button
+        onClick={nextPage}
+        disabled={page >= totalPages}
+        className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-50"
+      >
+        Suivant
+      </button>
+    </div>
+  );
+};
+const SearchResult = ({
+  product,
+  onClose,
+  onToggleProduct,
+  isExpanded,
+  getProduct,
+}) => {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [fullProduct, setFullProduct] = useState(null);
 
   const handleClick = (e) => {
     e.preventDefault();
     onToggleProduct(product.id);
-
-    // Charger les détails du produit si on l'expanse et qu'on ne les a pas déjà
     if (!isExpanded && !fullProduct) {
       loadProductDetails();
     }

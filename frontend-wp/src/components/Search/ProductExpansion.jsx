@@ -14,6 +14,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useBreadcrumb } from "../../hooks/useBreadcrumb";
+import WishlistButton from "../UI/WishlistButton";
 
 const ProductExpansion = ({
   product,
@@ -195,9 +196,11 @@ const ProductExpansion = ({
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                   {displayProduct.name}
                 </h1>
-                <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                  <Heart size={20} />
-                </button>
+                {/* ❤️ relié au WishlistContext */}
+                <WishlistButton
+                  product={displayProduct}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                />
               </div>
 
               {/* Prix */}

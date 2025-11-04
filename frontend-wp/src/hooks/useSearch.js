@@ -23,63 +23,62 @@ export const useSearch = () => {
     search,
     clearSearch,
     getRecentSearches,
+
+    // Pagination
+    page,
+    perPage,
+    total,
+    totalPages,
+    gotoPage,
+    nextPage,
+    prevPage,
   } = useProductSearch();
 
-  // Vérifie si des filtres sont actifs
   const hasActiveFilters = useMemo(() => {
     return Object.entries(filters).some(([key, value]) => {
       return value !== DEFAULT_FILTERS[key];
     });
   }, [filters]);
 
-  // Fonction de recherche optimisée
+  // Recherche optimisée
   const performSearch = useCallback(() => {
-    if (!query.trim() && !hasActiveFilters) {
-      return;
-    }
-    search(query, filters);
+    if (!query.trim() && !hasActiveFilters) return;
+    // Toujours repartir page 1 quand query/filters changent
+    search(query, filters, 1);
   }, [query, filters, hasActiveFilters, search]);
 
-  // Déclenchement automatique de la recherche
+  // Debounce
   useEffect(() => {
-    const timeoutId = setTimeout(performSearch, 300); // Debounce
+    const timeoutId = setTimeout(performSearch, 300);
     return () => clearTimeout(timeoutId);
   }, [performSearch]);
 
-  // Gestionnaires
-  const updateQuery = useCallback((newQuery) => {
-    setQuery(newQuery);
-  }, []);
-
-  const updateFilters = useCallback((newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  }, []);
-
+  // Reset pagination quand on change entièrement les filtres via "Effacer"
   const resetFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
   }, []);
 
+  const updateQuery = useCallback((newQuery) => setQuery(newQuery), []);
+  const updateFilters = useCallback(
+    (newFilters) => setFilters((prev) => ({ ...prev, ...newFilters })),
+    []
+  );
+
   const clearQuery = useCallback(() => {
     setQuery("");
-    // Réinitialiser aussi les résultats quand on efface la recherche
     clearSearch();
   }, [clearSearch]);
 
-  const openSearch = useCallback(() => {
-    setIsOpen(true);
-  }, []);
-
+  const openSearch = useCallback(() => setIsOpen(true), []);
   const closeSearch = useCallback(() => {
     setIsOpen(false);
     setExpandedProduct(null);
-    // Ne pas réinitialiser query, filters et results pour garder l'état
   }, []);
 
   const toggleProductExpansion = useCallback((productId) => {
     setExpandedProduct((prev) => (prev === productId ? null : productId));
   }, []);
 
-  // État calculé
   const isEmpty = !query.trim() && !hasActiveFilters;
   const hasResults = results.length > 0;
   const showEmpty = hasSearched && !hasResults && !isEmpty;
@@ -102,6 +101,15 @@ export const useSearch = () => {
     hasResults,
     showEmpty,
     showSuggestions,
+
+    // Pagination
+    page,
+    perPage,
+    total,
+    totalPages,
+    gotoPage,
+    nextPage,
+    prevPage,
 
     // Actions
     updateQuery,
