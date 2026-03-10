@@ -62,7 +62,7 @@ const ProductPage = () => {
             for (const cat of data.categories) {
               const hierarchy = await buildCategoryHierarchy(
                 cat.id,
-                allCategories
+                allCategories,
               );
               if (hierarchy.length > maxDepth) {
                 maxDepth = hierarchy.length;
@@ -72,7 +72,7 @@ const ProductPage = () => {
 
             const hierarchy = await buildCategoryHierarchy(
               deepestCategory.id,
-              allCategories
+              allCategories,
             );
 
             hierarchy.forEach((cat, index) => {
@@ -109,10 +109,10 @@ const ProductPage = () => {
   if (loading) {
     return (
       <div>
-        <section className="relative overflow-hidden min-h-[400px] page-content">
+        <section className="relative overflow-hidden min-h-[200px] page-content">
           <Background variant="auto" opacity={1} animated={true} />
-          <div className="container-divi relative z-10">
-            <div className="text-center py-20">
+          <div className="container-divi relative z-20">
+            <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
               <p className="text-white text-lg">Chargement du produit...</p>
             </div>
@@ -125,10 +125,10 @@ const ProductPage = () => {
   if (error || !product) {
     return (
       <div>
-        <section className="relative overflow-hidden min-h-[400px] page-content">
+        <section className="relative overflow-hidden min-h-[200px] page-content">
           <Background variant="auto" opacity={1} animated={true} />
-          <div className="container-divi relative z-10">
-            <div className="text-center py-20">
+          <div className="container-divi relative z-20">
+            <div className="text-center py-12">
               <Title
                 tag="h1"
                 className="mb-4 text-white"
@@ -154,41 +154,30 @@ const ProductPage = () => {
     );
   }
 
-  // ✅ Vérifier si le produit a des images
   const images = product.images || [];
   const hasImages = images.length > 0 && images[0]?.src;
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[300px] page-content">
+      {/* Hero Section - Fil d'ariane uniquement */}
+      <section className="relative overflow-hidden page-content pt-32 pb-4 md:pt-36 md:pb-4">
         <Background variant="ocean-night" opacity={1} animated={true} />
-        <div className="container-divi relative z-10">
-          <div className="py-12 lg:py-16">
-            <Breadcrumb items={breadcrumbItems} className="mb-6" />
-            <Title
-              tag="h1"
-              className="text-white drop-shadow-lg"
-              animationType="none"
-              gradient="ocean"
-              mode="oceanNight"
-              bold="true"
-            >
-              {product.name}
-            </Title>
+        <div className="container-divi relative z-20 pt-5">
+          <div className="flex justify-end">
+            <Breadcrumb items={breadcrumbItems} />
           </div>
         </div>
       </section>
 
       {/* Section produit */}
-      <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section className="py-6 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div
             className={`grid ${
               hasImages ? "lg:grid-cols-2" : "lg:grid-cols-1"
             } gap-8 lg:gap-12`}
           >
-            {/* ✅ GALERIE D'IMAGES - Affichée uniquement si des images existent */}
+            {/* GALERIE D'IMAGES */}
             {hasImages && (
               <div className="space-y-4">
                 <div className="aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
@@ -287,7 +276,7 @@ const ProductPage = () => {
                     <div className="flex flex-wrap gap-2">
                       {product.categories.map((cat) => {
                         const item = breadcrumbItems.find(
-                          (b) => b.label === cat.name
+                          (b) => b.label === cat.name,
                         );
                         return (
                           <button

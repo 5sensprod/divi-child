@@ -69,7 +69,7 @@ const CategoryPage = () => {
         (cat) =>
           cat.slug.includes(finalSlug) ||
           finalSlug.includes(cat.slug) ||
-          cat.name.toLowerCase().includes(finalSlug.toLowerCase())
+          cat.name.toLowerCase().includes(finalSlug.toLowerCase()),
       );
     }
 
@@ -152,10 +152,10 @@ const CategoryPage = () => {
   if (error) {
     return (
       <div>
-        <section className="relative overflow-hidden page-content pt-32 pb-20">
+        <section className="relative overflow-hidden page-content pt-32 pb-8">
           <Background variant="ocean-night" opacity={1} animated={true} />
           <div className="container-divi relative z-10">
-            <div className="text-center py-20">
+            <div className="text-center py-10">
               <Title
                 tag="h1"
                 className="mb-4 text-white drop-shadow-lg"
@@ -205,13 +205,13 @@ const CategoryPage = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden page-content pt-32 pb-20 md:pt-40 md:pb-20">
+      <section className="relative overflow-hidden page-content pt-32 pb-6 md:pt-36 md:pb-6">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-10">
           <div className="text-center">
             <Title
               tag="h1"
-              className="mb-4 text-white drop-shadow-lg"
+              className="mb-2 text-white drop-shadow-lg"
               animationType="none"
               gradient="ocean"
               mode="oceanNight"
@@ -220,14 +220,7 @@ const CategoryPage = () => {
               {category?.name || "Catégorie"}
             </Title>
 
-            {category?.description && (
-              <div
-                className="text-lg text-white/90 max-w-3xl mx-auto mb-6 drop-shadow-md"
-                dangerouslySetInnerHTML={{ __html: category.description }}
-              />
-            )}
-
-            <p className="text-white/80 text-lg">
+            <p className="text-white/80 text-base">
               {productsLoading
                 ? "Chargement des produits..."
                 : `${products.length} produit${
@@ -239,7 +232,7 @@ const CategoryPage = () => {
       </section>
 
       {/* Section Produits avec Filtres */}
-      <section className="py-10 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section className="py-6 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Sidebar Filtres */}

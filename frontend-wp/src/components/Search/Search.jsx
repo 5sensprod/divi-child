@@ -371,7 +371,7 @@ const SearchResults = ({
           onClose={onClose}
           onToggleProduct={toggleProductExpansion}
           isExpanded={expandedProduct === product.id}
-          getProduct={getProduct} // ✅ passe bien la prop
+          getProduct={getProduct}
         />
       ))}
     </div>
@@ -385,8 +385,6 @@ const SearchResults = ({
     )}
   </div>
 );
-
-// ➕ Composant Pagination (numérotation compacte avec ellipses)
 
 const SearchResult = ({
   product,
@@ -449,8 +447,14 @@ const SearchResult = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-gray-900 line-clamp-1 mb-1">
-            {product.name}
+          <h3 className="font-medium line-clamp-1 mb-1">
+            <a
+              href={product.permalink}
+              onClick={(e) => e.stopPropagation()}
+              className="text-gray-900 hover:text-blue-600 hover:underline transition-colors"
+            >
+              {product.name}
+            </a>
           </h3>
           <div className="flex items-center gap-3">
             {product.price && (
