@@ -5,10 +5,12 @@ import { getProductBySlug, getCategories } from "../services/woocommerce";
 import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
 import Breadcrumb from "../components/UI/Breadcrumb";
+import ImageLightbox from "../components/UI/ImageLightbox";
 import { formatPrice } from "../utils/format";
 import RelatedProductsCarousel from "../components/Product/RelatedProductsCarousel";
 import WishlistButton from "../components/UI/WishlistButton";
 import StockBadge from "../components/Product/StockBadge";
+import { ZoomIn } from "lucide-react";
 
 const ProductPage = () => {
   const { slug } = useParams();
@@ -19,6 +21,7 @@ const ProductPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [breadcrumbItems, setBreadcrumbItems] = useState([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const buildCategoryHierarchy = async (categoryId, allCategories) => {
     const hierarchy = [];
@@ -78,7 +81,6 @@ const ProductPage = () => {
             hierarchy.forEach((cat, index) => {
               const pathUpToThis = hierarchy.slice(0, index + 1);
               const fullPath = buildCategoryPath(pathUpToThis);
-
               items.push({
                 label: cat.name,
                 path: `/categorie-produit/${fullPath}`,
@@ -160,9 +162,9 @@ const ProductPage = () => {
   return (
     <div>
       {/* Hero Section - Fil d'ariane uniquement */}
-      <section className="relative overflow-hidden page-content pt-32 pb-4 md:pt-36 md:pb-4">
+      <section className="relative overflow-hidden page-content pt-36 pb-4 md:pt-48 md:pb-4">
         <Background variant="ocean-night" opacity={1} animated={true} />
-        <div className="container-divi relative z-20 pt-5">
+        <div className="container-divi relative z-20">
           <div className="flex justify-end">
             <Breadcrumb items={breadcrumbItems} />
           </div>
@@ -173,22 +175,30 @@ const ProductPage = () => {
       <section className="py-6 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div
-            className={`grid ${
-              hasImages ? "lg:grid-cols-2" : "lg:grid-cols-1"
-            } gap-8 lg:gap-12`}
+            className={`grid ${hasImages ? "lg:grid-cols-2" : "lg:grid-cols-1"} gap-8 lg:gap-12`}
           >
             {/* GALERIE D'IMAGES */}
             {hasImages && (
               <div className="space-y-4">
-                <div className="aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
+                {/* Image principale cliquable */}
+                <div
+                  className="relative aspect-square bg-white rounded-lg shadow-lg overflow-hidden cursor-zoom-in group"
+                  onClick={() => setLightboxOpen(true)}
+                >
                   <img
                     src={images[selectedImage]?.src}
                     alt={product.name}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                     loading="eager"
                   />
+                  {/* Indicateur zoom */}
+                  <div className="absolute bottom-3 right-3 bg-black/40 text-white text-xs px-2.5 py-1.5 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ZoomIn size={13} />
+                    Agrandir
+                  </div>
                 </div>
 
+                {/* Thumbnails */}
                 {images.length > 1 && (
                   <div className="grid grid-cols-4 gap-2">
                     {images.map((image, index) => (
@@ -217,13 +227,14 @@ const ProductPage = () => {
             {/* Informations produit */}
             <div className="space-y-6">
               <div className="bg-white rounded-lg p-6 shadow-md">
-                {/* Nom du produit */}
+                {/* Nom */}
                 <div className="mb-4 pb-4 border-b border-gray-200">
                   <h2 className="text-2xl font-bold text-gray-900">
                     {product.name}
                   </h2>
                 </div>
 
+                {/* Prix */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-baseline gap-3">
                     {product.on_sale && product.sale_price ? (
@@ -250,6 +261,7 @@ const ProductPage = () => {
                   />
                 </div>
 
+                {/* Marques */}
                 {product.brands?.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -268,6 +280,7 @@ const ProductPage = () => {
                   </div>
                 )}
 
+                {/* Catégories */}
                 {product.categories?.length > 0 && (
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -301,6 +314,7 @@ const ProductPage = () => {
                 />
               </div>
 
+              {/* Description courte */}
               {product.short_description && (
                 <div className="bg-white rounded-lg p-6 shadow-md">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">
@@ -315,6 +329,7 @@ const ProductPage = () => {
                 </div>
               )}
 
+              {/* Tags */}
               {product.tags?.length > 0 && (
                 <div className="bg-white rounded-lg p-6 shadow-md">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">
@@ -335,6 +350,7 @@ const ProductPage = () => {
             </div>
           </div>
 
+          {/* Description longue */}
           {product.description && (
             <div className="mt-12 bg-white rounded-lg p-8 shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
@@ -347,6 +363,7 @@ const ProductPage = () => {
             </div>
           )}
 
+          {/* Attributs */}
           {product.attributes?.length > 0 && (
             <div className="mt-8 bg-white rounded-lg p-8 shadow-md">
               <h2 className="text-2xl font-bold mb-6 text-gray-900">
@@ -369,6 +386,7 @@ const ProductPage = () => {
             </div>
           )}
 
+          {/* Produits liés */}
           {product.categories?.[0] && (
             <RelatedProductsCarousel
               currentProductId={product.id}
@@ -377,6 +395,15 @@ const ProductPage = () => {
           )}
         </div>
       </section>
+
+      {/* Lightbox */}
+      {lightboxOpen && (
+        <ImageLightbox
+          images={images}
+          currentIndex={selectedImage}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 };
