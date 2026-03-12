@@ -1,7 +1,6 @@
 // src/components/Product/ProductList.jsx
 import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
-import Pagination from "../UI/Pagination";
 
 /**
  * Composant réutilisable pour afficher une liste de produits avec filtres, tri et pagination
@@ -16,6 +15,8 @@ import Pagination from "../UI/Pagination";
  * @param {String} gridClassName - Classes CSS personnalisées pour la grille
  * @param {Boolean} showPagination - Afficher ou non la pagination
  * @param {ReactNode} emptyState - Composant à afficher quand aucun produit
+ * @param {Number} currentPage - Page courante contrôlée depuis le parent
+ * @param {Function} onPageChange - Callback quand la page change
  */
 const ProductList = ({
   products = [],
@@ -32,9 +33,13 @@ const ProductList = ({
   gridClassName = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
   showPagination = true,
   emptyState = null,
+  currentPage: externalPage = null,
+  onPageChange = null,
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [filteredProducts, setFilteredProducts] = useState([]);
+
+  // La page est entièrement gérée par le parent
+  const currentPage = externalPage || 1;
 
   // Fonction de tri
   const sortProducts = (productsToSort, sortType) => {
@@ -42,11 +47,11 @@ const ProductList = ({
     switch (sortType) {
       case "price-asc":
         return sorted.sort(
-          (a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0)
+          (a, b) => parseFloat(a.price || 0) - parseFloat(b.price || 0),
         );
       case "price-desc":
         return sorted.sort(
-          (a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0)
+          (a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0),
         );
       case "name-asc":
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -60,20 +65,20 @@ const ProductList = ({
   // Fonction de filtrage par marques
   const filterByBrands = (productsData) => {
     if (!filters.brands || filters.brands.length === 0) return productsData;
-
     return productsData.filter((product) =>
       product.brands?.some(
         (brand) =>
           filters.brands.includes(brand.slug) ||
-          filters.brands.includes(brand.name.toLowerCase().replace(/\s+/g, "-"))
-      )
+          filters.brands.includes(
+            brand.name.toLowerCase().replace(/\s+/g, "-"),
+          ),
+      ),
     );
   };
 
   // Fonction de filtrage par prix
   const filterByPrice = (productsData) => {
     if (!filters.priceRange) return productsData;
-
     const { min, max } = filters.priceRange;
     return productsData.filter((product) => {
       const price = parseFloat(product.price || product.regular_price || 0);
@@ -81,21 +86,13 @@ const ProductList = ({
     });
   };
 
-  // Appliquer tous les filtres
+  // Appliquer tous les filtres — ne touche jamais à la page
   useEffect(() => {
     let result = [...products];
-
-    // Filtrer par prix
     result = filterByPrice(result);
-
-    // Filtrer par marques
     result = filterByBrands(result);
-
-    // Trier
     result = sortProducts(result, filters.sort);
-
     setFilteredProducts(result);
-    setCurrentPage(1); // Réinitialiser à la page 1 quand les filtres changent
   }, [products, filters]);
 
   // Calculer la pagination
@@ -103,12 +100,12 @@ const ProductList = ({
   const startIndex = (currentPage - 1) * productsPerPage;
   const paginatedProducts = filteredProducts.slice(
     startIndex,
-    startIndex + productsPerPage
+    startIndex + productsPerPage,
   );
 
   // Gérer le changement de page
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+    onPageChange?.(pageNumber);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -127,7 +124,7 @@ const ProductList = ({
   );
 
   // Composant Pagination
-  const Pagination = () => {
+  const PaginationComponent = () => {
     if (!showPagination || totalPages <= 1) return null;
 
     return (
@@ -142,7 +139,6 @@ const ProductList = ({
 
         <div className="flex gap-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-            // Afficher seulement quelques pages autour de la page actuelle
             if (
               page === 1 ||
               page === totalPages ||
@@ -196,9 +192,7 @@ const ProductList = ({
 
   // Aucun produit
   if (filteredProducts.length === 0) {
-    if (emptyState) {
-      return emptyState;
-    }
+    if (emptyState) return emptyState;
 
     return (
       <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -227,13 +221,8 @@ const ProductList = ({
         ))}
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onChange={(p) => handlePageChange(p)}
-      />
+      <PaginationComponent />
 
-      {/* Informations de pagination */}
       {showPagination && totalPages > 1 && (
         <div className="text-center mt-4 text-sm text-gray-600">
           Affichage de {startIndex + 1} à{" "}

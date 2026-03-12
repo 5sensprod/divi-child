@@ -1,6 +1,6 @@
 // src/pages/CategoryPage.jsx
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useWordPress } from "../context/WordPressContext";
 import {
   getProductsByCategory,
@@ -17,6 +17,7 @@ import ProductList from "../components/Product/ProductList";
 const CategoryPage = () => {
   const params = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const fullPath = params["*"] || params.slug;
   const { categories, loading } = useWordPress();
 
@@ -26,6 +27,13 @@ const CategoryPage = () => {
   const [error, setError] = useState(null);
   const [brands, setBrands] = useState([]);
 
+  // La page est lue depuis l'URL — le bouton retour la restaure automatiquement
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
+  const saveCurrentPage = (page) => {
+    setSearchParams({ page }, { replace: false });
+  };
+
   // États des filtres
   const [filters, setFilters] = useState({
     priceRange: { min: 0, max: 2000 },
@@ -33,8 +41,15 @@ const CategoryPage = () => {
     sort: "default",
   });
 
-  // Réinitialiser les filtres quand on change de catégorie
+  // Ref pour ignorer l'exécution au premier montage
+  const isFirstMount = useRef(true);
+
+  // Réinitialiser uniquement quand on change de catégorie (pas au montage)
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     setFilters({
       priceRange: { min: 0, max: 2000 },
       brands: [],
@@ -43,6 +58,8 @@ const CategoryPage = () => {
     setProducts([]);
     setBrands([]);
     setCategory(null);
+    // Ne pas toucher aux searchParams ici : quand on change de catégorie,
+    // l'URL change complètement donc ?page de l'ancienne catégorie ne s'applique pas
   }, [fullPath]);
 
   // Fonction pour trouver la catégorie correspondante
@@ -120,17 +137,20 @@ const CategoryPage = () => {
     }
   }, [fullPath, categories, loading.categories]);
 
-  // Gérer les changements de filtres
+  // Gérer les changements de filtres (remet la page à 1)
   const handlePriceChange = (newPriceRange) => {
     setFilters((prev) => ({ ...prev, priceRange: newPriceRange }));
+    setSearchParams({ page: 1 }, { replace: true });
   };
 
   const handleBrandsChange = (newSelectedBrands) => {
     setFilters((prev) => ({ ...prev, brands: newSelectedBrands }));
+    setSearchParams({ page: 1 }, { replace: true });
   };
 
   const handleSortChange = (newSort) => {
     setFilters((prev) => ({ ...prev, sort: newSort }));
+    setSearchParams({ page: 1 }, { replace: true });
   };
 
   const resetAllFilters = () => {
@@ -139,6 +159,7 @@ const CategoryPage = () => {
       brands: [],
       sort: "default",
     });
+    setSearchParams({ page: 1 }, { replace: true });
   };
 
   // Vérifier si des filtres sont actifs
@@ -314,6 +335,8 @@ const CategoryPage = () => {
                 gridClassName="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 showPagination={true}
                 emptyState={<EmptyState />}
+                currentPage={currentPage}
+                onPageChange={saveCurrentPage}
               />
             </div>
           </div>
