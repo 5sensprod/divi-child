@@ -39,7 +39,6 @@ const Search = ({ isOpen, onClose }) => {
     recentSearches,
     toggleProductExpansion,
     expandedProduct,
-
     page,
     perPage,
     total,
@@ -56,10 +55,15 @@ const Search = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  // Fermer sans effacer — l'état est conservé pour la prochaine ouverture
   const handleClose = () => {
+    onClose();
+  };
+
+  // Effacer complètement la recherche (bouton X dans l'input)
+  const handleClearQuery = () => {
     clearQuery();
     resetFilters();
-    onClose();
   };
 
   return (
@@ -81,7 +85,7 @@ const Search = ({ isOpen, onClose }) => {
               query={query}
               onQueryChange={updateQuery}
               onClose={handleClose}
-              onClearQuery={clearQuery}
+              onClearQuery={handleClearQuery}
             />
           </div>
         </div>
@@ -136,7 +140,7 @@ const Search = ({ isOpen, onClose }) => {
   );
 };
 
-// Header simplifié
+// Header
 const SearchHeader = ({
   inputRef,
   query,
@@ -173,7 +177,7 @@ const SearchHeader = ({
   </div>
 );
 
-// Contenu principal simplifié
+// Contenu principal
 const SearchContent = ({
   loading,
   error,
@@ -190,8 +194,6 @@ const SearchContent = ({
   toggleProductExpansion,
   expandedProduct,
   getProduct,
-
-  // ➕ Pagination
   page,
   perPage,
   total,
@@ -242,7 +244,6 @@ const SearchContent = ({
         toggleProductExpansion={toggleProductExpansion}
         expandedProduct={expandedProduct}
         getProduct={getProduct}
-        // ➕ Pagination
         page={page}
         total={total}
         totalPages={totalPages}
@@ -252,10 +253,10 @@ const SearchContent = ({
       />
     );
   }
+
   return null;
 };
 
-// Composants UI restants (inchangés)
 const SearchEmptyState = ({ query }) => (
   <div className="text-center py-12">
     <ShoppingBag size={64} className="mx-auto mb-6 text-gray-300" />
@@ -332,8 +333,6 @@ const SearchResults = ({
   toggleProductExpansion,
   expandedProduct,
   getProduct,
-
-  // ➕ Pagination
   page,
   total,
   totalPages,
@@ -426,7 +425,6 @@ const SearchResult = ({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
-      {/* Ligne principale du produit */}
       <div
         onClick={handleClick}
         className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -483,7 +481,6 @@ const SearchResult = ({
         </div>
       </div>
 
-      {/* Zone d'expansion avec les détails */}
       {isExpanded && (
         <div className="border-t border-gray-100">
           <ProductExpansion

@@ -7,8 +7,8 @@ const Modal = ({
   onClose,
   title,
   children,
-  size = "default", // "sm", "default", "lg", "xl", "full", "fullscreen"
-  position = "top", // "center", "top"
+  size = "default",
+  position = "top",
   showCloseButton = true,
   closeOnBackdrop = true,
   closeOnEscape = true,
@@ -19,6 +19,7 @@ const Modal = ({
 }) => {
   const modalRef = useRef(null);
   const contentRef = useRef(null);
+
   // Gestion de l'échappement
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -29,13 +30,14 @@ const Modal = ({
 
     if (isOpen) {
       document.addEventListener("keydown", handleKeyDown);
-      // Empêcher le scroll du body
       document.body.style.overflow = "hidden";
 
       return () => {
         document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "unset";
       };
+    } else {
+      document.body.style.overflow = "unset";
     }
   }, [isOpen, closeOnEscape, onClose]);
 
@@ -54,8 +56,6 @@ const Modal = ({
     }
   };
 
-  if (!isOpen) return null;
-
   // Classes de taille
   const sizeClasses = {
     sm: "max-w-md",
@@ -63,7 +63,7 @@ const Modal = ({
     lg: "max-w-4xl",
     xl: "max-w-6xl",
     full: "max-w-full mx-4",
-    fullscreen: "w-full h-full", // Ajout spécifique pour fullscreen
+    fullscreen: "w-full h-full",
   };
 
   // Classes de position
@@ -76,6 +76,7 @@ const Modal = ({
   if (size === "fullscreen") {
     return (
       <div
+        style={{ display: isOpen ? undefined : "none" }}
         className={`fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm ${backdropClassName}`}
         onClick={handleBackdropClick}
       >
@@ -101,7 +102,6 @@ const Modal = ({
               )}
             </div>
           )}
-
           <div
             ref={contentRef}
             className={`flex-1 overflow-auto ${contentClassName}`}
@@ -115,20 +115,21 @@ const Modal = ({
 
   return (
     <div
+      style={{ display: isOpen ? undefined : "none" }}
       className={`fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex ${positionClasses[position]} ${backdropClassName}`}
       onClick={handleBackdropClick}
     >
       <div
         ref={modalRef}
         className={`
-           relative bg-white shadow-2xl 
-           ${sizeClasses[size]} 
-           rounded-lg
-           ${position === "top" ? "max-h-[90vh]" : "max-h-[95vh]"}
-           w-full mx-4
-           flex flex-col
-           ${className}
-         `}
+          relative bg-white shadow-2xl 
+          ${sizeClasses[size]} 
+          rounded-lg
+          ${position === "top" ? "max-h-[90vh]" : "max-h-[95vh]"}
+          w-full mx-4
+          flex flex-col
+          ${className}
+        `}
       >
         {(title || showCloseButton) && (
           <div
@@ -148,12 +149,9 @@ const Modal = ({
             )}
           </div>
         )}
-
         <div
           ref={contentRef}
-          className={` flex-1 overflow-auto ${
-            title || showCloseButton ? "p-4" : "p-4"
-          } ${contentClassName}`}
+          className={`flex-1 overflow-auto p-4 ${contentClassName}`}
         >
           {children}
         </div>

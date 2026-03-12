@@ -23,8 +23,6 @@ export const useSearch = () => {
     search,
     clearSearch,
     getRecentSearches,
-
-    // Pagination
     page,
     perPage,
     total,
@@ -35,15 +33,13 @@ export const useSearch = () => {
   } = useProductSearch();
 
   const hasActiveFilters = useMemo(() => {
-    return Object.entries(filters).some(([key, value]) => {
-      return value !== DEFAULT_FILTERS[key];
-    });
+    return Object.entries(filters).some(
+      ([key, value]) => value !== DEFAULT_FILTERS[key],
+    );
   }, [filters]);
 
-  // Recherche optimisée
   const performSearch = useCallback(() => {
     if (!query.trim() && !hasActiveFilters) return;
-    // Toujours repartir page 1 quand query/filters changent
     search(query, filters, 1);
   }, [query, filters, hasActiveFilters, search]);
 
@@ -53,7 +49,6 @@ export const useSearch = () => {
     return () => clearTimeout(timeoutId);
   }, [performSearch]);
 
-  // Reset pagination quand on change entièrement les filtres via "Effacer"
   const resetFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
   }, []);
@@ -61,7 +56,7 @@ export const useSearch = () => {
   const updateQuery = useCallback((newQuery) => setQuery(newQuery), []);
   const updateFilters = useCallback(
     (newFilters) => setFilters((prev) => ({ ...prev, ...newFilters })),
-    []
+    [],
   );
 
   const clearQuery = useCallback(() => {
@@ -85,7 +80,6 @@ export const useSearch = () => {
   const showSuggestions = isEmpty && !hasSearched;
 
   return {
-    // État
     query,
     filters,
     isOpen,
@@ -94,15 +88,11 @@ export const useSearch = () => {
     error,
     hasSearched,
     expandedProduct,
-
-    // État calculé
     hasActiveFilters,
     isEmpty,
     hasResults,
     showEmpty,
     showSuggestions,
-
-    // Pagination
     page,
     perPage,
     total,
@@ -110,8 +100,6 @@ export const useSearch = () => {
     gotoPage,
     nextPage,
     prevPage,
-
-    // Actions
     updateQuery,
     updateFilters,
     resetFilters,
@@ -120,8 +108,6 @@ export const useSearch = () => {
     closeSearch,
     performSearch,
     toggleProductExpansion,
-
-    // Données
     recentSearches: getRecentSearches(),
   };
 };
