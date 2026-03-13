@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-4">
           <p>
-            © 2025{" "}
+            © {new Date().getFullYear()}{" "}
             <span style={{ fontFamily: "AnticFont, serif", fontSize: "1.5em" }}>
               AXE
             </span>{" "}

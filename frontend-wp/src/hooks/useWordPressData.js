@@ -1,7 +1,12 @@
 // src/hooks/useWordPressData.js
 
 import { useState, useEffect } from "react";
-import { getProducts, getCategories } from "../services/woocommerce";
+import {
+  getProducts,
+  getCategories,
+  getBrands,
+  enrichProductsWithBrandImages,
+} from "../services/woocommerce";
 import { wordpressService } from "../services/wordpress";
 import { DEFAULT_DATA, FALLBACK_PRODUCTS } from "../utils/constants";
 import { cacheUtils, CACHE_KEYS } from "../utils/cache";
@@ -13,6 +18,7 @@ export const useWordPressData = () => {
     products: [],
     categories: [],
     parentCategories: [],
+    brands: [],
     error: null,
   });
 
@@ -71,19 +77,23 @@ export const useWordPressData = () => {
           await wordpressService.testConnection();
         } catch (error) {
           console.warn(
-            "⚠️ API WordPress non accessible, mode WooCommerce uniquement"
+            "⚠️ API WordPress non accessible, mode WooCommerce uniquement",
           );
           wordpressAvailable = false;
         }
 
         // Charger toutes les données en parallèle
-        const promises = [getProducts({ per_page: 20 }), getCategories()];
+        const promises = [
+          getProducts({ per_page: 20 }),
+          getCategories(),
+          getBrands(),
+        ];
 
         // N'ajouter les promesses WordPress que si l'API est disponible
         if (wordpressAvailable) {
           promises.push(
             wordpressService.loadSiteData(),
-            wordpressService.loadMenu()
+            wordpressService.loadMenu(),
           );
         }
 
@@ -92,23 +102,38 @@ export const useWordPressData = () => {
         // Extraire les résultats
         const productsResult = results[0];
         const categoriesResult = results[1];
+        const brandsResult = results[2];
         const siteDataResult = wordpressAvailable
-          ? results[2]
+          ? results[3]
           : { status: "rejected" };
         const menuDataResult = wordpressAvailable
-          ? results[3]
+          ? results[4]
           : { status: "rejected" };
 
         // Filtrer les catégories parentes côté client
         const allCategories =
           categoriesResult.status === "fulfilled" ? categoriesResult.value : [];
-
         const parentCats = allCategories.filter((cat) => cat.parent === 0);
+
+        // Marques
+        const allBrands =
+          brandsResult.status === "fulfilled" ? brandsResult.value : [];
+
+        // Enrichir les produits avec les images de marques
+        const productsRaw =
+          productsResult.status === "fulfilled"
+            ? productsResult.value
+            : FALLBACK_PRODUCTS;
+        const products = enrichProductsWithBrandImages(productsRaw, allBrands);
 
         console.log("=== RÉSULTATS DU CHARGEMENT ===");
         console.log("Menu structure:", menuDataResult.value);
         console.log("Categories loaded:", allCategories.length);
         console.log("Parent categories:", parentCats.length);
+        console.log("Brands loaded:", allBrands.length);
+        // ← ajoute ici
+        console.log("BRANDS MAP SIZE:", allBrands.length);
+        console.log("PREMIER PRODUIT BRAND:", products[0]?.brands?.[0]);
 
         // Mise à jour du state avec les résultats
         setData((prev) => ({
@@ -121,12 +146,10 @@ export const useWordPressData = () => {
             menuDataResult.status === "fulfilled"
               ? menuDataResult.value
               : prev.menus,
-          products:
-            productsResult.status === "fulfilled"
-              ? productsResult.value
-              : FALLBACK_PRODUCTS,
+          products,
           categories: allCategories,
           parentCategories: parentCats,
+          brands: allBrands,
           loading: {
             initial: false,
             menus: false,
@@ -147,6 +170,7 @@ export const useWordPressData = () => {
           categories: prev.categories.length > 0 ? prev.categories : [],
           parentCategories:
             prev.parentCategories.length > 0 ? prev.parentCategories : [],
+          brands: prev.brands.length > 0 ? prev.brands : [],
           loading: {
             initial: false,
             menus: false,
@@ -188,6 +212,7 @@ export const useWordPressData = () => {
       cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent`);
       cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);
       cacheUtils.remove(CACHE_KEYS.SITE_DATA);
+      cacheUtils.remove("axemusique_brands_all");
       console.log("Tout le cache a été vidé");
     },
   };

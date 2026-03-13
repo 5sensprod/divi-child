@@ -32,6 +32,85 @@ const createWooCommerceAPI = () => {
   });
 };
 
+// Récupérer toutes les marques (toutes les pages automatiquement)
+export const getBrands = async () => {
+  try {
+    const cacheKey = "axemusique_brands_all";
+
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      const cached = cacheUtils.getWithTTL(cacheKey, CACHE_DURATIONS.DEFAULT);
+      if (cached) return cached;
+    }
+
+    const WooCommerce = createWooCommerceAPI();
+
+    const firstResponse = await WooCommerce.get("products/brands", {
+      per_page: 100,
+      page: 1,
+    });
+
+    const totalPages = parseInt(firstResponse.headers["x-wp-totalpages"]) || 1;
+    let allRaw = [...firstResponse.data];
+
+    if (totalPages > 1) {
+      const pageNumbers = Array.from(
+        { length: totalPages - 1 },
+        (_, i) => i + 2,
+      );
+      const responses = await Promise.all(
+        pageNumbers.map((page) =>
+          WooCommerce.get("products/brands", { per_page: 100, page }),
+        ),
+      );
+      responses.forEach((r) => allRaw.push(...r.data));
+    }
+
+    const brands = decodeObject(allRaw).map((brand) => ({
+      id: brand.id,
+      name: brand.name,
+      slug: brand.slug,
+      count: brand.count,
+      image: brand.image?.src || null,
+      imageAlt: brand.image?.alt || brand.name,
+    }));
+
+    if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
+      cacheUtils.setWithTTL(cacheKey, brands, CACHE_DURATIONS.DEFAULT);
+    }
+
+    return brands;
+  } catch (error) {
+    console.log("Pas d'endpoint brands disponible");
+    return [];
+  }
+};
+
+// Helper pour enrichir les produits avec les images de marques
+export const enrichProductsWithBrandImages = (products, brands) => {
+  if (!brands?.length) return products;
+
+  const brandsMap = new Map(brands.map((b) => [b.id, b]));
+
+  return products.map((product) => ({
+    ...product,
+    brands: product.brands?.map((brand) => ({
+      ...brand,
+      image: brandsMap.get(brand.id)?.image
+        ? {
+            src: brandsMap.get(brand.id).image,
+            alt: brandsMap.get(brand.id).imageAlt,
+          }
+        : null,
+    })),
+  }));
+};
+
+// Helper interne : récupérer les marques en cache puis enrichir
+const enrichWithBrands = async (products) => {
+  const brands = await getBrands();
+  return enrichProductsWithBrandImages(products, brands);
+};
+
 // Récupérer les produits
 export const getProducts = async (params = {}) => {
   try {
@@ -41,12 +120,13 @@ export const getProducts = async (params = {}) => {
       status: "publish",
       ...params,
     });
-    return decodeObject(response.data);
+    const products = decodeObject(response.data);
+    return enrichWithBrands(products);
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur WooCommerce:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
     throw error;
@@ -63,21 +143,18 @@ export const getCategories = async () => {
 
     const WooCommerce = createWooCommerceAPI();
 
-    // Page 1
     const response1 = await WooCommerce.get("products/categories", {
       per_page: 100,
       page: 1,
       hide_empty: true,
     });
 
-    // Page 2
     const response2 = await WooCommerce.get("products/categories", {
       per_page: 100,
       page: 2,
       hide_empty: true,
     });
 
-    // Combiner les résultats
     const categories = decodeObject([...response1.data, ...response2.data]);
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
@@ -89,7 +166,7 @@ export const getCategories = async () => {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur catégories:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
     throw error;
@@ -101,7 +178,9 @@ export const getProduct = async (productId) => {
   try {
     const WooCommerce = createWooCommerceAPI();
     const response = await WooCommerce.get(`products/${productId}`);
-    return decodeObject(response.data);
+    const product = decodeObject(response.data);
+    const [enriched] = await enrichWithBrands([product]);
+    return enriched;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error("Erreur produit:", error.response?.data || error.message);
@@ -130,7 +209,8 @@ export const getProductBySlug = async (slug) => {
       throw new Error("Produit non trouvé");
     }
 
-    const product = decodeObject(response.data[0]);
+    const raw = decodeObject(response.data[0]);
+    const [product] = await enrichWithBrands([raw]);
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
       cacheUtils.setWithTTL(cacheKey, product, CACHE_DURATIONS.DEFAULT);
@@ -141,7 +221,7 @@ export const getProductBySlug = async (slug) => {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur produit par slug:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
     throw error;
@@ -168,9 +248,10 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
     }
 
     const response = await WooCommerce.get("products", params);
+    const enrichedData = await enrichWithBrands(decodeObject(response.data));
 
-    const result = {
-      data: decodeObject(response.data),
+    return {
+      data: enrichedData,
       headers: {
         "x-wp-total": response.headers["x-wp-total"],
         "x-wp-totalpages": response.headers["x-wp-totalpages"],
@@ -182,13 +263,11 @@ export const searchProducts = async (searchTerm = "", searchParams = {}) => {
         perPage: per_page,
       },
     };
-
-    return result;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur searchProducts:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
     throw error;
@@ -216,8 +295,10 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
       ...params,
     });
 
+    const enrichedData = await enrichWithBrands(decodeObject(response.data));
+
     const result = {
-      data: decodeObject(response.data),
+      data: enrichedData,
       headers: {
         "x-wp-total": response.headers["x-wp-total"],
         "x-wp-totalpages": response.headers["x-wp-totalpages"],
@@ -239,7 +320,7 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
     if (import.meta.env.DEV) {
       console.error(
         "Erreur produits par catégorie:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
     }
     throw error;
@@ -263,12 +344,17 @@ export const getBrandsByCategory = async (categoryId) => {
       status: "publish",
     });
 
+    // Récupérer les marques complètes pour avoir les images
+    const allBrands = await getBrands();
+    const brandsById = new Map(allBrands.map((b) => [b.id, b]));
+
     const brandsMap = new Map();
     data.forEach((product) => {
       product.brands?.forEach((brand) => {
         const decodedName = decodeHTMLEntities(brand.name);
         const slug =
           brand.slug || decodedName.toLowerCase().replace(/\s+/g, "-");
+        const fullBrand = brandsById.get(brand.id);
 
         brandsMap.has(slug)
           ? brandsMap.get(slug).count++
@@ -277,12 +363,14 @@ export const getBrandsByCategory = async (categoryId) => {
               name: decodedName,
               slug,
               count: 1,
+              image: fullBrand?.image || null,
+              imageAlt: fullBrand?.imageAlt || decodedName,
             });
       });
     });
 
     const brands = Array.from(brandsMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
+      a.name.localeCompare(b.name),
     );
 
     if (import.meta.env.VITE_DISABLE_CACHE !== "true") {
@@ -292,20 +380,6 @@ export const getBrandsByCategory = async (categoryId) => {
     return brands;
   } catch (error) {
     console.error("Erreur récupération marques:", error);
-    return [];
-  }
-};
-
-// Récupérer toutes les marques
-export const getBrands = async () => {
-  try {
-    const WooCommerce = createWooCommerceAPI();
-    const response = await WooCommerce.get("products/brands", {
-      per_page: 100,
-    });
-    return decodeObject(response.data);
-  } catch (error) {
-    console.log("Pas d'endpoint brands disponible");
     return [];
   }
 };
@@ -344,6 +418,7 @@ export default {
   getProductsByCategory,
   getBrandsByCategory,
   getBrands,
+  enrichProductsWithBrandImages,
   getTotalProductsCount,
   clearCategoriesCache,
 };

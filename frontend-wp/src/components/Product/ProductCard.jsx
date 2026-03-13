@@ -15,7 +15,7 @@ const ProductCard = ({
 }) => {
   const navigate = useNavigate();
   const [imgSrc, setImgSrc] = useState(
-    product?.images?.[0]?.src || (allowFallback ? FALLBACK_IMAGE : null)
+    product?.images?.[0]?.src || (allowFallback ? FALLBACK_IMAGE : null),
   );
   const [loaded, setLoaded] = useState(false);
   const [errorOccurred, setErrorOccurred] = useState(false);
@@ -67,6 +67,9 @@ const ProductCard = ({
   if (!imgSrc && !allowFallback) {
     return null;
   }
+
+  const brand = product?.brands?.[0];
+  console.log("BRAND DATA:", brand);
 
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden hover:shadow-md transition-all">
@@ -127,9 +130,16 @@ const ProductCard = ({
               {product.categories[0].name}
             </button>
           )}
-          {product?.brands?.[0] && (
-            <span className="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded">
-              {product.brands[0].name}
+          {brand && (
+            <span className="flex items-center gap-1.5 text-xs text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded">
+              {brand.image?.src && (
+                <img
+                  src={brand.image.src}
+                  alt={brand.image.alt || brand.name}
+                  className="h-4 w-auto object-contain"
+                />
+              )}
+              {brand.name}
             </span>
           )}
         </div>
@@ -176,10 +186,10 @@ const ProductCard = ({
               isInStock
                 ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-fuchsia-500 hover:to-sky-400"
                 : isOnOrder
-                ? "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-                : isBackorder
-                ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-                : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"
+                  ? "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+                  : isBackorder
+                    ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                    : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"
             }`}
         >
           Voir le produit

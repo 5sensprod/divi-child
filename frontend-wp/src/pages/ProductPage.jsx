@@ -271,8 +271,15 @@ const ProductPage = () => {
                       {product.brands.map((brand) => (
                         <span
                           key={brand.id}
-                          className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-sm font-medium text-blue-700"
+                          className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-sm font-medium text-blue-700 flex items-center gap-2"
                         >
+                          {brand.image?.src && (
+                            <img
+                              src={brand.image.src}
+                              alt={brand.image.alt || brand.name}
+                              className="h-5 w-auto object-contain"
+                            />
+                          )}
                           {brand.name}
                         </span>
                       ))}

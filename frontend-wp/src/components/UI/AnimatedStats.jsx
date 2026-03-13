@@ -13,7 +13,7 @@ const useIntersectionObserver = (threshold = 0.1) => {
           observer.disconnect(); // Ne déclencher qu'une fois
         }
       },
-      { threshold }
+      { threshold },
     );
 
     if (ref.current) {
@@ -26,35 +26,30 @@ const useIntersectionObserver = (threshold = 0.1) => {
   return [ref, isVisible];
 };
 
-// Hook pour animer les nombres
-const useCountUp = (end, duration = 2000, start = 0) => {
-  const [count, setCount] = useState(start);
-  const [isAnimating, setIsAnimating] = useState(false);
+// Hook pour animer les nombres - se déclenche une seule fois
+const useCountUp = (end, duration = 2000) => {
+  const [count, setCount] = useState(0);
+  const hasAnimated = useRef(false);
 
   const startAnimation = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
+    if (hasAnimated.current || !end) return;
+    hasAnimated.current = true;
 
     const startTime = Date.now();
-    const startValue = start;
-    const endValue = parseInt(end.toString().replace(/\D/g, "")) || end;
+    const endValue = parseInt(end.toString().replace(/\D/g, "")) || 0;
 
     const animate = () => {
       const now = Date.now();
       const progress = Math.min((now - startTime) / duration, 1);
-
-      // Fonction d'easing pour un effet plus naturel
       const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-      const currentValue = Math.floor(
-        startValue + (endValue - startValue) * easeOutCubic
-      );
+      const currentValue = Math.floor(endValue * easeOutCubic);
 
       setCount(currentValue);
 
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        setIsAnimating(false);
+        setCount(endValue);
       }
     };
 
@@ -67,12 +62,14 @@ const useCountUp = (end, duration = 2000, start = 0) => {
 // Composant AnimatedNumber
 const AnimatedNumber = ({ value, suffix = "", isVisible }) => {
   const [count, startAnimation] = useCountUp(value, 2000);
+  const started = useRef(false);
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && !started.current && value > 0) {
+      started.current = true;
       startAnimation();
     }
-  }, [isVisible, startAnimation]);
+  }, [isVisible, value]);
 
   const formatNumber = (num) => {
     if (num >= 1000) {
@@ -92,66 +89,31 @@ const AnimatedNumber = ({ value, suffix = "", isVisible }) => {
 // Composant principal AnimatedStats
 const AnimatedStats = ({ products = [], categories = [] }) => {
   const [ref, isVisible] = useIntersectionObserver(0.3);
-  const [totalProducts, setTotalProducts] = useState(products.length || 0);
-  const [totalBrands, setTotalBrands] = useState(50);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalBrands, setTotalBrands] = useState(0);
 
-  // Récupérer le nombre total de produits et marques via API
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Import dynamique pour éviter les problèmes de dépendances
-        const { getProducts } = await import("../../services/woocommerce");
+        const { getTotalProductsCount, getBrands } =
+          await import("../../services/woocommerce");
 
-        // Récupérer tous les produits pour avoir le total exact
-        const allProducts = await getProducts({ per_page: 100 });
-        setTotalProducts(allProducts.length);
+        const [total, brands] = await Promise.all([
+          getTotalProductsCount(),
+          getBrands(),
+        ]);
 
-        // Extraire les marques uniques depuis les produits
-        const brands = new Set();
-        allProducts.forEach((product) => {
-          // Vérifier différents champs possibles pour la marque
-          if (product.brands && product.brands.length > 0) {
-            product.brands.forEach((brand) => brands.add(brand.name));
-          }
-          // Ou si la marque est dans les attributs
-          if (product.attributes) {
-            const brandAttribute = product.attributes.find(
-              (attr) =>
-                attr.name.toLowerCase().includes("marque") ||
-                attr.name.toLowerCase().includes("brand")
-            );
-            if (brandAttribute && brandAttribute.options) {
-              brandAttribute.options.forEach((option) => brands.add(option));
-            }
-          }
-          // Ou si la marque est dans les meta_data
-          if (product.meta_data) {
-            const brandMeta = product.meta_data.find(
-              (meta) =>
-                meta.key.toLowerCase().includes("brand") ||
-                meta.key.toLowerCase().includes("marque")
-            );
-            if (brandMeta && brandMeta.value) {
-              brands.add(brandMeta.value);
-            }
-          }
-        });
-
-        setTotalBrands(brands.size || 50); // Fallback à 50 si aucune marque trouvée
-        console.log("Stats calculées:", {
-          totalProducts: allProducts.length,
-          totalBrands: brands.size,
-        });
+        setTotalProducts(total);
+        setTotalBrands(brands.length);
       } catch (error) {
-        console.error("Erreur lors du calcul des stats:", error);
-        // Utiliser les valeurs par défaut en cas d'erreur
+        console.error("Erreur stats:", error);
         setTotalProducts(products.length || 1000);
         setTotalBrands(50);
       }
     };
 
     fetchStats();
-  }, [products]);
+  }, []);
 
   const stats = [
     {
@@ -171,8 +133,8 @@ const AnimatedStats = ({ products = [], categories = [] }) => {
         </svg>
       ),
       value: totalProducts,
-      suffix: totalProducts < 100 ? "" : "+",
-      label: "Instruments disponibles",
+      suffix: "+",
+      label: "Produits disponibles",
       gradient: "from-pink-500 to-pink-600",
       delay: 0,
     },
@@ -233,14 +195,10 @@ const AnimatedStats = ({ products = [], categories = [] }) => {
             <div
               key={index}
               className="group"
-              style={{
-                animationDelay: isVisible ? `${stat.delay}ms` : "0ms",
-              }}
+              style={{ animationDelay: isVisible ? `${stat.delay}ms` : "0ms" }}
             >
               <div
-                className={`bg-gradient-to-br ${
-                  stat.gradient
-                } text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-500 ${
+                className={`bg-gradient-to-br ${stat.gradient} text-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-500 ${
                   isVisible
                     ? "animate-bounce-in opacity-100 translate-y-0"
                     : "opacity-0 translate-y-8"
@@ -303,7 +261,6 @@ const AnimatedStats = ({ products = [], categories = [] }) => {
             opacity: 1;
           }
         }
-
         .animate-bounce-in {
           animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)
             forwards;
