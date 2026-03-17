@@ -1,5 +1,3 @@
-// Ajouter import
-
 const StockBadge = ({
   stockStatus,
   manageStock = false,
@@ -10,7 +8,12 @@ const StockBadge = ({
   let badge;
 
   if (manageStock) {
-    // Suivi automatique : outofstock = vraie rupture
+    // stock_quantity === 0 → en cours de réappro, sinon rupture franche
+    const isReappro =
+      stockStatus === "outofstock" &&
+      stockQuantity !== null &&
+      stockQuantity === 0;
+
     const standardBadges = {
       instock: {
         bgColor: "bg-green-100",
@@ -18,22 +21,29 @@ const StockBadge = ({
         dotColor: "bg-green-500",
         label: "En stock",
       },
-      outofstock: {
-        bgColor: "bg-red-100",
-        textColor: "text-red-800",
-        dotColor: "bg-red-500",
-        label: "Rupture de stock",
-      },
+      outofstock: isReappro
+        ? {
+            bgColor: "bg-orange-100",
+            textColor: "text-orange-800",
+            dotColor: "bg-orange-500",
+            label: "En cours de réappro",
+          }
+        : {
+            bgColor: "bg-red-100",
+            textColor: "text-red-800",
+            dotColor: "bg-red-500",
+            label: "Rupture de stock",
+          },
       onbackorder: {
-        bgColor: "bg-red-100",
-        textColor: "text-red-800",
-        dotColor: "bg-red-500",
-        label: "Rupture de stock",
+        bgColor: "bg-orange-100",
+        textColor: "text-orange-800",
+        dotColor: "bg-orange-500",
+        label: "En cours de réappro",
       },
     };
     badge = standardBadges[stockStatus] || standardBadges.outofstock;
   } else {
-    // Gestion manuelle : 3 statuts distincts tous dispo
+    // Gestion manuelle : 3 statuts distincts
     const manualBadges = {
       instock: {
         bgColor: "bg-green-100",

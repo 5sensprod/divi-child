@@ -37,37 +37,59 @@ const ProductExpansion = ({
     }).format(parseFloat(price));
   };
 
-  const getStockStatus = (status) => {
-    switch (status) {
-      case "instock":
-        return {
-          text: "En stock",
-          color: "text-green-600",
-          bg: "bg-green-50",
-          icon: "✓",
-        };
-      case "outofstock":
-        return {
-          text: "Rupture de stock",
-          color: "text-red-600",
-          bg: "bg-red-50",
-          icon: "✗",
-        };
-      case "onbackorder":
-        return {
-          text: "En précommande",
-          color: "text-orange-600",
-          bg: "bg-orange-50",
-          icon: "⏳",
-        };
-      default:
-        return {
-          text: "Non disponible",
-          color: "text-gray-600",
-          bg: "bg-gray-50",
-          icon: "?",
-        };
+  const getStockStatus = (product) => {
+    const status = product?.stock_status;
+    const manageStock = product?.manage_stock || false;
+    const stockQuantity = product?.stock_quantity ?? null;
+
+    const isReappro =
+      manageStock &&
+      status === "outofstock" &&
+      stockQuantity !== null &&
+      stockQuantity === 0;
+
+    if (status === "instock") {
+      return {
+        text: "En stock",
+        color: "text-green-600",
+        bg: "bg-green-50",
+        icon: "✓",
+      };
     }
+
+    if (status === "onbackorder" || isReappro) {
+      return {
+        text: "En cours de réappro",
+        color: "text-orange-600",
+        bg: "bg-orange-50",
+        icon: "⏳",
+      };
+    }
+
+    if (status === "outofstock") {
+      // manageStock=false → sur commande, manageStock=true → vraie rupture
+      if (!manageStock) {
+        return {
+          text: "Sur commande",
+          color: "text-yellow-600",
+          bg: "bg-yellow-50",
+          icon: "📦",
+        };
+      }
+      return {
+        text: "Rupture de stock",
+        color: "text-red-600",
+        bg: "bg-red-50",
+        icon: "✗",
+      };
+    }
+
+    return {
+      text: "Non disponible",
+      color: "text-gray-600",
+      bg: "bg-gray-50",
+      icon: "?",
+    };
   };
 
   if (isLoading) {
@@ -95,7 +117,7 @@ const ProductExpansion = ({
 
   const images = displayProduct.images || [];
   const mainImage = images[selectedImageIndex] || images[0];
-  const stockInfo = getStockStatus(displayProduct.stock_status);
+  const stockInfo = getStockStatus(displayProduct);
 
   const nextImage = () => {
     setSelectedImageIndex((prev) => (prev + 1) % images.length);
@@ -221,7 +243,7 @@ const ProductExpansion = ({
                 ) : (
                   <span className="text-3xl font-bold text-blue-600">
                     {formatPrice(
-                      displayProduct.price || displayProduct.regular_price
+                      displayProduct.price || displayProduct.regular_price,
                     )}
                   </span>
                 )}

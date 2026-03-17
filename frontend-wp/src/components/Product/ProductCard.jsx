@@ -31,20 +31,26 @@ const ProductCard = ({
   // Gestion du stock
   const stockStatus = product?.stock_status || "outofstock";
   const manageStock = product?.manage_stock || false;
+  const stockQuantity = product?.stock_quantity ?? null;
 
-  let isInStock, isOnOrder, isBackorder, isOutOfStock;
+  let isInStock, isOnOrder, isBackorder, isOutOfStock, isReappro;
 
   if (manageStock) {
     isInStock = stockStatus === "instock";
+    isReappro =
+      (stockStatus === "outofstock" &&
+        stockQuantity !== null &&
+        stockQuantity === 0) ||
+      stockStatus === "onbackorder";
+    isOutOfStock = stockStatus === "outofstock" && !isReappro;
     isOnOrder = false;
     isBackorder = false;
-    isOutOfStock =
-      stockStatus === "outofstock" || stockStatus === "onbackorder";
   } else {
     isInStock = stockStatus === "instock";
     isOnOrder = stockStatus === "outofstock";
     isBackorder = stockStatus === "onbackorder";
     isOutOfStock = false;
+    isReappro = false;
   }
 
   // ✅ Gestion d'erreur - Fallback seulement si allowFallback=true
@@ -101,6 +107,11 @@ const ProductCard = ({
           {manageStock && isOutOfStock && (
             <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-red-600/90 text-white shadow">
               Rupture
+            </span>
+          )}
+          {manageStock && isReappro && (
+            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-orange-500/90 text-white shadow">
+              Réappro
             </span>
           )}
           {!manageStock && isOnOrder && (
@@ -187,7 +198,7 @@ const ProductCard = ({
                 ? "bg-gradient-to-r from-sky-500 to-blue-600 hover:from-fuchsia-500 hover:to-sky-400"
                 : isOnOrder
                   ? "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
-                  : isBackorder
+                  : isReappro || isBackorder
                     ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                     : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"
             }`}
