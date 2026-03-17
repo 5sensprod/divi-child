@@ -72,12 +72,23 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const getStockBadge = (stockStatus, manageStock = false) => {
+  const getStockBadge = (
+    stockStatus,
+    manageStock = false,
+    stockQuantity = null,
+  ) => {
     if (manageStock) {
+      const isReappro =
+        stockStatus === "outofstock" &&
+        stockQuantity !== null &&
+        stockQuantity === 0;
+
       const badges = {
         instock: null,
-        outofstock: { text: "Rupture", bgColor: "bg-gray-600/90" },
-        onbackorder: { text: "Rupture", bgColor: "bg-gray-600/90" },
+        outofstock: isReappro
+          ? { text: "Réappro", bgColor: "bg-orange-500/90" }
+          : { text: "Rupture", bgColor: "bg-red-600/90" },
+        onbackorder: { text: "Réappro", bgColor: "bg-orange-500/90" },
       };
       return badges[stockStatus];
     } else {
@@ -186,7 +197,8 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
             {products.map((product) => {
               const stockBadge = getStockBadge(
                 product.stock_status,
-                product.manage_stock
+                product.manage_stock,
+                product.stock_quantity ?? null,
               );
 
               return (

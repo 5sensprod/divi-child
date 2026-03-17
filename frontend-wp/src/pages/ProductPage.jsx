@@ -1,5 +1,5 @@
 // src/pages/ProductPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductBySlug, getCategories } from "../services/woocommerce";
 import Background from "../components/UI/Background";
@@ -22,6 +22,17 @@ const ProductPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [breadcrumbItems, setBreadcrumbItems] = useState([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const infoColRef = useRef(null);
+  const [infoColHeight, setInfoColHeight] = useState(null);
+
+  useEffect(() => {
+    if (!infoColRef.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setInfoColHeight(entry.contentRect.height);
+    });
+    observer.observe(infoColRef.current);
+    return () => observer.disconnect();
+  }, [product]);
 
   const buildCategoryHierarchy = async (categoryId, allCategories) => {
     const hierarchy = [];
@@ -175,14 +186,15 @@ const ProductPage = () => {
       <section className="py-6 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="container-divi">
           <div
-            className={`grid ${hasImages ? "lg:grid-cols-2" : "lg:grid-cols-1"} gap-8 lg:gap-12`}
+            className={`grid ${hasImages ? "lg:grid-cols-2" : "lg:grid-cols-1"} gap-8 lg:gap-12 lg:items-start`}
           >
             {/* GALERIE D'IMAGES */}
             {hasImages && (
-              <div className="space-y-4">
+              <div className="lg:sticky lg:top-6 flex flex-col gap-4">
                 {/* Image principale cliquable */}
                 <div
-                  className="relative aspect-square bg-white rounded-lg shadow-lg overflow-hidden cursor-zoom-in group"
+                  className="relative bg-white rounded-lg shadow-lg overflow-hidden cursor-zoom-in group"
+                  style={{ height: "400px" }}
                   onClick={() => setLightboxOpen(true)}
                 >
                   <img
@@ -225,7 +237,7 @@ const ProductPage = () => {
             )}
 
             {/* Informations produit */}
-            <div className="space-y-6">
+            <div className="space-y-6" ref={infoColRef}>
               <div className="bg-white rounded-lg p-6 shadow-md">
                 {/* Nom */}
                 <div className="mb-4 pb-4 border-b border-gray-200">
