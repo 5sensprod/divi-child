@@ -8,9 +8,10 @@ import AnimatedStats from "../components/UI/AnimatedStats";
 import CTASection from "../components/UI/CTASection";
 import Background from "../components/UI/Background";
 import HeroSlider from "../components/UI/HeroSlider";
+import BrandCarousel from "../components/UI/BrandCarousel";
 
 const Home = () => {
-  const { siteData, products, categories, parentCategories, loading } =
+  const { siteData, products, categories, parentCategories, brands, loading } =
     useWordPress();
   const productFilterRef = useRef(null);
 
@@ -40,9 +41,12 @@ const Home = () => {
           siteDescription={siteData?.site_description}
         />
       </section>
-
+      <BrandCarousel brands={brands} loading={loading.brands} />
+      {/* Section Statistiques */}
+      {/* Section Statistiques — pleine largeur */}
+      <AnimatedStats products={products} categories={categories} />
       {/* Catégories populaires */}
-      <section
+      {/* <section
         id="boutique"
         className="py-14 relative overflow-hidden min-h-[400px]"
       >
@@ -71,7 +75,7 @@ const Home = () => {
             onCategoryClick={handleCategoryClick}
           />
         </div>
-      </section>
+      </section> */}
 
       {/* Section Produits avec recherche et filtres */}
       <section
@@ -86,7 +90,7 @@ const Home = () => {
               animationType="equalizer"
               gradient="sunset"
             >
-              Notre sélection
+              Notre catalogue
             </Title>
           </div>
 
@@ -97,27 +101,6 @@ const Home = () => {
             showTitle={false}
             className="mb-12"
           />
-        </div>
-      </section>
-
-      {/* Section Statistiques */}
-      <section className="py-20 bg-white">
-        <div className="container-divi">
-          <div className="text-center mb-12">
-            <Title
-              tag="h2"
-              className="mb-4"
-              animationType="equalizer"
-              gradient="ocean"
-            >
-              Nos chiffres
-            </Title>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              La confiance de milliers de musiciens
-            </p>
-          </div>
-
-          <AnimatedStats products={products} categories={categories} />
         </div>
       </section>
 
