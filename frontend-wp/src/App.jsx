@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 import { ThemeProvider } from "./context/ThemeContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { API_CONFIG } from "./utils/constants";
-
+import { getProductsOnSale } from "./services/woocommerce";
 // Pages React
 import CategoryPage from "./pages/CategoryPage";
 import ShopPage from "./pages/ShopPage";
@@ -47,11 +47,14 @@ const useWordPressRedirect = () => {
 const App = () => {
   useWordPressRedirect();
   console.log(
-    `🎛️ React Categories: ${API_CONFIG.useReactCategories ? "ON" : "OFF"}`
+    `🎛️ React Categories: ${API_CONFIG.useReactCategories ? "ON" : "OFF"}`,
   );
   console.log(
-    `🎛️ React Products: ${API_CONFIG.useReactProducts ? "ON" : "OFF"}`
+    `🎛️ React Products: ${API_CONFIG.useReactProducts ? "ON" : "OFF"}`,
   );
+  useEffect(() => {
+    getProductsOnSale();
+  }, []);
 
   return (
     <WishlistProvider>

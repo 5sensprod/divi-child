@@ -327,6 +327,44 @@ export const getProductsByCategory = async (categoryId, params = {}) => {
   }
 };
 
+// Récupérer les produits en promotion
+export const getProductsOnSale = async (params = {}) => {
+  try {
+    const page = params.page || 1;
+    const per_page = params.per_page || 12;
+
+    const WooCommerce = createWooCommerceAPI();
+    const response = await WooCommerce.get("products", {
+      per_page,
+      page,
+      status: "publish",
+      on_sale: true,
+      ...params,
+    });
+
+    const products = decodeObject(response.data);
+    const enriched = await enrichWithBrands(products);
+
+    return {
+      data: enriched,
+      pagination: {
+        total: parseInt(response.headers["x-wp-total"]) || 0,
+        totalPages: parseInt(response.headers["x-wp-totalpages"]) || 0,
+        currentPage: page,
+        perPage: per_page,
+      },
+    };
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(
+        "Erreur getProductsOnSale:",
+        error.response?.data || error.message,
+      );
+    }
+    throw error;
+  }
+};
+
 // Récupérer les marques d'une catégorie
 export const getBrandsByCategory = async (categoryId) => {
   try {
@@ -418,6 +456,7 @@ export default {
   getProductsByCategory,
   getBrandsByCategory,
   getBrands,
+  getProductsOnSale,
   enrichProductsWithBrandImages,
   getTotalProductsCount,
   clearCategoriesCache,

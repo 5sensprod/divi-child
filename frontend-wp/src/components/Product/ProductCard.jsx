@@ -12,6 +12,7 @@ const ProductCard = ({
   product,
   allowFallback = false,
   showCategory = true,
+  saleLabel = "Solde",
 }) => {
   const navigate = useNavigate();
   const [imgSrc, setImgSrc] = useState(
@@ -27,6 +28,14 @@ const ProductCard = ({
     Number(product?.sale_price || 0) > 0 &&
     product?.regular_price &&
     product.sale_price !== product.regular_price;
+
+  // ✅ Pourcentage de remise arrondi
+  const discountPercent = hasPromo
+    ? Math.round(
+        100 -
+          (Number(product.sale_price) / Number(product.regular_price)) * 100,
+      )
+    : null;
 
   // Gestion du stock
   const stockStatus = product?.stock_status || "outofstock";
@@ -75,7 +84,6 @@ const ProductCard = ({
   }
 
   const brand = product?.brands?.[0];
-  console.log("BRAND DATA:", brand);
 
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden hover:shadow-md transition-all">
@@ -98,29 +106,52 @@ const ProductCard = ({
             </div>
           )}
 
+          {/* Badge Solde (gauche) + Pourcentage de remise (droite) */}
           {hasPromo && (
-            <span className="absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded bg-red-500 text-white shadow">
-              PROMO
-            </span>
+            <>
+              <span className="absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded bg-red-500 text-white shadow">
+                {saleLabel}
+              </span>
+              <span className="absolute top-3 right-3 text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow">
+                -{discountPercent}%
+              </span>
+            </>
           )}
 
+          {/* Badges de stock — décalés vers le bas si promo pour ne pas chevaucher le %  */}
           {manageStock && isOutOfStock && (
-            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-red-600/90 text-white shadow">
+            <span
+              className={`absolute ${
+                hasPromo ? "top-11" : "top-3"
+              } right-3 text-xs font-medium px-2 py-1 rounded-full bg-red-600/90 text-white shadow`}
+            >
               Rupture
             </span>
           )}
           {manageStock && isReappro && (
-            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-orange-500/90 text-white shadow">
+            <span
+              className={`absolute ${
+                hasPromo ? "top-11" : "top-3"
+              } right-3 text-xs font-medium px-2 py-1 rounded-full bg-orange-500/90 text-white shadow`}
+            >
               Réappro
             </span>
           )}
           {!manageStock && isOnOrder && (
-            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-yellow-500/90 text-white shadow">
+            <span
+              className={`absolute ${
+                hasPromo ? "top-11" : "top-3"
+              } right-3 text-xs font-medium px-2 py-1 rounded-full bg-yellow-500/90 text-white shadow`}
+            >
               Sur commande
             </span>
           )}
           {!manageStock && isBackorder && (
-            <span className="absolute top-3 right-3 text-xs font-medium px-2 py-1 rounded-full bg-orange-500/90 text-white shadow">
+            <span
+              className={`absolute ${
+                hasPromo ? "top-11" : "top-3"
+              } right-3 text-xs font-medium px-2 py-1 rounded-full bg-orange-500/90 text-white shadow`}
+            >
               Réappro
             </span>
           )}
@@ -180,7 +211,7 @@ const ProductCard = ({
                 {formatPrice(product?.regular_price)}
               </span>
               <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">
-                PROMO
+                {saleLabel}
               </span>
             </>
           ) : (

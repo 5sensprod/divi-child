@@ -9,6 +9,7 @@ import CTASection from "../components/UI/CTASection";
 import Background from "../components/UI/Background";
 import HeroSlider from "../components/UI/HeroSlider";
 import BrandCarousel from "../components/UI/BrandCarousel";
+import PromoProductsSection from "../components/Product/PromoProductsSection";
 
 const Home = () => {
   const { siteData, products, categories, parentCategories, brands, loading } =
@@ -76,7 +77,7 @@ const Home = () => {
           />
         </div>
       </section> */}
-
+      <PromoProductsSection limit={8} />
       {/* Section Produits avec recherche et filtres */}
       <section
         id="ProduitsVedettes"
