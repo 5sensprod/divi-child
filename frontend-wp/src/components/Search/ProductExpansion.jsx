@@ -226,7 +226,7 @@ const ProductExpansion = ({
               </div>
 
               {/* Prix */}
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
                 {displayProduct.sale_price &&
                 displayProduct.regular_price !== displayProduct.sale_price ? (
                   <>
@@ -236,8 +236,18 @@ const ProductExpansion = ({
                     <span className="text-xl text-gray-500 line-through">
                       {formatPrice(displayProduct.regular_price)}
                     </span>
-                    <span className="px-2 py-1 bg-red-100 text-red-800 text-sm font-medium rounded">
-                      PROMO
+                    <span className="px-2.5 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-bold rounded-full shadow-sm">
+                      Solde
+                    </span>
+                    <span className="px-2.5 py-1 bg-gray-900 text-white text-sm font-bold rounded-full shadow-sm">
+                      -
+                      {Math.round(
+                        100 -
+                          (Number(displayProduct.sale_price) /
+                            Number(displayProduct.regular_price)) *
+                            100,
+                      )}
+                      %
                     </span>
                   </>
                 ) : (

@@ -1,6 +1,12 @@
 // src/components/Search/SearchFilters.jsx
 import { useMemo, useState, useRef, useEffect } from "react";
-import { X, SlidersHorizontal, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  X,
+  SlidersHorizontal,
+  ChevronDown,
+  ChevronRight,
+  Tag,
+} from "lucide-react";
 
 // Dropdown custom catégorie avec accordion
 const CategoryDropdown = ({ categories, value, onChange }) => {
@@ -169,6 +175,11 @@ const SearchFilters = ({
     onFiltersChange({ [key]: value });
   };
 
+  // ✅ Toggle simple pour le filtre promo
+  const togglePromo = () => {
+    updateFilter("onSale", !filters.onSale);
+  };
+
   const activeFilters = useMemo(() => {
     const active = [];
     if (filters.category) {
@@ -202,6 +213,14 @@ const SearchFilters = ({
           label,
           reset: () => updateFilter("availability", "all"),
         });
+    }
+    // ✅ Badge filtre promo
+    if (filters.onSale) {
+      active.push({
+        key: "onSale",
+        label: "En solde",
+        reset: () => updateFilter("onSale", false),
+      });
     }
     if (
       filters.sortBy &&
@@ -274,6 +293,19 @@ const SearchFilters = ({
             </option>
           ))}
         </select>
+
+        {/* ✅ Filtre Promo */}
+        <button
+          onClick={togglePromo}
+          className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full font-medium transition-all cursor-pointer ${
+            filters.onSale
+              ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-sm"
+              : "bg-white border border-gray-200 text-gray-600 hover:border-red-300 hover:text-red-600"
+          }`}
+        >
+          <Tag size={13} className={filters.onSale ? "fill-white/20" : ""} />
+          En solde
+        </button>
 
         {/* Bouton reset */}
         {hasActiveFilters && (

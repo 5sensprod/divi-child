@@ -7,6 +7,7 @@ const DEFAULT_FILTERS = {
   priceRange: "all",
   availability: "all",
   sortBy: "name-asc",
+  onSale: false,
 };
 
 export const useSearch = () => {

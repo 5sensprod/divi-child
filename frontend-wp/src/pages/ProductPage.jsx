@@ -248,7 +248,7 @@ const ProductPage = () => {
 
                 {/* Prix */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-baseline gap-3">
+                  <div className="flex items-baseline gap-3 flex-wrap">
                     {product.on_sale && product.sale_price ? (
                       <>
                         <span className="text-3xl font-bold text-pink-600">
@@ -257,8 +257,18 @@ const ProductPage = () => {
                         <span className="text-xl text-gray-500 line-through">
                           {formatPrice(product.regular_price)}
                         </span>
-                        <span className="bg-red-500 text-white text-sm font-bold px-2 py-1 rounded">
-                          PROMO
+                        <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm">
+                          Solde
+                        </span>
+                        <span className="bg-gray-900 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm">
+                          -
+                          {Math.round(
+                            100 -
+                              (Number(product.sale_price) /
+                                Number(product.regular_price)) *
+                                100,
+                          )}
+                          %
                         </span>
                       </>
                     ) : (
@@ -272,7 +282,6 @@ const ProductPage = () => {
                     className="p-2 hover:bg-gray-100 rounded-full"
                   />
                 </div>
-
                 {/* Marques */}
                 {product.brands?.length > 0 && (
                   <div className="mb-4">

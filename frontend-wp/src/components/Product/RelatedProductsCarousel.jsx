@@ -72,6 +72,18 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // ✅ Vérifie si le produit est en solde
+  const isOnSale = (product) =>
+    Number(product?.sale_price || 0) > 0 &&
+    product?.regular_price &&
+    product.sale_price !== product.regular_price;
+
+  // ✅ Calcule le pourcentage de remise arrondi
+  const getDiscountPercent = (product) =>
+    Math.round(
+      100 - (Number(product.sale_price) / Number(product.regular_price)) * 100,
+    );
+
   const getStockBadge = (
     stockStatus,
     manageStock = false,
@@ -102,7 +114,7 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
   };
 
   // ✅ Composant Image avec gestion d'erreur
-  const ProductImage = ({ src, alt, promo, stockBadge }) => {
+  const ProductImage = ({ src, alt, promo, discountPercent, stockBadge }) => {
     const [imgSrc, setImgSrc] = useState(src || FALLBACK_IMAGE);
     const [errorOccurred, setErrorOccurred] = useState(false);
 
@@ -123,17 +135,24 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
           loading="lazy"
         />
 
-        {/* Badge Promo */}
+        {/* Badge Solde (gauche) + Pourcentage (droite) */}
         {promo && (
-          <span className="absolute top-2 left-2 text-xs font-medium px-2 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-sky-400 text-white shadow">
-            Promo
-          </span>
+          <>
+            <span className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white shadow">
+              Solde
+            </span>
+            <span className="absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full bg-gray-900 text-white shadow">
+              -{discountPercent}%
+            </span>
+          </>
         )}
 
-        {/* Badge de stock */}
+        {/* Badge de stock — décalé si promo pour ne pas chevaucher le % */}
         {stockBadge && (
           <span
-            className={`absolute top-2 right-2 text-xs font-medium px-2 py-1 rounded-full text-white shadow ${stockBadge.bgColor}`}
+            className={`absolute ${
+              promo ? "top-10" : "top-2"
+            } right-2 text-xs font-medium px-2 py-1 rounded-full text-white shadow ${stockBadge.bgColor}`}
           >
             {stockBadge.text}
           </span>
@@ -200,6 +219,10 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
                 product.manage_stock,
                 product.stock_quantity ?? null,
               );
+              const promo = isOnSale(product);
+              const discountPercent = promo
+                ? getDiscountPercent(product)
+                : null;
 
               return (
                 <div
@@ -215,7 +238,8 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
                     <ProductImage
                       src={product.images?.[0]?.src}
                       alt={product.name}
-                      promo={product.on_sale && product.sale_price}
+                      promo={promo}
+                      discountPercent={discountPercent}
                       stockBadge={stockBadge}
                     />
 
@@ -224,7 +248,7 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
                         {product.name}
                       </h3>
                       <div className="flex items-center justify-between">
-                        {product.on_sale && product.sale_price ? (
+                        {promo ? (
                           <div className="flex flex-col">
                             <span className="text-lg font-bold text-pink-600">
                               {formatPrice(product.sale_price)}

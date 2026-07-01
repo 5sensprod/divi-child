@@ -92,7 +92,7 @@ export const HEADER_CONFIG = {
         "transition-all duration-300 hover:scale-95 shadow-lg hover:shadow-xl",
       shadow: "0 4px 15px rgba(0,0,0,0.3)",
       text: "Boutique",
-      href: "/#boutique",
+      href: "/#ProduitsVedettes",
     },
 
     slides: [

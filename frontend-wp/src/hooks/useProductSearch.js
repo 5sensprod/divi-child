@@ -10,6 +10,11 @@ const mapFiltersToWooParams = (filters = {}) => {
     params.category = String(filters.category);
   }
 
+  // Promo
+  if (filters.onSale) {
+    params.on_sale = true;
+  }
+
   // Prix
   if (filters.priceRange && filters.priceRange !== "all") {
     const [min, max] = filters.priceRange.split("-");
@@ -100,7 +105,7 @@ export const useProductSearch = () => {
     } catch (err) {
       setError(
         err?.response?.data?.message ||
-          "Une erreur est survenue lors de la recherche."
+          "Une erreur est survenue lors de la recherche.",
       );
       setResults([]);
     } finally {
@@ -115,7 +120,7 @@ export const useProductSearch = () => {
       setPage(pageArg);
       await runSearch(q, filters, pageArg, perPageRef.current);
     },
-    [runSearch]
+    [runSearch],
   );
 
   const gotoPage = useCallback(
@@ -125,7 +130,7 @@ export const useProductSearch = () => {
       setPage(pageNum);
       await runSearch(q, filters, pageNum, perPageRef.current);
     },
-    [runSearch]
+    [runSearch],
   );
 
   const nextPage = useCallback(async () => {
