@@ -395,14 +395,6 @@ const SearchResult = ({
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [fullProduct, setFullProduct] = useState(null);
 
-  const handleClick = (e) => {
-    e.preventDefault();
-    onToggleProduct(product.id);
-    if (!isExpanded && !fullProduct) {
-      loadProductDetails();
-    }
-  };
-
   const loadProductDetails = async () => {
     try {
       setLoadingDetails(true);
@@ -415,13 +407,35 @@ const SearchResult = ({
     }
   };
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    onToggleProduct(product.id);
+
+    if (!isExpanded && !fullProduct) {
+      loadProductDetails();
+    }
+  };
+
   const formatPrice = (price) => {
     if (!price) return null;
+
     return new Intl.NumberFormat("fr-FR", {
       style: "currency",
       currency: "EUR",
     }).format(parseFloat(price));
   };
+
+  const hasPromo =
+    Number(product?.sale_price || 0) > 0 &&
+    product?.regular_price &&
+    product.sale_price !== product.regular_price;
+
+  const discountPercent = hasPromo
+    ? Math.round(
+        100 -
+          (Number(product.sale_price) / Number(product.regular_price)) * 100,
+      )
+    : null;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
@@ -429,7 +443,7 @@ const SearchResult = ({
         onClick={handleClick}
         className="flex items-center gap-4 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
       >
-        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+        <div className="relative flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
           {product.images?.[0] ? (
             <img
               src={product.images[0].src}
@@ -441,6 +455,12 @@ const SearchResult = ({
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <ShoppingBag size={24} />
             </div>
+          )}
+
+          {hasPromo && (
+            <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
+              -{discountPercent}%
+            </span>
           )}
         </div>
 
@@ -454,18 +474,35 @@ const SearchResult = ({
               {product.name}
             </a>
           </h3>
-          <div className="flex items-center gap-3">
-            {product.price && (
-              <p className="text-lg font-bold text-blue-600">
-                {formatPrice(product.price)}
-              </p>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {hasPromo ? (
+              <>
+                <p className="text-lg font-bold text-pink-600">
+                  {formatPrice(product.sale_price)}
+                </p>
+                <p className="text-sm text-gray-400 line-through">
+                  {formatPrice(product.regular_price)}
+                </p>
+                <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  Solde
+                </span>
+              </>
+            ) : (
+              product.price && (
+                <p className="text-lg font-bold text-blue-600">
+                  {formatPrice(product.price)}
+                </p>
+              )
             )}
+
             {product.categories?.length > 0 && (
               <p className="text-sm text-gray-500">
                 {product.categories[0].name}
               </p>
             )}
           </div>
+
           {product.stock_status === "instock" && (
             <p className="text-xs text-green-600 mt-1">✓ En stock</p>
           )}
@@ -493,7 +530,6 @@ const SearchResult = ({
     </div>
   );
 };
-
 const SearchFooter = () => (
   <p className="text-xs text-gray-500 text-center hidden sm:block">
     Appuyez sur{" "}
