@@ -126,7 +126,14 @@ const Navigation = ({
                   onClick={onSearchClick}
                 />
               )}
-              <HeaderWishlistButton />
+
+              <span
+                data-wishlist-header-icon
+                className="inline-flex items-center justify-center"
+              >
+                <HeaderWishlistButton />
+              </span>
+
               {showCart && <CartButton count={cartCount} />}
             </div>
           </div>
