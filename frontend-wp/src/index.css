@@ -931,6 +931,225 @@ a:focus-visible {
   animation: backgroundFlow 20s ease-in-out infinite alternate;
 }
 
+/* ===== Panneau split-flap ===== */
+.split-flap-scope {
+  --tile-h: 98px;
+  --num-w: 56px;
+  --letter-w: 54px;
+  --radius: 4px;
+  --scale: 0.42;
+}
+.split-flap-scope .board-wrap {
+  max-width: 100%;
+  overflow: visible;
+}
+.split-flap-scope .split-board {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: max-content;
+  padding: 8px 12px;
+  transform: scale(var(--scale));
+  transform-origin: top center;
+  background: linear-gradient(180deg, #191919 0%, #2a2a2a 48%, #323232 100%);
+  border: 1px solid #262626;
+  border-radius: 7px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.9),
+    0 0 0 2px #050505,
+    19px 0 34px rgba(255, 91, 0, 0.58);
+}
+.split-flap-scope .split-group {
+  display: flex;
+  gap: 3px;
+}
+.split-flap-scope .split-group--number {
+  --tile-w: var(--num-w);
+  --glyph-size: 70px;
+  --glyph-color: #ededed;
+  --glyph-shadow:
+    0 1px 0 #fff, 0 -2px 8px rgba(255, 255, 255, 0.16),
+    0 4px 10px rgba(0, 0, 0, 0.9);
+}
+.split-flap-scope .split-group--letter {
+  --tile-w: var(--letter-w);
+  --glyph-size: 66px;
+  --glyph-color: #ffc21a;
+  --glyph-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35), 0 0 12px rgba(255, 184, 0, 0.12),
+    0 5px 10px rgba(0, 0, 0, 0.9);
+}
+.split-flap-scope .split-tile {
+  position: relative;
+  width: var(--tile-w);
+  height: var(--tile-h);
+  perspective: 720px;
+  color: var(--glyph-color);
+  font-family: "Helvetica Neue", Arial, "Segoe UI", sans-serif;
+  font-weight: 500;
+  font-size: var(--glyph-size);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-shadow: var(--glyph-shadow);
+  isolation: isolate;
+}
+.split-flap-scope .split-tile::before {
+  content: "";
+  position: absolute;
+  z-index: 8;
+  left: -1px;
+  right: -1px;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.96),
+    rgba(35, 35, 35, 0.96) 12%,
+    rgba(0, 0, 0, 0.96) 50%,
+    rgba(35, 35, 35, 0.96) 88%,
+    rgba(0, 0, 0, 0.96)
+  );
+  box-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(0, 0, 0, 0.95);
+}
+.split-flap-scope .split-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  border-radius: var(--radius);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset -1px 0 0 rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.95);
+}
+.split-flap-scope .split-panel,
+.split-flap-scope .split-flip {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+  background: linear-gradient(180deg, #242424 0%, #141414 46%, #080808 100%);
+  border: 1px solid #030303;
+}
+.split-flap-scope .split-panel--top,
+.split-flap-scope .split-flip--top {
+  top: 0;
+  border-radius: var(--radius) var(--radius) 2px 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -16px 26px rgba(0, 0, 0, 0.34);
+}
+.split-flap-scope .split-panel--bottom,
+.split-flap-scope .split-flip--bottom {
+  bottom: 0;
+  border-radius: 2px 2px var(--radius) var(--radius);
+  background: linear-gradient(180deg, #151515 0%, #101010 44%, #050505 100%);
+  box-shadow:
+    inset 0 13px 22px rgba(255, 255, 255, 0.035),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.82);
+}
+.split-flap-scope .split-char {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--tile-h);
+  display: grid;
+  place-items: center;
+  transform: translateY(-1px) scaleY(1.35);
+  user-select: none;
+}
+.split-flap-scope .split-char--top {
+  top: 0;
+}
+.split-flap-scope .split-char--bottom {
+  top: calc(var(--tile-h) / -2);
+}
+.split-flap-scope .split-flip {
+  z-index: 7;
+  opacity: 0;
+}
+.split-flap-scope .split-flip--top {
+  transform-origin: 50% 100%;
+}
+.split-flap-scope .split-flip--bottom {
+  transform-origin: 50% 0%;
+  transform: rotateX(92deg);
+}
+.split-flap-scope .split-tile.is-flipping .split-flip--top {
+  opacity: 1;
+  animation: flapTop 150ms cubic-bezier(0.42, 0, 0.58, 1) forwards;
+}
+.split-flap-scope .split-tile.is-flipping .split-flip--bottom {
+  opacity: 1;
+  animation: flapBottom 170ms cubic-bezier(0.18, 0.86, 0.32, 1) 140ms forwards;
+}
+.split-flap-scope .split-hinge {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  width: 7px;
+  height: 20px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: linear-gradient(90deg, #020202 0%, #303030 42%, #060606 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px #020202,
+    0 2px 4px rgba(0, 0, 0, 0.9);
+}
+.split-flap-scope .split-hinge--left {
+  left: -4px;
+}
+.split-flap-scope .split-hinge--right {
+  right: -4px;
+}
+
+@keyframes flapTop {
+  0% {
+    transform: rotateX(0deg);
+    filter: brightness(1);
+  }
+  100% {
+    transform: rotateX(-92deg);
+    filter: brightness(0.42);
+  }
+}
+@keyframes flapBottom {
+  0% {
+    transform: rotateX(92deg);
+    filter: brightness(0.42);
+  }
+  100% {
+    transform: rotateX(0deg);
+    filter: brightness(1);
+  }
+}
+
+/* Échelles responsive du panneau */
+@media (max-width: 900px) {
+  .split-flap-scope {
+    --scale: 0.34;
+  }
+}
+@media (max-width: 720px) {
+  .split-flap-scope {
+    --scale: 0.26;
+  }
+}
+@media (max-width: 520px) {
+  .split-flap-scope {
+    --scale: 0.2;
+  }
+}
+
 @keyframes backgroundFlow {
   0% {
     background-position: 0% 50%;

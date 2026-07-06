@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { getProductsOnSale } from "../../services/woocommerce";
 import ProductCard from "./ProductCard";
+import LoadingSkeleton from "../UI/LoadingSkeleton";
+import SplitFlapBoard from "../UI/SplitFlapBoard";
 
 const SoldesCarousel = ({
   perPage = 8,
@@ -55,8 +57,14 @@ const SoldesCarousel = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-4 border-white/70 border-t-transparent rounded-full animate-spin" />
+      <div className="w-full">
+        <div className="max-w-xs sm:max-w-sm mx-auto px-2">
+          <LoadingSkeleton />
+        </div>
+        {/* Placeholder du bouton pour garder la même hauteur */}
+        <div className="max-w-xs sm:max-w-sm mx-auto mt-3 sm:mt-6">
+          <div className="h-[52px] w-full rounded-full bg-white/20 animate-pulse" />
+        </div>
       </div>
     );
   }
@@ -112,6 +120,10 @@ const SoldesCarousel = ({
         >
           {ctaText}
         </a>
+      </div>
+      {/* Split-flap — visible uniquement en mobile (l'affiche est masquée) */}
+      <div className="md:hidden flex justify-center mt-4 overflow-hidden">
+        <SplitFlapBoard />
       </div>
     </div>
   );
