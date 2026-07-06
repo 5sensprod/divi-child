@@ -1,21 +1,36 @@
 // src/components/UI/ImageLightbox.jsx
 import { useState, useEffect, useCallback } from "react";
 import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
+import { ImageLightboxSkeleton } from "./LoadingSkeleton";
 
-const ImageLightbox = ({ images, currentIndex, onClose }) => {
+const ImageLightbox = ({ images = [], currentIndex = 0, onClose, loading = false }) => {
   const [index, setIndex] = useState(currentIndex);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imageLoading, setImageLoading] = useState(true);
+
+  useEffect(() => {
+    setIndex(currentIndex);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    setImageLoading(true);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    setImageLoading(true);
+  }, [index]);
 
   const prev = useCallback(() => {
+    if (!images.length) return;
     setIndex((i) => (i - 1 + images.length) % images.length);
     setZoom(1);
     setPan({ x: 0, y: 0 });
   }, [images.length]);
 
   const next = useCallback(() => {
+    if (!images.length) return;
     setIndex((i) => (i + 1) % images.length);
     setZoom(1);
     setPan({ x: 0, y: 0 });
@@ -37,6 +52,10 @@ const ImageLightbox = ({ images, currentIndex, onClose }) => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
+
+  if (loading || !images.length) {
+    return <ImageLightboxSkeleton onClose={onClose} />;
+  }
 
   const handleWheel = (e) => {
     e.preventDefault();
@@ -98,14 +117,20 @@ const ImageLightbox = ({ images, currentIndex, onClose }) => {
         onMouseLeave={handleMouseUp}
         style={{ cursor: zoom > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in" }}
       >
+        {imageLoading && (
+          <div className="absolute h-[70vh] w-[70vw] max-w-5xl rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 animate-pulse" />
+        )}
         <img
           src={images[index]?.src}
           alt={images[index]?.alt || ""}
           onClick={toggleZoom}
+          onLoad={() => setImageLoading(false)}
+          onError={() => setImageLoading(false)}
           draggable={false}
+          className={`transition-opacity duration-200 ${imageLoading ? "opacity-0" : "opacity-100"}`}
           style={{
             transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
-            transition: isDragging ? "none" : "transform 0.2s ease",
+            transition: isDragging ? "none" : "transform 0.2s ease, opacity 0.2s ease",
             maxWidth: "90vw",
             maxHeight: "80vh",
             objectFit: "contain",

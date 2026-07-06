@@ -1,10 +1,15 @@
+import { StockBadgeSkeleton } from "../UI/LoadingSkeleton";
+
 const StockBadge = ({
   stockStatus,
   manageStock = false,
   stockQuantity = null,
   size = "md",
   showQuantity = true,
+  loading = false,
 }) => {
+  if (loading) return <StockBadgeSkeleton size={size} />;
+
   let badge;
 
   if (manageStock) {

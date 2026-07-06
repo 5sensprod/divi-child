@@ -10,6 +10,7 @@ import { formatPrice } from "../utils/format";
 import RelatedProductsCarousel from "../components/Product/RelatedProductsCarousel";
 import WishlistButton from "../components/UI/WishlistButton";
 import StockBadge from "../components/Product/StockBadge";
+import { ProductPageBodySkeleton } from "../components/UI/LoadingSkeleton";
 import { ZoomIn } from "lucide-react";
 
 const ProductPage = () => {
@@ -122,15 +123,16 @@ const ProductPage = () => {
   if (loading) {
     return (
       <div>
-        <section className="relative overflow-hidden min-h-[200px] page-content">
-          <Background variant="auto" opacity={1} animated={true} />
+        <section className="relative overflow-hidden page-content pt-36 pb-4 md:pt-48 md:pb-4">
+          <Background variant="ocean-night" opacity={1} animated={true} />
           <div className="container-divi relative z-20">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
-              <p className="text-white text-lg">Chargement du produit...</p>
+            <div className="flex justify-end">
+              <Breadcrumb loading />
             </div>
           </div>
         </section>
+
+        <ProductPageBodySkeleton />
       </div>
     );
   }

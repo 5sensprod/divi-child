@@ -1,9 +1,12 @@
 // src/components/UI/Breadcrumb.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { BreadcrumbGlassSkeleton } from "./LoadingSkeleton";
 
-const Breadcrumb = ({ items = [], className = "" }) => {
+const Breadcrumb = ({ items = [], loading = false, className = "" }) => {
   const navigate = useNavigate();
+
+  if (loading) return <BreadcrumbGlassSkeleton className={className} />;
 
   if (!items || items.length === 0) return null;
 
