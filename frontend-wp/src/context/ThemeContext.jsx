@@ -90,6 +90,26 @@ const THEME_CONFIG = {
     },
   },
 
+  soldes: {
+    name: "soldes",
+    displayName: "Soldes d'été",
+    colors: {
+      primary: "#ff2d6f",
+      secondary: "#ffb703",
+      accent: "#ff6b35",
+    },
+    background: {
+      bg0: "#031428", // Bleu nuit très profond (haut du ciel)
+      bg55: "#132a4f", // Bleu roi (milieu)
+      bg100: "#5e1e2a", // Bordeaux chaud (bas, bascule coucher)
+      spot1Core: "#ff9ec2", // Rose lumineux (spot gauche)
+      spot1Outer: "#ff2d6f", // Magenta (spot gauche)
+      spot2Core: "#ffe08a", // Or clair / soleil (spot droite)
+      spot2Outer: "#ff8c1a", // Orange coucher (spot droite)
+      spot3: "#c2451a", // Rouge-orange terre (spot bas)
+    },
+  },
+
   boutique: {
     name: "boutique",
     displayName: "Boutique",
@@ -194,7 +214,7 @@ export const ThemeProvider = ({ children, initialTheme = "neon" }) => {
         setIsTransitioning(false);
       }, 1200);
     },
-    [currentTheme, applyTheme]
+    [currentTheme, applyTheme],
   );
 
   // Initialisation au montage
@@ -242,7 +262,7 @@ export const ThemeProvider = ({ children, initialTheme = "neon" }) => {
         colors: config.colors,
       })),
     }),
-    [currentTheme, previousTheme, isTransitioning, changeTheme]
+    [currentTheme, previousTheme, isTransitioning, changeTheme],
   );
 
   return (

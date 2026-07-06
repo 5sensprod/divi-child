@@ -1,6 +1,7 @@
 // src/components/Layout/Header/HeroComponents/HeroContent.jsx
 import HeroButton from "./HeroButton";
 import SlideDots from "./SlideDots";
+import SoldesCarousel from "../../Product/SoldesCarousel";
 
 const HeroContent = ({
   slide,
@@ -9,6 +10,21 @@ const HeroContent = ({
   onSlideChange,
   config,
 }) => {
+  // Slide soldes : carrousel de produits soldés + bouton "Voir les soldes"
+  if (slide.theme === "soldes") {
+    return (
+      <div className="flex flex-col justify-center w-full">
+        <SoldesCarousel
+          perPage={8}
+          autoplayDelay={4000}
+          ctaText="Voir les soldes"
+          ctaHref="#ProduitsPromo"
+        />
+      </div>
+    );
+  }
+
+  // Slides normales : titre + description + bouton
   return (
     <div className="flex flex-col justify-center">
       <div className="max-w-prose mx-auto md:mx-0 w-full text-center md:text-left">
@@ -43,4 +59,5 @@ const HeroContent = ({
     </div>
   );
 };
+
 export default HeroContent;

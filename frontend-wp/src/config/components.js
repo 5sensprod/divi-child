@@ -42,7 +42,7 @@ export const HEADER_CONFIG = {
 
   // Configuration Hero Slider
   slider: {
-    autoplayDelay: 5000,
+    autoplayDelay: 8000,
     containerType: "divi",
 
     // Layout responsive - Simplifié avec une seule classe responsive
@@ -96,6 +96,13 @@ export const HEADER_CONFIG = {
     },
 
     slides: [
+      {
+        title: "SOLDES D'ÉTÉ 2026 — JUSQU'À -30%",
+        description:
+          "Profitez de nos soldes d'été sur une sélection d'instruments et d'accessoires. Guitares, claviers, effets et bien plus à prix réduits. Offre valable jusqu'au 28 juillet 2026, dans la limite des stocks disponibles.",
+        image: "/assets/images/SoldeAxe_2026.png",
+        theme: "soldes",
+      },
       {
         title: "ACHETEZ, RÉPAREZ, RÉGLEZ VOTRE MATÉRIEL",
         description:
@@ -206,6 +213,24 @@ export const HEADER_CONFIG = {
         "cyan-core": "#FFD700", // Gold (spot droite)
         "cyan-outer": "#FFA500", // Orange (spot droite)
         violet: "#A0522D", // SaddleBrown (spot bottom)
+      },
+    },
+    soldes: {
+      gradient: "var(--gradient-soldes)",
+      textGradient: "var(--gradient-soldes-night)",
+      color: "#FF2D6F",
+      dotColor: "#FFC300",
+      hoverGradient: "linear-gradient(90deg, #FFC300, #FF2D6F)",
+
+      background: {
+        "bg-0": "#12060E", // Nuit chaude profonde
+        "bg-55": "#3A1030", // Magenta sombre
+        "bg-100": "#5A1A2E", // Bordeaux/coucher de soleil
+        "pink-core": "#FF6FA5", // Rose vif (spot gauche)
+        "pink-outer": "#FF2D6F", // Magenta (spot gauche)
+        "cyan-core": "#FFD54A", // Or (spot droite)
+        "cyan-outer": "#FF9E1B", // Orange (spot droite)
+        violet: "#C2185B", // Framboise (spot bottom)
       },
     },
   },

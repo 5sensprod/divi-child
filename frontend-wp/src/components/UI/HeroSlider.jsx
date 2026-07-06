@@ -39,14 +39,32 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
   };
 
   // Autoplay
+  // useEffect(() => {
+  //   intervalRef.current = setInterval(nextSlide, slider.autoplayDelay);
+
+  //   return () => {
+  //     clearInterval(intervalRef.current);
+  //     clearTimeout(timeoutRef.current);
+  //   };
+  // }, []);
+
+  // Autoplay — désactivé quand la slide courante est "soldes"
   useEffect(() => {
+    const isSoldes = slider.slides[currentSlide]?.theme === "soldes";
+
+    if (isSoldes) {
+      // On stoppe l'enchaînement du Hero, le carrousel produits gère seul
+      clearInterval(intervalRef.current);
+      return;
+    }
+
     intervalRef.current = setInterval(nextSlide, slider.autoplayDelay);
 
     return () => {
       clearInterval(intervalRef.current);
       clearTimeout(timeoutRef.current);
     };
-  }, []);
+  }, [currentSlide, slider.slides, slider.autoplayDelay]);
 
   // Apply theme - COMPLET avec tous les thèmes
   useEffect(() => {
@@ -58,11 +76,11 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
 
     root.style.setProperty(
       "--current-gradient",
-      getThemeStyle(slide.theme, "gradient")
+      getThemeStyle(slide.theme, "gradient"),
     );
     root.style.setProperty(
       "--current-text-gradient",
-      getThemeStyle(slide.theme, "textGradient")
+      getThemeStyle(slide.theme, "textGradient"),
     );
 
     applyBackgroundTheme(slide.theme);
@@ -88,7 +106,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       root.style.setProperty("--logo-accent", "#7D49FF");
       root.style.setProperty(
         "--logo-gradient",
-        "linear-gradient(90deg, #FF3FD1, #31D1FF)"
+        "linear-gradient(90deg, #FF3FD1, #31D1FF)",
       );
     } else if (themeName === "sunset") {
       root.style.setProperty("--logo-primary", "#ff6b35");
@@ -96,7 +114,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       root.style.setProperty("--logo-accent", "#ff4d6d");
       root.style.setProperty(
         "--logo-gradient",
-        "linear-gradient(90deg, #ff6b35, #ffd23f)"
+        "linear-gradient(90deg, #ff6b35, #ffd23f)",
       );
     } else if (themeName === "oceanNight") {
       root.style.setProperty("--logo-primary", "#70B2E0");
@@ -104,7 +122,7 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       root.style.setProperty("--logo-accent", "#3F51B5");
       root.style.setProperty(
         "--logo-gradient",
-        "linear-gradient(90deg, #70B2E0, #4DD0E1)"
+        "linear-gradient(90deg, #70B2E0, #4DD0E1)",
       );
     } else if (themeName === "havana") {
       // NOUVEAU - Thème Havana
@@ -113,7 +131,15 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
       root.style.setProperty("--logo-accent", "#A0522D");
       root.style.setProperty(
         "--logo-gradient",
-        "linear-gradient(90deg, #FF7F50, #FFD700)"
+        "linear-gradient(90deg, #FF7F50, #FFD700)",
+      );
+    } else if (themeName === "soldes") {
+      root.style.setProperty("--logo-primary", "#FF2D6F");
+      root.style.setProperty("--logo-secondary", "#FFC300");
+      root.style.setProperty("--logo-accent", "#FF9E1B");
+      root.style.setProperty(
+        "--logo-gradient",
+        "linear-gradient(90deg, #FF2D6F, #FFC300)",
       );
     }
   };
@@ -159,7 +185,11 @@ const HeroSlider = ({ siteTitle, siteDescription }) => {
           </div>
 
           {/* Image avec effet de glissement */}
-          <div className="relative overflow-hidden">
+          <div
+            className={`relative overflow-hidden ${
+              currentSlideData?.theme === "soldes" ? "hidden md:block" : ""
+            }`}
+          >
             {slider.slides.map((slide, index) => (
               <div
                 key={index}
