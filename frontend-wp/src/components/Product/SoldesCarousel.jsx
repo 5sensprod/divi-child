@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { getProductsOnSale } from "../../services/woocommerce";
 import ProductCard from "./ProductCard";
-import LoadingSkeleton from "../UI/LoadingSkeleton";
+import { GlassSkeleton } from "../UI/LoadingSkeleton";
 import SplitFlapBoard from "../UI/SplitFlapBoard";
 
 const SoldesCarousel = ({
@@ -59,7 +59,7 @@ const SoldesCarousel = ({
     return (
       <div className="w-full">
         <div className="max-w-xs sm:max-w-sm mx-auto px-2">
-          <LoadingSkeleton />
+          <GlassSkeleton />
         </div>
         {/* Placeholder du bouton pour garder la même hauteur */}
         <div className="max-w-xs sm:max-w-sm mx-auto mt-3 sm:mt-6">

@@ -11,7 +11,7 @@ export const HEADER_CONFIG = {
 
     soldes: {
       label: "SOLDES",
-      url: "https://axemusique.shop/#ProduitsPromo",
+      url: "/bons-plans",
     },
 
     // Logos responsive

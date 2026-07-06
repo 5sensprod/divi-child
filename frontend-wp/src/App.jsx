@@ -12,6 +12,7 @@ import CategoryPage from "./pages/CategoryPage";
 import ShopPage from "./pages/ShopPage";
 import ProductPage from "./pages/ProductPage";
 import LegalPage from "./pages/LegalPage";
+import BonsPlansPage from "./pages/BonsPlansPage";
 import NotFoundPage from "./pages/NotFoundPage"; // 👈 AJOUTER
 
 // Composant de redirection optimisé
@@ -125,6 +126,15 @@ const App = () => {
               ) : (
                 <Route path="/produit/*" element={<RedirectToWordPress />} />
               )}
+
+              <Route
+                path="/bons-plans"
+                element={
+                  <Layout>
+                    <BonsPlansPage />
+                  </Layout>
+                }
+              />
 
               {/* Page 404 React pour toutes les routes inconnues */}
               <Route

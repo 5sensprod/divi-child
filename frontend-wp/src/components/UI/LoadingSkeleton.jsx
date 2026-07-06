@@ -99,4 +99,21 @@ export const FooterSkeleton = () => (
   </div>
 );
 
+// Variante "glass" pour fonds sombres/colorés (slide soldes)
+export const GlassSkeleton = () => {
+  return (
+    <div
+      className="rounded-2xl overflow-hidden animate-pulse
+                    bg-white/10 backdrop-blur-md border border-white/20 shadow-lg"
+    >
+      <div className="h-52 bg-white/15"></div>
+      <div className="p-4 space-y-3">
+        <div className="h-4 bg-white/20 rounded"></div>
+        <div className="h-4 bg-white/20 rounded w-2/3"></div>
+        <div className="h-10 bg-white/15 rounded-xl"></div>
+      </div>
+    </div>
+  );
+};
+
 export default LoadingSkeleton;
