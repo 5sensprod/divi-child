@@ -15,10 +15,21 @@ const AxeLogo = ({
 }) => {
   const [isClient, setIsClient] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Détecte la zone lg (1024–1279px) pour réduire le logo avant de passer en mobile
+  useEffect(() => {
+    if (isMobile) return;
+    const mq = window.matchMedia("(min-width: 1024px) and (max-width: 1279px)");
+    const update = () => setIsCompact(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [isMobile]);
 
   useEffect(() => {
     if (!isClient || isMobile) return;
@@ -34,15 +45,15 @@ const AxeLogo = ({
     });
   }, [theme, isClient, isMobile]);
 
-  const logoSize = useMemo(
-    () =>
-      getLogoSizePx({
-        isMobile,
-        isScrolled,
-        widthOverride: width,
-      }),
-    [isMobile, isScrolled, width]
-  );
+  const logoSize = useMemo(() => {
+    const base = getLogoSizePx({
+      isMobile,
+      isScrolled,
+      widthOverride: width,
+    });
+    // Réduction ~72% dans la zone lg serrée (desktop uniquement)
+    return isCompact ? Math.round(base * 0.72) : base;
+  }, [isMobile, isScrolled, width, isCompact]);
 
   const textSizes = useMemo(
     () => ({
@@ -50,7 +61,7 @@ const AxeLogo = ({
       musique: Math.round(logoSize * 0.16),
       scale: logoSize / 200,
     }),
-    [logoSize]
+    [logoSize],
   );
 
   const containerProps = {

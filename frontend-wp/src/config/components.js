@@ -9,9 +9,14 @@ export const HEADER_CONFIG = {
     cartCount: 5,
     scrollThreshold: 100,
 
+    soldes: {
+      label: "SOLDES",
+      url: "https://axemusique.shop/#ProduitsPromo",
+    },
+
     // Logos responsive
     logo: {
-      desktop: { normal: 220, scrolled: 140 },
+      desktop: { normal: 180, scrolled: 130 }, // au lieu de 220 / 140
       mobile: { normal: 150, scrolled: 100 },
       alt: "Logo Axe Musique",
     },

@@ -33,7 +33,7 @@ export const DesktopMenuItem = ({ item, openDropdowns, toggleDropdown }) => {
     return (
       <MenuLink
         item={item}
-        className={`nav-link ${
+        className={`nav-link text-xs xl:text-sm 2xl:text-base ${
           item.isActive ? "nav-link-active" : "nav-link-inactive"
         }`}
       />
@@ -44,13 +44,13 @@ export const DesktopMenuItem = ({ item, openDropdowns, toggleDropdown }) => {
     <div className="relative">
       <button
         onClick={() => toggleDropdown(item.id)}
-        className={`nav-link nav-link-inactive flex items-center space-x-1 ${
+        className={`nav-link nav-link-inactive flex items-center space-x-1 text-xs xl:text-sm 2xl:text-base ${
           isDropdownOpen ? "text-pink-300" : ""
         }`}
       >
         <span>{item.title}</span>
         <ChevronDown
-          size={16}
+          size={14}
           className={`transition-transform duration-200 ${
             isDropdownOpen ? "rotate-180" : ""
           }`}

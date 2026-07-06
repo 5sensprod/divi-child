@@ -57,7 +57,7 @@ const Navigation = ({
       <nav className={navClasses} translate="no">
         <div className="container-divi">
           <div
-            className={`grid items-center gap-4 ${heightClasses} grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
+            className={`grid items-center gap-2 xl:gap-4 ${heightClasses} grid-cols-3 lg:grid-cols-[auto_1fr_auto]`}
           >
             {/* GAUCHE - Burger (mobile) + Logo desktop */}
             <div className="flex items-center justify-start">
@@ -91,19 +91,28 @@ const Navigation = ({
               </Link>
 
               {/* Menu desktop */}
-              <div className="hidden lg:flex items-center justify-center flex-1 space-x-4 nav-dropdown-container">
+              <div className="hidden lg:flex items-center justify-center flex-1 space-x-1 xl:space-x-3 2xl:space-x-4 nav-dropdown-container">
                 {loading ? (
                   <MenuSkeleton />
                 ) : (
-                  organizedMenu.map((item) => (
-                    <MegaMenu
-                      key={item.id}
-                      item={item}
-                      isOpen={openDropdowns.has(item.id)}
-                      onToggle={() => openSingleDropdown(item.id)}
-                      onClose={() => toggleDropdown(item.id)}
-                    />
-                  ))
+                  <>
+                    <a
+                      href={navigation.soldes.url}
+                      className="nav-link text-xs xl:text-sm 2xl:text-base font-medium text-pink-400 hover:text-pink-300 whitespace-nowrap border border-white/70 rounded-full px-3 py-1.5 transition-colors hover:border-white"
+                    >
+                      {navigation.soldes.label}
+                    </a>
+
+                    {organizedMenu.map((item) => (
+                      <MegaMenu
+                        key={item.id}
+                        item={item}
+                        isOpen={openDropdowns.has(item.id)}
+                        onToggle={() => openSingleDropdown(item.id)}
+                        onClose={() => toggleDropdown(item.id)}
+                      />
+                    ))}
+                  </>
                 )}
               </div>
             </div>
