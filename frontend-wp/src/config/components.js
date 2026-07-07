@@ -95,7 +95,7 @@ export const HEADER_CONFIG = {
         "mx-auto md:mx-0 mb-8 px-8 py-4 text-base md:text-lg font-bold text-white uppercase rounded-full",
       animations:
         "transition-all duration-300 hover:scale-95 shadow-lg hover:shadow-xl",
-      shadow: "0 4px 15px rgba(0,0,0,0.3)",
+      shadow: "none",
       text: "Boutique",
       href: "/#ProduitsVedettes",
     },

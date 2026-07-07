@@ -816,14 +816,34 @@ a:focus-visible {
 
 /* Theme soldes - Soldes d'été 2026 (bleu nuit → coucher chaud) */
 .animated-background.theme-soldes {
-  --bg-color-0: #264269; /* Bleu ciel (haut de l'affiche) */
-  --bg-color-55: #5f455b; /* Bascule bleu → chaud (milieu) */
-  --bg-color-100: #8f2d10; /* Orange-rouge coucher (bas) */
-  --spot1-core: #fde8ac; /* Cœur du soleil doré (spot gauche) */
-  --spot1-outer: #f86f02; /* Orange vif du reflet (spot gauche) */
-  --spot2-core: #fdcc7c; /* Or lumineux (spot droite) */
-  --spot2-outer: #fca125; /* Orange soleil (spot droite) */
-  --spot3-color: #d12b00; /* Rouge coucher intense (spot bas) */
+  /* aspect-ratio: 16 / 9;
+  min-height: auto; */
+
+  background: url("assets/images/solde_bg.png");
+
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+
+  background-size: cover;
+  background-position: center center;
+  background-repeat: repeat;
+}
+
+.animated-background.theme-soldes.with-motion {
+  animation: soldes-bg-opacity 0.6s ease forwards !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+@keyframes soldes-bg-opacity {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Theme boutique - Version claire avec spots subtils */
@@ -1186,10 +1206,29 @@ a:focus-visible {
         var(--bg-color-55) 50%,
         var(--bg-color-100) 100%
       );
+    .animated-background.theme-soldes {
+      background: url("assets/images/solde_bg.png");
+
+      animation: none !important;
+      transition: none !important;
+      filter: none !important;
+
+      background-size: cover;
+      background-position: top center;
+      background-repeat: repeat;
+    }
   }
 
   .animated-background.with-motion {
     animation: none; /* Pas d'animation sur mobile */
+  }
+}
+
+@media (max-width: 580px) {
+  .animated-background.theme-soldes {
+    background-size: cover;
+    background-position: top center;
+    background-repeat: repeat;
   }
 }
 
