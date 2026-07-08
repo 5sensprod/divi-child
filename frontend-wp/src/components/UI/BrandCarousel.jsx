@@ -38,7 +38,7 @@ const BrandCarousel = ({ brands = [], loading = false }) => {
 
       {/* Label */}
       <p
-        className="text-center text-[10px] uppercase tracking-[0.2em] mb-3 relative z-10"
+        className="text-center text-[18px] uppercase tracking-[0.2em] mb-3 relative z-10"
         style={{ color: `${primaryColor}90`, transition: "color 0.8s ease" }}
       >
         Nos marques partenaires
@@ -75,18 +75,19 @@ const BrandCarousel = ({ brands = [], loading = false }) => {
               <img
                 src={brand.image}
                 alt={brand.imageAlt}
-                className="h-9 w-auto max-w-[120px] object-contain"
+                className="h-11 w-auto max-w-[150px] object-contain"
                 style={{
-                  filter: "grayscale(20%) brightness(1)",
+                  filter:
+                    "grayscale(20%) brightness(1) drop-shadow(0 3px 5px rgba(0,0,0,0.28))",
                   transition: "filter 0.3s",
                 }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.filter =
-                    "grayscale(0%) brightness(1.05)")
+                    "grayscale(0%) brightness(1.04) drop-shadow(0 4px 6px rgba(0,0,0,0.34))")
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.filter =
-                    "grayscale(20%) brightness(1)")
+                    "grayscale(20%) brightness(1) drop-shadow(0 3px 5px rgba(0,0,0,0.28))")
                 }
               />
             </div>

@@ -58,7 +58,7 @@ const PromoProductsSection = ({ perPage = 8, className = "" }) => {
             animationType="equalizer"
             gradient="sunset"
           >
-            🔥 Nos meilleures soldes
+            🔥 Soldes Eté 2026
           </Title>
           <p className="text-lg text-gray-700 max-w-2xl mx-auto">
             Profitez de nos offres du moment avant qu'elles ne s'envolent
