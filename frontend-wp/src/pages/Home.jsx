@@ -77,7 +77,7 @@ const Home = () => {
           />
         </div>
       </section> */}
-      <PromoProductsSection limit={8} />
+      {/* <PromoProductsSection limit={8} /> */}
       {/* Section Produits avec recherche et filtres */}
       <section
         id="ProduitsVedettes"

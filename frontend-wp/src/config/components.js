@@ -10,7 +10,7 @@ export const HEADER_CONFIG = {
     scrollThreshold: 100,
 
     soldes: {
-      label: "SOLDES",
+      label: "Bon plan",
       url: "/bons-plans",
     },
 
@@ -101,13 +101,13 @@ export const HEADER_CONFIG = {
     },
 
     slides: [
-      {
-        title: "SOLDES D'ÉTÉ 2026 — JUSQU'À -30%",
-        description:
-          "Profitez de nos soldes d'été sur une sélection d'instruments et d'accessoires. Guitares, claviers, effets et bien plus à prix réduits. Offre valable jusqu'au 28 juillet 2026, dans la limite des stocks disponibles.",
-        image: "/assets/images/SoldeAxe_2026.png",
-        theme: "soldes",
-      },
+      // {
+      //   title: "SOLDES D'ÉTÉ 2026 — JUSQU'À -30%",
+      //   description:
+      //     "Profitez de nos soldes d'été sur une sélection d'instruments et d'accessoires. Guitares, claviers, effets et bien plus à prix réduits. Offre valable jusqu'au 28 juillet 2026, dans la limite des stocks disponibles.",
+      //   image: "/assets/images/SoldeAxe_2026.png",
+      //   theme: "soldes",
+      // },
       {
         title: "ACHETEZ, RÉPAREZ, RÉGLEZ VOTRE MATÉRIEL",
         description:
