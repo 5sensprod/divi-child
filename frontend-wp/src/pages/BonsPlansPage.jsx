@@ -288,12 +288,12 @@ const BonsPlansPage = () => {
               mode="oceanNight"
               bold="true"
             >
-              Solde Eté 2026
+              Bons plans & promotions
             </Title>
             <p className="text-white/80 text-base">
               {productsLoading
                 ? "Recherche des meilleures promos..."
-                : `${totalOnSale} produit${totalOnSale > 1 ? "s" : ""} en solde`}
+                : `${totalOnSale} produit${totalOnSale > 1 ? "s" : ""} pour le moment`}
             </p>
           </div>
 
