@@ -68,6 +68,38 @@ export async function fetchCategoryWithProducts({
   return await callCatalog({ action: "category", slug, id, limit });
 }
 
+/**
+ * Une catégorie, sa page de produits, ses sous-catégories.
+ *
+ * Pagination à part de `fetchCategoryWithProducts` : la page d'accueil veut
+ * « les 8 premiers » et la page catégorie « la page 3 » — deux besoins, deux
+ * appels, plutôt qu'un seul aux paramètres ambigus.
+ */
+export async function fetchCategoryPage({
+  slug,
+  id,
+  page = 1,
+  perPage = 24,
+} = {}) {
+  return await callCatalog({
+    action: "category",
+    slug,
+    id,
+    page,
+    per_page: perPage,
+  });
+}
+
+/**
+ * Un produit par son slug, avec les catégories auxquelles il appartient.
+ *
+ * Le slug est l'adresse publique, et il est **figé au premier envoi** côté
+ * serveur : c'est ce qui permet à cette route de ne jamais casser.
+ */
+export async function fetchProductBySlug(slug) {
+  return await callCatalog({ action: "product", slug });
+}
+
 /** Les catégories qui portent au moins un produit en ligne. */
 export async function fetchOnlineCategories() {
   return await callCatalog({ action: "categories" });

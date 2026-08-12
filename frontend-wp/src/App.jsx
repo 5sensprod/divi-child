@@ -5,6 +5,8 @@ import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
 import { ThemeProvider } from "./context/ThemeContext";
 import { WishlistProvider } from "./context/WishlistContext";
+import AxeCategoryPage from "./pages/axe/AxeCategoryPage";
+import AxeProductPage from "./pages/axe/AxeProductPage";
 import { API_CONFIG } from "./utils/constants";
 import { getProductsOnSale } from "./services/woocommerce";
 // Pages React
@@ -83,8 +85,24 @@ const App = () => {
                 }
               />
 
-              {/* Pages catégories - conditionnel selon l'env */}
-              {API_CONFIG.useReactCategories ? (
+              {/* ─── Pages catégories ──────────────────────────────────────
+                  Trois cas, dans cet ordre de priorité :
+                    1. `useAxeCatalog` → notre base SQL ;
+                    2. `useReactCategories` → WooCommerce en React ;
+                    3. sinon → redirection vers WordPress.
+                  Le premier drapeau PRIME : quand le catalogue Axe est actif,
+                  les slugs sont les nôtres et la page WooCommerce ne saurait
+                  pas les résoudre. */}
+              {API_CONFIG.useAxeCatalog ? (
+                <Route
+                  path="/categorie-produit/*"
+                  element={
+                    <Layout>
+                      <AxeCategoryPage />
+                    </Layout>
+                  }
+                />
+              ) : API_CONFIG.useReactCategories ? (
                 <>
                   <Route
                     path="/categorie-produit/*"
@@ -113,8 +131,17 @@ const App = () => {
                 </>
               )}
 
-              {/* Pages produits - conditionnel selon l'env */}
-              {API_CONFIG.useReactProducts ? (
+              {/* Pages produits — même priorité que ci-dessus. */}
+              {API_CONFIG.useAxeCatalog ? (
+                <Route
+                  path="/produit/:slug"
+                  element={
+                    <Layout>
+                      <AxeProductPage />
+                    </Layout>
+                  }
+                />
+              ) : API_CONFIG.useReactProducts ? (
                 <Route
                   path="/produit/:slug"
                   element={
