@@ -45,7 +45,7 @@ add_action('after_setup_theme', 'axemusique_init');
 // ========================================
 
 add_theme_support('post-thumbnails');
-add_theme_support('menus');
+//add_theme_support('menus');
 
 // ========================================
 // 🏷️ BODY CLASSES
@@ -119,10 +119,17 @@ function get_menus_data()
 // 2. Ajouter des champs personnalisés à l'API
 function add_custom_fields_to_api()
 {
+    // Vérifier si WooCommerce est activé
+    if (!class_exists('WooCommerce')) {
+        return;
+    }
+
     // Pour les produits WooCommerce
     register_rest_field('product', 'custom_data', array(
         'get_callback' => function ($object) {
             $product = wc_get_product($object['id']);
+            if (!$product) return null;
+
             return array(
                 'stock_status' => $product->get_stock_status(),
                 'gallery_images' => array_map(function ($id) {
@@ -135,14 +142,25 @@ function add_custom_fields_to_api()
 }
 add_action('rest_api_init', 'add_custom_fields_to_api');
 
-// 3. Configurer CORS pour votre domaine React
+function enable_application_password_authentication()
+{
+    add_filter('application_password_is_api_request', function ($is_api_request) {
+        if (defined('REST_REQUEST') && REST_REQUEST) {
+            return true;
+        }
+        return $is_api_request;
+    });
+}
+add_action('init', 'enable_application_password_authentication');
+
+// Améliorer CORS pour l'authentification
 function add_cors_headers()
 {
-    header('Access-Control-Allow-Origin: http://localhost:3000'); // Remplacez par votre domaine React
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    header("Access-Control-Allow-Origin: https://axemusique.shop");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
 }
-add_action('rest_api_init', 'add_cors_headers');
+add_action('init', 'add_cors_headers');
 
 // 4. Endpoint personnalisé pour les données globales du site
 function site_global_data()
@@ -167,3 +185,49 @@ function get_site_global_data()
         )
     );
 }
+function expose_menus_in_rest()
+{
+    $menus_data = array();
+
+    // Récupérer tous les menus créés
+    $menus = wp_get_nav_menus();
+
+    foreach ($menus as $menu) {
+        $menu_items = wp_get_nav_menu_items($menu->term_id);
+        if ($menu_items) {
+            $structured_menu = array();
+            foreach ($menu_items as $item) {
+                $structured_menu[] = array(
+                    'id' => $item->ID,
+                    'title' => $item->title,
+                    'url' => $item->url,
+                    'parent' => (int)$item->menu_item_parent,
+                    'target' => $item->target,
+                    'classes' => implode(' ', $item->classes)
+                );
+            }
+
+            // Utiliser le slug du menu comme clé
+            $menu_key = $menu->slug;
+            // Si le menu s'appelle "main", utiliser "main" comme clé
+            if (strtolower($menu->name) === 'main' || $menu->slug === 'main') {
+                $menu_key = 'main';
+            }
+
+            $menus_data[$menu_key] = array(
+                'name' => $menu->name,
+                'items' => $structured_menu
+            );
+        }
+    }
+
+    return $menus_data;
+}
+
+add_action('rest_api_init', function () {
+    register_rest_route('wp/v2', '/menus', array(
+        'methods' => 'GET',
+        'callback' => 'expose_menus_in_rest',
+        'permission_callback' => '__return_true'
+    ));
+});

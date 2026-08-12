@@ -7,6 +7,39 @@ export const API_CONFIG = {
   // Supprimé isDevMode - plus besoin
   useReactCategories: import.meta.env.VITE_USE_REACT_CATEGORIES === "true",
   useReactProducts: import.meta.env.VITE_USE_REACT_PRODUCTS === "true",
+
+  // ─── Source du menu de navigation (ticket 8) ───────────────────────────
+  // `false` = WordPress (`/wp-json/wp/v2/menus`), le comportement historique.
+  // `true`  = fichier publié par PocketApp.
+  //
+  // PAR DÉFAUT SUR WORDPRESS, et la variable absente vaut `false` : déployer ce
+  // build ne change donc rien en production. Le retour arrière est une variable
+  // d'environnement et un rebuild — pas une restauration de fichiers, qui
+  // n'existe pas ici (le site part par FTP sans retour arrière).
+  usePublishedMenu: import.meta.env.VITE_USE_PUBLISHED_MENU === "true",
+
+  // URL du menu publié. Même origine que le site en production, donc aucune
+  // question de CORS ; en développement, le proxy de `vite.config.js` s'en
+  // charge — le fichier est servi SANS en-tête `Access-Control-Allow-Origin`,
+  // contrairement à `/wp-json`.
+  publishedMenuUrl:
+    import.meta.env.VITE_PUBLISHED_MENU_URL || "/data/menu.json",
+
+  // ─── Catalogue Axe Musique (base SQL alimentée par PocketApp) ────────────
+  // `false` = le site ne lit que WooCommerce, comportement historique.
+  // `true`  = la section catalogue de la page d'accueil lit NOTRE base.
+  //
+  // PAR DÉFAUT SUR WOOCOMMERCE, comme le drapeau du menu : déployer ce build
+  // ne change rien tant que la variable est absente. Même raison qu'au ticket
+  // 8 — le site part par FTP, sans retour arrière possible.
+  useAxeCatalog: import.meta.env.VITE_USE_AXE_CATALOG === "true",
+
+  // Endpoint PUBLIC de lecture du catalogue. Aucune clé : le bundle est
+  // public, et y mettre un secret serait refaire la faille des clés
+  // WooCommerce. Même origine en production ; en développement, le proxy de
+  // `vite.config.js` s'en charge.
+  axeCatalogUrl:
+    import.meta.env.VITE_AXE_CATALOG_URL || "/server/api/catalog.php",
   auth: {
     username: import.meta.env.VITE_WP_USER,
     password: import.meta.env.VITE_WP_APP_PASSWORD,
@@ -25,19 +58,31 @@ export const DEFAULT_DATA = {
     },
   },
 
+  // ─── Menu de repli (ticket 8) ────────────────────────────────────────────
+  // Sert quand les DEUX sources échouent — WordPress en maintenance, fichier
+  // publié absent ou de version inconnue. Sans lui, la navigation du site
+  // disparaît (faille 3.4 de l'audit).
+  //
+  // Il était présent avant ce ticket mais INOPÉRANT, pour deux raisons qui
+  // valent d'être connues :
+  //
+  //   1. sa forme était `{main: {name, items}}` alors que le seul consommateur,
+  //      `Header.jsx:39`, lit `menus?.items` — le repli rendait donc
+  //      `undefined`, c'est-à-dire un menu vide ;
+  //   2. `parent: 0` (nombre) ne correspondait pas au `item.parent === "0"`
+  //      (chaîne) de `useNavigation.js:111`, et ses URL — `/categorie/guitares`,
+  //      `/boutique` — ne correspondent à AUCUNE route de `App.jsx`.
+  //
+  // Il est donc réécrit, pas branché : forme aplatie, parents en chaîne, et
+  // uniquement des URL qui existent réellement.
   menus: {
-    main: {
-      name: "Menu Principal",
-      items: [
-        { id: 1, title: "Accueil", url: "/", parent: 0 },
-        { id: 2, title: "Boutique", url: "/boutique", parent: 0 },
-        { id: 3, title: "Instruments", url: "#", parent: 0 }, // Parent
-        { id: 4, title: "Guitares", url: "/categorie/guitares", parent: 3 }, // Enfant de Instruments
-        { id: 5, title: "Pianos", url: "/categorie/pianos", parent: 3 }, // Enfant de Instruments
-        { id: 6, title: "Batterie", url: "/categorie/batterie", parent: 3 }, // Enfant de Instruments
-        { id: 7, title: "Contact", url: "/contact", parent: 0 },
-      ],
-    },
+    name: "Menu Principal",
+    items: [
+      { id: "1", title: "Accueil", url: "/", parent: "0" },
+      { id: "2", title: "Boutique", url: "/shop", parent: "0" },
+      { id: "3", title: "Bons plans", url: "/bons-plans", parent: "0" },
+      { id: "4", title: "Mentions légales", url: "/mentions-legales", parent: "0" },
+    ],
   },
 
   categories: [

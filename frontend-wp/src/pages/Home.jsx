@@ -10,6 +10,8 @@ import Background from "../components/UI/Background";
 import HeroSlider from "../components/UI/HeroSlider";
 import BrandCarousel from "../components/UI/BrandCarousel";
 import PromoProductsSection from "../components/Product/PromoProductsSection";
+import AxeCatalogSection from "../components/section/AxeCatalogSection";
+import { API_CONFIG } from "../utils/constants";
 
 const Home = () => {
   const { siteData, products, categories, parentCategories, brands, loading } =
@@ -46,6 +48,14 @@ const Home = () => {
       {/* Section Statistiques */}
       {/* Section Statistiques — pleine largeur */}
       <AnimatedStats products={products} categories={categories} />
+
+      {/* ─── Catalogue Axe Musique ────────────────────────────────────────
+          Lue dans NOTRE base SQL, pas dans WooCommerce. Derrière un drapeau
+          par défaut à `false` : sans `VITE_USE_AXE_CATALOG=true`, ce build se
+          comporte exactement comme le précédent. */}
+      {API_CONFIG.useAxeCatalog && (
+        <AxeCatalogSection limit={8} title="Directement de notre catalogue" />
+      )}
       {/* Catégories populaires */}
       {/* <section
         id="boutique"

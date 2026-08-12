@@ -2,6 +2,12 @@ import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
 import { cacheUtils, CACHE_KEYS, CACHE_DURATIONS } from "../utils/cache";
 import { decodeHTMLEntities } from "../utils/format";
 
+console.log("=== ENV ===", {
+  url: import.meta.env.VITE_WP_SITE_URL,
+  key: import.meta.env.VITE_WC_CONSUMER_KEY?.slice(0, 6),
+  secret: import.meta.env.VITE_WC_CONSUMER_SECRET?.slice(0, 6),
+  mode: import.meta.env.MODE,
+});
 // Décoder récursivement les entités dans un objet
 const decodeObject = (obj) => {
   if (!obj) return obj;

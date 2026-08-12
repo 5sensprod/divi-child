@@ -8,8 +8,12 @@ import {
   enrichProductsWithBrandImages,
 } from "../services/woocommerce";
 import { wordpressService } from "../services/wordpress";
-import { DEFAULT_DATA, FALLBACK_PRODUCTS } from "../utils/constants";
-import { cacheUtils, CACHE_KEYS } from "../utils/cache";
+import {
+  API_CONFIG,
+  DEFAULT_DATA,
+  FALLBACK_PRODUCTS,
+} from "../utils/constants";
+import { cacheUtils, CACHE_KEYS, activeMenuCacheKey } from "../utils/cache";
 
 // Hook pour gérer les données WordPress (sans UI)
 export const useWordPressData = () => {
@@ -25,7 +29,12 @@ export const useWordPressData = () => {
   useEffect(() => {
     const initializeApp = async () => {
       // Chargement immédiat du cache pour le menu ET les catégories
-      const cachedMenu = cacheUtils.get(CACHE_KEYS.MENU);
+      // Affichage immédiat depuis le cache — DE LA SOURCE COURANTE (ticket 8).
+      // Lire `CACHE_KEYS.MENU` en dur ferait apparaître le menu WordPress au
+      // premier rendu même quand le site est basculé sur le menu publié, le
+      // temps que la requête retombe. Un menu qui change sous les yeux du
+      // visiteur, et un doute permanent sur ce que la bascule a réellement fait.
+      const cachedMenu = cacheUtils.get(activeMenuCacheKey());
       const cachedCategories =
         import.meta.env.VITE_DISABLE_CACHE !== "true"
           ? cacheUtils.get(CACHE_KEYS.CATEGORIES)
@@ -71,30 +80,58 @@ export const useWordPressData = () => {
 
     const loadProductionData = async () => {
       try {
-        // Ne pas bloquer si testConnection échoue
+        // ─── Le menu part en premier, et s'affiche seul ────────────────────
+        //
+        // Mesuré le 10 août 2026 : le menu publié arrive en 0,13 s, les marques
+        // en 1,64 s, les catégories en ~2 s. Attendre `Promise.allSettled` pour
+        // TOUT afficher faisait patienter le menu ~2,5 s derrière des données
+        // qu'il n'utilise pas.
+        //
+        // `loadMenu()` a son propre repli et ne lève jamais : le `.catch` final
+        // est une ceinture, pas un cas prévu.
+        wordpressService
+          .loadMenu()
+          .then((menuData) => {
+            setData((prev) => ({
+              ...prev,
+              menus: menuData,
+              loading: { ...prev.loading, menus: false },
+            }));
+          })
+          .catch((error) => {
+            console.error("Menu : échec inattendu du chargement", error);
+          });
+
+        // ─── testConnection : seulement quand WordPress sert encore ────────
+        //
+        // Il coûte 0,64 s EN SÉRIE avant tout le reste, et télécharge 328 Ko
+        // d'index `wp-json` que personne ne lit. Son seul rôle est de décider
+        // s'il faut interroger WordPress pour le menu — question sans objet
+        // quand la source est le fichier publié.
+        //
+        // `loadSiteData()` reste appelé dans tous les cas : il a son propre
+        // repli et ne lève jamais.
         let wordpressAvailable = true;
-        try {
-          await wordpressService.testConnection();
-        } catch (error) {
-          console.warn(
-            "⚠️ API WordPress non accessible, mode WooCommerce uniquement",
-          );
-          wordpressAvailable = false;
+        if (!API_CONFIG.usePublishedMenu) {
+          try {
+            await wordpressService.testConnection();
+          } catch (error) {
+            console.warn(
+              "⚠️ API WordPress non accessible, mode WooCommerce uniquement",
+            );
+            wordpressAvailable = false;
+          }
         }
 
-        // Charger toutes les données en parallèle
+        // Charger le reste en parallèle
         const promises = [
           getProducts({ per_page: 20 }),
           getCategories(),
           getBrands(),
         ];
 
-        // N'ajouter les promesses WordPress que si l'API est disponible
         if (wordpressAvailable) {
-          promises.push(
-            wordpressService.loadSiteData(),
-            wordpressService.loadMenu(),
-          );
+          promises.push(wordpressService.loadSiteData());
         }
 
         const results = await Promise.allSettled(promises);
@@ -105,9 +142,6 @@ export const useWordPressData = () => {
         const brandsResult = results[2];
         const siteDataResult = wordpressAvailable
           ? results[3]
-          : { status: "rejected" };
-        const menuDataResult = wordpressAvailable
-          ? results[4]
           : { status: "rejected" };
 
         // Filtrer les catégories parentes côté client
@@ -127,7 +161,6 @@ export const useWordPressData = () => {
         const products = enrichProductsWithBrandImages(productsRaw, allBrands);
 
         console.log("=== RÉSULTATS DU CHARGEMENT ===");
-        console.log("Menu structure:", menuDataResult.value);
         console.log("Categories loaded:", allCategories.length);
         console.log("Parent categories:", parentCats.length);
         console.log("Brands loaded:", allBrands.length);
@@ -142,17 +175,16 @@ export const useWordPressData = () => {
             siteDataResult.status === "fulfilled"
               ? siteDataResult.value
               : DEFAULT_DATA.siteData,
-          menus:
-            menuDataResult.status === "fulfilled"
-              ? menuDataResult.value
-              : prev.menus,
+          // `menus` n'est volontairement PAS repris ici : il est posé par sa
+          // propre promesse, plus tôt. Le réécrire depuis `prev` risquerait
+          // d'annuler un menu déjà affiché si les deux se croisaient.
           products,
           categories: allCategories,
           parentCategories: parentCats,
           brands: allBrands,
           loading: {
+            ...prev.loading,
             initial: false,
-            menus: false,
             products: false,
             categories: false,
             siteData: false,
@@ -207,7 +239,10 @@ export const useWordPressData = () => {
   // Méthodes utilitaires pour interagir avec les données
   const actions = {
     clearAllCache: () => {
+      // Les DEUX menus, pas seulement celui de la source courante : « vider
+      // tout le cache » doit tenir sa promesse même après une bascule.
       cacheUtils.remove(CACHE_KEYS.MENU);
+      cacheUtils.remove(CACHE_KEYS.MENU_PUBLISHED);
       cacheUtils.remove(CACHE_KEYS.CATEGORIES);
       cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent`);
       cacheUtils.remove(`${CACHE_KEYS.CATEGORIES}_parent_filtered`);

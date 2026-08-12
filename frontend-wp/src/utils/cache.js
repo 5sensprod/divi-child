@@ -1,4 +1,5 @@
 // Utilitaires pour la gestion du cache
+import { API_CONFIG } from "./constants";
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures
 const SEARCH_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes pour la recherche
 
@@ -120,6 +121,11 @@ export const cacheUtils = {
 
 export const CACHE_KEYS = {
   MENU: "axemusique_menu",
+  // Menu publié par PocketApp — clé DISTINCTE de MENU, et c'est le mécanisme
+  // d'invalidation à la bascule (ticket 8) : changer de source change de clé,
+  // donc le cache de l'autre source n'est jamais resservi. Revenir en arrière
+  // retrouve le sien. Aucune purge à écrire.
+  MENU_PUBLISHED: "axemusique_menu_published",
   CATEGORIES: "axemusique_categories",
   SITE_DATA: "axemusique_site_data",
   PRODUCTS: "axemusique_products",
@@ -128,6 +134,15 @@ export const CACHE_KEYS = {
   RECENT_SEARCHES: "axemusique_recent_searches", // Historique des recherches
   POPULAR_PRODUCTS: "axemusique_popular_products", // Produits populaires pour suggestions
 };
+
+/**
+ * Clé de cache du menu de la source ACTIVE (ticket 8).
+ *
+ * Un seul endroit décide, pour que personne n'écrive `CACHE_KEYS.MENU` en dur
+ * et ne réintroduise le menu WordPress dans un site basculé.
+ */
+export const activeMenuCacheKey = () =>
+  API_CONFIG.usePublishedMenu ? CACHE_KEYS.MENU_PUBLISHED : CACHE_KEYS.MENU;
 
 // Constantes pour les durées de cache
 export const CACHE_DURATIONS = {
