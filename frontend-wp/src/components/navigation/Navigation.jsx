@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { MenuSkeleton } from "../UI/LoadingSkeleton";
 import { HEADER_CONFIG } from "../../config/components";
+import { API_CONFIG } from "../../utils/constants";
 import AxeLogo from "../logo/AxeLogo";
 import MobileMenu from "../navigation/MobileMenu";
 import { useNavigation } from "../navigation/useNavigation";
@@ -96,12 +97,17 @@ const Navigation = ({
                   <MenuSkeleton />
                 ) : (
                   <>
-                    <a
-                      href={navigation.soldes.url}
-                      className="nav-link text-xs xl:text-sm 2xl:text-base font-medium text-pink-400 hover:text-pink-300 whitespace-nowrap border border-white/70 rounded-full px-3 py-1.5 transition-colors hover:border-white"
-                    >
-                      {navigation.soldes.label}
-                    </a>
+                    {/* Pastille « Bon plan » : retirée sous `useAxeCatalog`,
+                        avec la route qu'elle vise (`App.jsx`). Notre catalogue
+                        n'a pas de promotion. */}
+                    {!API_CONFIG.useAxeCatalog && (
+                      <a
+                        href={navigation.soldes.url}
+                        className="nav-link text-xs xl:text-sm 2xl:text-base font-medium text-pink-400 hover:text-pink-300 whitespace-nowrap border border-white/70 rounded-full px-3 py-1.5 transition-colors hover:border-white"
+                      >
+                        {navigation.soldes.label}
+                      </a>
+                    )}
 
                     {organizedMenu.map((item) => (
                       <MegaMenu

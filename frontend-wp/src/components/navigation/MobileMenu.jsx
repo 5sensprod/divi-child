@@ -5,6 +5,7 @@ import { MobileMenuItem } from "./MenuItems";
 import AxeLogo from "../logo/AxeLogo";
 import { MenuSkeleton } from "../UI/LoadingSkeleton";
 import { HEADER_CONFIG } from "../../config/components";
+import { API_CONFIG } from "../../utils/constants";
 
 const MobileMenu = ({
   menuItems,
@@ -60,13 +61,16 @@ const MobileMenu = ({
             <MenuSkeleton />
           ) : (
             <div className="space-y-1">
-              <a
-                href={HEADER_CONFIG.navigation.soldes.url}
-                onClick={onClose}
-                className="block text-center font-medium text-pink-400 hover:text-pink-300 border border-white/70 hover:border-white rounded-full px-4 py-2.5 mb-2 transition-colors"
-              >
-                {HEADER_CONFIG.navigation.soldes.label}
-              </a>
+              {/* Voir `Navigation.jsx` : même retrait, même raison. */}
+              {!API_CONFIG.useAxeCatalog && (
+                <a
+                  href={HEADER_CONFIG.navigation.soldes.url}
+                  onClick={onClose}
+                  className="block text-center font-medium text-pink-400 hover:text-pink-300 border border-white/70 hover:border-white rounded-full px-4 py-2.5 mb-2 transition-colors"
+                >
+                  {HEADER_CONFIG.navigation.soldes.label}
+                </a>
+              )}
               {menuItems.map((item) => (
                 <MobileMenuItem
                   key={item.id}

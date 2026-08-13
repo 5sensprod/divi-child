@@ -43,7 +43,7 @@ async function callCatalog(params) {
     payload = JSON.parse(raw);
   } catch {
     throw new Error(
-      `Réponse inattendue du catalogue (${response.status}) : ${raw.slice(0, 120)}`
+      `Réponse inattendue du catalogue (${response.status}) : ${raw.slice(0, 120)}`,
     );
   }
 
@@ -60,11 +60,7 @@ async function callCatalog(params) {
  * Sans `slug` ni `id`, le serveur rend la catégorie la mieux fournie — ce que
  * veut une page d'accueil qui montre « une » catégorie.
  */
-export async function fetchCategoryWithProducts({
-  slug,
-  id,
-  limit = 8,
-} = {}) {
+export async function fetchCategoryWithProducts({ slug, id, limit = 8 } = {}) {
   return await callCatalog({ action: "category", slug, id, limit });
 }
 
@@ -103,4 +99,38 @@ export async function fetchProductBySlug(slug) {
 /** Les catégories qui portent au moins un produit en ligne. */
 export async function fetchOnlineCategories() {
   return await callCatalog({ action: "categories" });
+}
+
+/**
+ * Recherche plein texte, paginée.
+ *
+ * Porte sur `name`, `sku` et `slug` — PAS sur la description, qui est du HTML :
+ * chercher « strong » y trouverait la moitié du catalogue.
+ *
+ * L'ordre est alphabétique, sans pertinence pondérée. Le serveur n'a pas
+ * d'index FULLTEXT ; une pertinence bricolée à sa place serait un classement
+ * qui a l'air d'en être un, ce qui est pire que pas de classement du tout.
+ *
+ * Deux caractères au minimum : en deçà, le serveur rend une liste vide et
+ * `total: 0`. On s'arrête donc avant l'appel, qui n'apprendrait rien.
+ */
+export async function searchProducts(query, { page = 1, perPage = 12 } = {}) {
+  const q = (query || "").trim();
+  if (q.length < 2) {
+    return {
+      ok: true,
+      query: q,
+      products: [],
+      total: 0,
+      page: 1,
+      per_page: perPage,
+    };
+  }
+
+  return await callCatalog({
+    action: "search",
+    q,
+    page,
+    per_page: perPage,
+  });
 }

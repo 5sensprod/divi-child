@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Background from "../components/UI/Background";
 import Title from "../components/UI/Title";
+import { API_CONFIG } from "../utils/constants";
 
 const NotFoundPage = () => {
   // Scroll vers le haut au chargement de la page
@@ -57,34 +58,52 @@ const NotFoundPage = () => {
               </Link>
             </div>
 
-            {/* Suggestions */}
+            {/* ─── Suggestions ───────────────────────────────────────────
+                Les quatre slugs ci-dessous sont ceux de WordPress, écrits en
+                dur. Sous `useAxeCatalog`, AUCUN des quatre n'existe (vérifié
+                sur `catalog.php?action=category`) : une page 404 qui propose
+                quatre 404 de plus. On renvoie alors vers la boutique, qui liste
+                les rayons réels lus dans notre base — plutôt que de deviner
+                quatre slugs, ce qui mènerait au mieux à une autre catégorie. */}
             <div className="mt-12 pt-8 border-t border-gray-600">
               <p className="text-gray-300 mb-4">Vous cherchez peut-être :</p>
               <div className="flex flex-wrap gap-3 justify-center">
-                <Link
-                  to="/categorie-produit/guitares"
-                  className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
-                >
-                  Guitares
-                </Link>
-                <Link
-                  to="/categorie-produit/batteries"
-                  className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
-                >
-                  Batteries
-                </Link>
-                <Link
-                  to="/categorie-produit/pianos"
-                  className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
-                >
-                  Pianos
-                </Link>
-                <Link
-                  to="/categorie-produit/sono"
-                  className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
-                >
-                  Sono
-                </Link>
+                {API_CONFIG.useAxeCatalog && (
+                  <Link
+                    to="/shop"
+                    className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
+                  >
+                    Tous les rayons
+                  </Link>
+                )}
+                {!API_CONFIG.useAxeCatalog && (
+                  <>
+                    <Link
+                      to="/categorie-produit/guitares"
+                      className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
+                    >
+                      Guitares
+                    </Link>
+                    <Link
+                      to="/categorie-produit/batteries"
+                      className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
+                    >
+                      Batteries
+                    </Link>
+                    <Link
+                      to="/categorie-produit/pianos"
+                      className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
+                    >
+                      Pianos
+                    </Link>
+                    <Link
+                      to="/categorie-produit/sono"
+                      className="px-4 py-2 bg-gray-800/50 text-gray-200 rounded-full text-sm hover:bg-gray-700/50 transition-colors"
+                    >
+                      Sono
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

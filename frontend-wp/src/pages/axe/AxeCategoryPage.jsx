@@ -15,10 +15,13 @@
 //
 // Pas d'images : elles ne sont pas encore exportées (§7 du contrat d'export).
 //
-// Pas de filtres ni de tri, contrairement à la page WooCommerce : les siens
-// travaillent sur la liste complète, chargée d'un bloc. Ici la liste est
-// paginée côté serveur — les porter demanderait de les pousser en SQL, ce qui
-// est un ticket à part.
+// Pas de TRI, contrairement à la page WooCommerce : le sien travaille sur la
+// liste complète, chargée d'un bloc. Ici la liste est paginée côté serveur —
+// le porter demanderait de le pousser en SQL, ce qui est un ticket à part.
+//
+// Des FILTRES, en revanche, il y en a — mais uniquement sur la page affichée,
+// et la barre l'annonce elle-même. Voir `AxeProductFilter.jsx`, dont l'en-tête
+// explique pourquoi ce choix a été préféré au silence.
 
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
@@ -29,6 +32,10 @@ import { formatPrice } from "../../utils/format";
 import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
+import AxeProductFilter, {
+  DEFAULT_AXE_FILTERS,
+  applyAxeFilters,
+} from "../../components/Product/AxeProductFilter";
 
 const PER_PAGE = 24;
 
@@ -55,6 +62,13 @@ const AxeCategoryPage = () => {
     error: null,
     data: null,
   });
+  const [filters, setFilters] = useState(DEFAULT_AXE_FILTERS);
+
+  // Les filtres ne portent que sur la page affichée : les garder d'une page à
+  // l'autre laisserait croire qu'ils suivent la navigation.
+  useEffect(() => {
+    setFilters(DEFAULT_AXE_FILTERS);
+  }, [slug, page]);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,6 +138,7 @@ const AxeCategoryPage = () => {
     ...(category ? [{ label: category.name }] : []),
   ];
   const products = data?.products || [];
+  const visibleProducts = applyAxeFilters(products, filters);
   const total = data?.total || 0;
   const lastPage = Math.max(1, Math.ceil(total / PER_PAGE));
 
@@ -192,6 +207,15 @@ const AxeCategoryPage = () => {
             </div>
           )}
 
+          {!loading && products.length > 0 && (
+            <AxeProductFilter
+              products={products}
+              filters={filters}
+              onChange={setFilters}
+              resultCount={visibleProducts.length}
+            />
+          )}
+
           {loading ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
@@ -205,9 +229,13 @@ const AxeCategoryPage = () => {
             <p className="py-12 text-center text-gray-500">
               Aucun produit dans cette catégorie pour le moment.
             </p>
+          ) : visibleProducts.length === 0 ? (
+            <p className="py-12 text-center text-gray-500">
+              Aucun produit de cette page ne correspond à ces filtres.
+            </p>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {products.map((product) => (
+              {visibleProducts.map((product) => (
                 <AxeProductCard key={product.id} product={product} />
               ))}
             </div>

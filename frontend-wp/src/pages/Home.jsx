@@ -10,7 +10,7 @@ import Background from "../components/UI/Background";
 import HeroSlider from "../components/UI/HeroSlider";
 import BrandCarousel from "../components/UI/BrandCarousel";
 import PromoProductsSection from "../components/Product/PromoProductsSection";
-import AxeCatalogSection from "../components/section/AxeCatalogSection";
+import AxeCatalogSearchSection from "../components/section/AxeCatalogSearchSection";
 import { API_CONFIG } from "../utils/constants";
 
 const Home = () => {
@@ -44,18 +44,29 @@ const Home = () => {
           siteDescription={siteData?.site_description}
         />
       </section>
-      <BrandCarousel brands={brands} loading={loading.brands} />
-      {/* Section Statistiques */}
-      {/* Section Statistiques — pleine largeur */}
-      <AnimatedStats products={products} categories={categories} />
+      {/* ─── Marques et statistiques : masquées sous `useAxeCatalog` ────────
+          `BrandCarousel` ne vit que par les LOGOS des marques, qui ne sont pas
+          exportés (§7 du contrat) : un carrousel de marques sans logo n'est pas
+          un carrousel. Il reviendra avec la session images.
 
-      {/* ─── Catalogue Axe Musique ────────────────────────────────────────
-          Lue dans NOTRE base SQL, pas dans WooCommerce. Derrière un drapeau
-          par défaut à `false` : sans `VITE_USE_AXE_CATALOG=true`, ce build se
-          comporte exactement comme le précédent. */}
-      {API_CONFIG.useAxeCatalog && (
-        <AxeCatalogSection limit={8} title="Directement de notre catalogue" />
+          `AnimatedStats` compte les produits et les marques en interrogeant
+          WooCommerce directement (`AnimatedStats.jsx`, import dynamique) : sous
+          le drapeau, il annoncerait au visiteur le volume d'un catalogue qui
+          n'est plus celui que le site lui montre. */}
+      {!API_CONFIG.useAxeCatalog && (
+        <>
+          <BrandCarousel brands={brands} loading={loading.brands} />
+          <AnimatedStats products={products} categories={categories} />
+        </>
       )}
+
+      {/* `AxeCatalogSection` — la section « Directement de notre catalogue »,
+          qui montrait les produits d'une catégorie — a été RETIRÉE de l'accueil
+          le 13 août 2026. La section « Notre catalogue » plus bas fait la même
+          chose au repos, avec en plus la recherche : deux grilles de huit
+          produits se suivaient sans que le visiteur sache ce qui les
+          distinguait. Le composant existe toujours et reste utilisable
+          ailleurs. */}
       {/* Catégories populaires */}
       {/* <section
         id="boutique"
@@ -88,32 +99,42 @@ const Home = () => {
         </div>
       </section> */}
       {/* <PromoProductsSection limit={8} /> */}
-      {/* Section Produits avec recherche et filtres */}
-      <section
-        id="ProduitsVedettes"
-        className="py-10 bg-gradient-to-br from-gray-50 to-gray-100"
-      >
-        <div className="container-divi">
-          <div className="text-center mb-10">
-            <Title
-              tag="h2"
-              className="mb-4"
-              animationType="equalizer"
-              gradient="sunset"
-            >
-              Notre catalogue
-            </Title>
-          </div>
+      {/* ─── « Notre catalogue » ────────────────────────────────────────────
+          La section existe dans les DEUX cas, avec sa barre de recherche ; seule
+          la source change. Sous `useAxeCatalog`, la version WooCommerce est
+          écartée — elle lit `products` et `categories` du `WordPressContext` et
+          sa recherche interroge Woo, ce qui donnerait deux prix pour un même
+          produit sur la même page — et `AxeCatalogSearchSection` prend sa place,
+          à la même ancre `#ProduitsVedettes`. */}
+      {API_CONFIG.useAxeCatalog && <AxeCatalogSearchSection />}
 
-          <ProductFilter
-            ref={productFilterRef}
-            initialProducts={products.slice(0, 8)}
-            initialLoading={loading.products}
-            showTitle={false}
-            className="mb-12"
-          />
-        </div>
-      </section>
+      {!API_CONFIG.useAxeCatalog && (
+        <section
+          id="ProduitsVedettes"
+          className="py-10 bg-gradient-to-br from-gray-50 to-gray-100"
+        >
+          <div className="container-divi">
+            <div className="text-center mb-10">
+              <Title
+                tag="h2"
+                className="mb-4"
+                animationType="equalizer"
+                gradient="sunset"
+              >
+                Notre catalogue
+              </Title>
+            </div>
+
+            <ProductFilter
+              ref={productFilterRef}
+              initialProducts={products.slice(0, 8)}
+              initialLoading={loading.products}
+              showTitle={false}
+              className="mb-12"
+            />
+          </div>
+        </section>
+      )}
 
       {/* Section Contact / CTA */}
       <section

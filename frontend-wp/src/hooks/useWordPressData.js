@@ -123,12 +123,19 @@ export const useWordPressData = () => {
           }
         }
 
-        // Charger le reste en parallèle
-        const promises = [
-          getProducts({ per_page: 20 }),
-          getCategories(),
-          getBrands(),
-        ];
+        // ─── Les trois appels WooCommerce, coupés sous `useAxeCatalog` ─────
+        //
+        // Neutralisé plutôt que réécrit : ce hook n'a plus de consommateur sous
+        // le drapeau — `BrandCarousel`, `AnimatedStats` et `ProductFilter` sont
+        // masqués (`Home.jsx`), la recherche passe par `AxeSearch`. Les laisser
+        // partir, c'est trois requêtes WooCommerce par chargement de page, avec
+        // les clés du bundle, pour un résultat que plus personne n'affiche.
+        //
+        // Le menu et `siteData` restent : ils viennent de WordPress, pas de
+        // WooCommerce, et le site vitrine en a toujours besoin.
+        const promises = API_CONFIG.useAxeCatalog
+          ? [Promise.resolve([]), Promise.resolve([]), Promise.resolve([])]
+          : [getProducts({ per_page: 20 }), getCategories(), getBrands()];
 
         if (wordpressAvailable) {
           promises.push(wordpressService.loadSiteData());

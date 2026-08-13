@@ -16,8 +16,13 @@
 //   • pas de bouton favori — `WishlistButton` attend la forme WooCommerce
 //     (`images[]`, `regular_price`, identifiant numérique) ; lui passer notre
 //     objet écrirait des favoris de travers dans le stockage local ;
-//   • pas d'ajout au panier — le site est une vitrine, il ne vend pas ;
-//   • pas de produits liés — la règle qui les choisirait n'est pas décidée.
+//   • pas d'ajout au panier — le site est une vitrine, il ne vend pas.
+//
+// ─── Ce qui y est ENTRÉ depuis ────────────────────────────────────────────
+// Les produits liés, écartés ici tant que la règle n'était pas décidée. Elle
+// l'est : même catégorie, produit courant exclu, huit au maximum, ordre de
+// l'API — voir `AxeRelatedProducts.jsx`. Le commentaire qui disait le
+// contraire a été retiré plutôt que laissé à vieillir.
 //
 // La description est rendue en HTML brut, comme celle de WooCommerce. Elle
 // vient de notre propre base, alimentée par notre propre export ; le jour où
@@ -35,6 +40,7 @@ import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import StockBadge from "../../components/Product/StockBadge";
 import { ProductPageBodySkeleton } from "../../components/UI/LoadingSkeleton";
+import AxeRelatedProducts from "../../components/Product/AxeRelatedProducts";
 
 /**
  * Notre export ne porte pas `stock_status` — seulement un entier.
@@ -56,7 +62,11 @@ function stockProps(stock) {
 const AxeProductPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [state, setState] = useState({ loading: true, error: null, data: null });
+  const [state, setState] = useState({
+    loading: true,
+    error: null,
+    data: null,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -245,6 +255,14 @@ const AxeProductPage = () => {
               )}
             </div>
           </div>
+
+          {/* La catégorie retenue est la MÊME que celle du fil d'Ariane —
+              `categories[0]`. Deux « premières catégories » différentes sur la
+              même page seraient un mensonge discret. */}
+          <AxeRelatedProducts
+            categorySlug={categories[0]?.slug}
+            currentProductId={product.id}
+          />
         </div>
       </section>
     </div>
