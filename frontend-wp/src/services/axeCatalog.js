@@ -96,6 +96,18 @@ export async function fetchProductBySlug(slug) {
   return await callCatalog({ action: "product", slug });
 }
 
+/**
+ * Les décomptes du catalogue en ligne.
+ *
+ * Produits, marques et catégories, comptés côté serveur sur les seuls produits
+ * publiés. Additionner les `product_count` de `fetchOnlineCategories` donnerait
+ * un total faux dans les deux sens : un produit rattaché à deux catégories
+ * compterait double, un produit sans catégorie ne compterait pas.
+ */
+export async function fetchCatalogStats() {
+  return await callCatalog({ action: "stats" });
+}
+
 /** Les catégories qui portent au moins un produit en ligne. */
 export async function fetchOnlineCategories() {
   return await callCatalog({ action: "categories" });

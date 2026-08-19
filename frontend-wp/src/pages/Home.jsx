@@ -44,21 +44,19 @@ const Home = () => {
           siteDescription={siteData?.site_description}
         />
       </section>
-      {/* ─── Marques et statistiques : masquées sous `useAxeCatalog` ────────
+      {/* ─── Marques : toujours masquées sous `useAxeCatalog` ───────────────
           `BrandCarousel` ne vit que par les LOGOS des marques, qui ne sont pas
           exportés (§7 du contrat) : un carrousel de marques sans logo n'est pas
-          un carrousel. Il reviendra avec la session images.
-
-          `AnimatedStats` compte les produits et les marques en interrogeant
-          WooCommerce directement (`AnimatedStats.jsx`, import dynamique) : sous
-          le drapeau, il annoncerait au visiteur le volume d'un catalogue qui
-          n'est plus celui que le site lui montre. */}
+          un carrousel. Il reviendra avec la session images. */}
       {!API_CONFIG.useAxeCatalog && (
-        <>
-          <BrandCarousel brands={brands} loading={loading.brands} />
-          <AnimatedStats products={products} categories={categories} />
-        </>
+        <BrandCarousel brands={brands} loading={loading.brands} />
       )}
+
+      {/* `AnimatedStats` vit dans les DEUX cas depuis le 13 août 2026 : il
+          choisit lui-même sa source — `catalog.php?action=stats` sous le
+          drapeau, WooCommerce sinon. Il ne compte donc plus le volume d'un
+          catalogue que le site ne montre pas, ce qui l'avait fait masquer. */}
+      <AnimatedStats products={products} categories={categories} />
 
       {/* `AxeCatalogSection` — la section « Directement de notre catalogue »,
           qui montrait les produits d'une catégorie — a été RETIRÉE de l'accueil

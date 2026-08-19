@@ -12,7 +12,7 @@
 // qu'on ne veut pas.
 //
 // ─── Ce qui n'y est PAS, et pourquoi ──────────────────────────────────────
-//   • pas d'images ni de galerie — non exportées (§7 du contrat d'export) ;
+//   • pas d'images ni de galerie DU PRODUIT — non exportées ;
 //   • pas de bouton favori — `WishlistButton` attend la forme WooCommerce
 //     (`images[]`, `regular_price`, identifiant numérique) ; lui passer notre
 //     objet écrirait des favoris de travers dans le stockage local ;
@@ -23,6 +23,11 @@
 // l'est : même catégorie, produit courant exclu, huit au maximum, ordre de
 // l'API — voir `AxeRelatedProducts.jsx`. Le commentaire qui disait le
 // contraire a été retiré plutôt que laissé à vieillir.
+//
+// Le LOGO DE MARQUE, lui, est arrivé : ses octets sont en ligne depuis le
+// 19 août 2026 et `catalog.php` rend `brand.image`, une URL COMPLÈTE — voir
+// `BrandBadge` plus bas. Le champ est null pour la quasi-totalité des marques,
+// et c'est le cas NORMAL : trois marques sur 288 sont synchronisées à ce jour.
 //
 // La description est rendue en HTML brut, comme celle de WooCommerce. Elle
 // vient de notre propre base, alimentée par notre propre export ; le jour où
@@ -57,6 +62,49 @@ function stockProps(stock) {
     manageStock: true,
     stockQuantity: Number.isFinite(stock) ? stock : 0,
   };
+}
+
+/**
+ * La pastille de marque, avec son logo quand il existe.
+ *
+ * ─── LE REPLI EST LE CAS NORMAL, PAS LE CAS D'ERREUR ──────────────────────
+ * Trois marques sur 288 ont leurs images en ligne au 19 août 2026 : la très
+ * grande majorité des pages produit n'aura pas de logo, et l'absence doit
+ * donc être PROPRE et SILENCIEUSE. Sans logo, on rend exactement la pastille
+ * d'avant — même bordure, même fond, même texte : aucun trou réservé, aucune
+ * icône « image manquante », aucun décalage de mise en page.
+ *
+ * `brand.image` est consommée TELLE QUELLE. C'est une URL complète, composée
+ * côté serveur à partir de `media_base_url` : ce bundle est public et déjà en
+ * production, il ne doit porter aucun préfixe de médias qu'il faudrait
+ * reconstruire à chaque déménagement. Ne jamais la préfixer ici.
+ *
+ * Pas de `loading="lazy"` : le logo est au-dessus de la ligne de flottaison,
+ * il pèse 24 pixels de côté, et le différer ne ferait que le faire apparaître
+ * après le reste de la page.
+ *
+ * `broken` couvre le seul cas restant : l'URL est là mais les octets ne
+ * répondent pas (déploiement à moitié, fichier retiré du disque). On repasse
+ * alors au repli plutôt que de laisser l'icône d'image cassée du navigateur.
+ */
+function BrandBadge({ brand }) {
+  const [broken, setBroken] = useState(false);
+  const showLogo = Boolean(brand.image) && !broken;
+
+  return (
+    <span className="flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
+      {showLogo && (
+        <img
+          src={brand.image}
+          alt=""
+          aria-hidden="true"
+          onError={() => setBroken(true)}
+          className="h-6 w-6 shrink-0 object-contain"
+        />
+      )}
+      {brand.name}
+    </span>
+  );
 }
 
 const AxeProductPage = () => {
@@ -200,11 +248,9 @@ const AxeProductPage = () => {
                       Marque
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {/* Même pastille que la page WooCommerce, sans le logo :
-                          les images de marque ne sont pas exportées non plus. */}
-                      <span className="flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
-                        {product.brand.name}
-                      </span>
+                      {/* Même pastille que la page WooCommerce, logo compris
+                          quand la marque en a un en ligne. */}
+                      <BrandBadge brand={product.brand} />
                     </div>
                   </div>
                 )}
