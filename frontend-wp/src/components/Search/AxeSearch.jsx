@@ -27,10 +27,11 @@
 
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ImageOff, Search as SearchIcon, X } from "lucide-react";
+import { Search as SearchIcon, X } from "lucide-react";
 
 import { formatPrice } from "../../utils/format";
 import { MIN_QUERY, useAxeSearch } from "../../hooks/useAxeSearch";
+import AxeProductImage from "../Product/AxeProductImage";
 import Modal from "../UI/Modal";
 import Pagination from "../UI/Pagination";
 import { SearchListSkeleton } from "./SearchSkeletons";
@@ -189,8 +190,12 @@ const AxeSearchResult = ({ product, onNavigate }) => (
     onClick={onNavigate}
     className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
   >
-    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
-      <ImageOff size={20} className="text-gray-300" />
+    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100">
+      <AxeProductImage
+        src={product.image}
+        alt={product.title}
+        iconClassName="h-5 w-5"
+      />
     </div>
 
     <div className="min-w-0 flex-1">

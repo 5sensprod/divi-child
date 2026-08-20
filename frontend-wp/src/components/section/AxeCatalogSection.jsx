@@ -9,16 +9,20 @@
 //
 // ⚠️ SANS IMAGES, ET CE N'EST PAS UN OUBLI.
 // Les images du catalogue ne sont pas encore exportées vers le serveur (§7 du
-// contrat d'export) : elles vivent dans le stockage local de PocketApp, que ce
-// site ne peut pas atteindre. Afficher une URL locale donnerait une image
-// cassée par produit. On affiche donc une vignette de remplacement, qui dit la
-// vérité — la donnée est là, l'image ne l'est pas encore.
+// contrat d'export) : elles vivaient dans le stockage local de PocketApp, que
+// ce site ne peut pas atteindre.
+//
+// Ce n'est plus vrai depuis le 20 août 2026 : le miroir accepte les produits,
+// et `catalog.php` rend `product.image` en URL complète. Mais UN produit sur
+// 2412 publiés est en ligne — la vignette de remplacement reste donc ce qu'on
+// voit presque partout, et c'est normal. Voir `AxeProductImage`.
 
 import React, { useEffect, useState } from "react";
-import { ImageOff, PackageSearch } from "lucide-react";
+import { PackageSearch } from "lucide-react";
 
 import { fetchCategoryWithProducts } from "../../services/axeCatalog";
 import { formatPrice } from "../../utils/format";
+import AxeProductImage from "../Product/AxeProductImage";
 
 const AxeCatalogSection = ({
   slug,
@@ -127,7 +131,7 @@ const AxeCatalogSection = ({
               className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg"
             >
               <div className="flex aspect-square items-center justify-center bg-gray-50">
-                <ImageOff className="h-8 w-8 text-gray-300" />
+                <AxeProductImage src={product.image} alt={product.title} />
               </div>
 
               <div className="flex flex-1 flex-col gap-1 p-4">

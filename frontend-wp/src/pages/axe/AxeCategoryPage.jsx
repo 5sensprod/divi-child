@@ -25,13 +25,14 @@
 
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { fetchCategoryPage } from "../../services/axeCatalog";
 import { formatPrice } from "../../utils/format";
 import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
+import AxeProductImage from "../../components/Product/AxeProductImage";
 import AxeProductFilter, {
   DEFAULT_AXE_FILTERS,
   applyAxeFilters,
@@ -286,8 +287,9 @@ export const AxeProductCard = ({ product }) => (
     to={`/produit/${product.slug || product.id}`}
     className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-lg"
   >
+    {/* Le cadre existe avec ou sans image : rien ne bouge entre les deux. */}
     <div className="flex aspect-square items-center justify-center bg-gray-50">
-      <ImageOff className="h-8 w-8 text-gray-300" />
+      <AxeProductImage src={product.image} alt={product.title} />
     </div>
     <div className="flex flex-1 flex-col gap-1 p-4">
       <h3

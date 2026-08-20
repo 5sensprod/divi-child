@@ -12,17 +12,28 @@
 // qu'on ne veut pas.
 //
 // ─── Ce qui n'y est PAS, et pourquoi ──────────────────────────────────────
-//   • pas d'images ni de galerie DU PRODUIT — non exportées ;
-//   • pas de bouton favori — `WishlistButton` attend la forme WooCommerce
-//     (`images[]`, `regular_price`, identifiant numérique) ; lui passer notre
-//     objet écrirait des favoris de travers dans le stockage local ;
-//   • pas d'ajout au panier — le site est une vitrine, il ne vend pas.
+//   • pas de bouton favori (voir plus bas) ni d'ajout au panier ;
+//     `WishlistButton` attend la forme WooCommerce (`images[]`,
+//     `regular_price`, identifiant numérique) ; lui passer notre objet
+//     écrirait des favoris de travers dans le stockage local. Et le site est
+//     une vitrine : il ne vend pas.
 //
 // ─── Ce qui y est ENTRÉ depuis ────────────────────────────────────────────
 // Les produits liés, écartés ici tant que la règle n'était pas décidée. Elle
 // l'est : même catégorie, produit courant exclu, huit au maximum, ordre de
 // l'API — voir `AxeRelatedProducts.jsx`. Le commentaire qui disait le
 // contraire a été retiré plutôt que laissé à vieillir.
+//
+// ─── LES IMAGES DU PRODUIT SONT ARRIVÉES — 20 août 2026 ───────────────────
+// Le miroir accepte `products` depuis ce jour, et `catalog.php` rend
+// `product.image` (le rang 0) et `product.gallery` (les rangs 1..n, dans leur
+// ordre, sur CETTE action seulement). Deux URL absolues, consommées telles
+// quelles — voir `ProductGallery` plus bas.
+//
+// UN produit sur 2412 publiés est en ligne au moment où ceci s'écrit (mesuré
+// à l'inventaire du miroir) : ils partent un par un, à la main. Le bloc
+// « Image à venir » reste donc ce qu'on voit sur presque toutes les fiches, et
+// ce n'est pas une panne.
 //
 // Le LOGO DE MARQUE, lui, est arrivé : ses octets sont en ligne depuis le
 // 19 août 2026 et `catalog.php` rend `brand.image`, une URL COMPLÈTE — voir
@@ -104,6 +115,101 @@ function BrandBadge({ brand }) {
       )}
       {brand.name}
     </span>
+  );
+}
+
+/**
+ * L'image principale du produit et sa galerie.
+ *
+ * ─── L'ORDRE EST LE SENS ──────────────────────────────────────────────────
+ * `image` est le rang 0, `gallery` les rangs 1..n DANS LEUR ORDRE. On les
+ * recompose ici en une seule liste, principale en tête : c'est le serveur qui
+ * les sépare (la galerie ne voyage que sur la fiche), pas l'affichage qui les
+ * distingue. `gallery` peut être absent — sur les grilles il n'est pas
+ * fourni —, d'où le `|| []`.
+ *
+ * Les URL sont ABSOLUES et se consomment TELLES QUELLES. Aucun préfixe n'est
+ * ajouté ici, et aucun nom de fichier n'est recomposé : le nom distant est
+ * calculé à l'écriture, jamais deviné à la lecture.
+ *
+ * ─── LE REPLI EST LE CAS NORMAL ───────────────────────────────────────────
+ * Sans image, on rend exactement le bloc « Image à venir » qui occupait cette
+ * place avant que les images existent : même cadre, même hauteur, même ton.
+ * Un produit sur 2412 est en ligne — ce repli est la vue ordinaire du site, il
+ * ne doit pas ressembler à un incident.
+ *
+ * `broken` couvre l'URL présente dont les octets manquent : l'image sort de la
+ * liste, les vignettes se referment dessus, et si toutes tombent on retrouve
+ * le repli. Jamais l'icône cassée du navigateur.
+ */
+function ProductGallery({ product }) {
+  const [broken, setBroken] = useState(() => new Set());
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const all = [product.image, ...(product.gallery || [])].filter(Boolean);
+  const images = all.filter((url) => !broken.has(url));
+
+  // Changer de produit sans démonter le composant — les produits liés le font —
+  // laisserait sinon la vignette 3 sélectionnée sur une fiche qui n'en a qu'une.
+  useEffect(() => {
+    setActiveIndex(0);
+    setBroken(new Set());
+  }, [product.id]);
+
+  const active = images[Math.min(activeIndex, images.length - 1)];
+
+  if (images.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center rounded-lg bg-white shadow-lg">
+        <div className="text-center text-gray-300">
+          <ImageOff className="mx-auto h-14 w-14" />
+          <p className="mt-3 text-xs">Image à venir</p>
+        </div>
+      </div>
+    );
+  }
+
+  const markBroken = (url) =>
+    setBroken((previous) => new Set(previous).add(url));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex h-[400px] items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-lg">
+        <img
+          src={active}
+          alt={product.title}
+          onError={() => markBroken(active)}
+          className="max-h-full max-w-full object-contain"
+        />
+      </div>
+
+      {images.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {images.map((url, index) => (
+            <button
+              key={url}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              aria-label={`Image ${index + 1} sur ${images.length}`}
+              aria-current={url === active}
+              className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border-2 bg-white p-1 transition-colors ${
+                url === active
+                  ? "border-pink-400"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <img
+                src={url}
+                alt=""
+                aria-hidden="true"
+                onError={() => markBroken(url)}
+                className="max-h-full max-w-full object-contain"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -219,13 +325,15 @@ const AxeProductPage = () => {
       <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-6">
         <div className="container-divi">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
-            <div className="lg:sticky lg:top-6">
-              <div className="flex h-[400px] items-center justify-center rounded-lg bg-white shadow-lg">
-                <div className="text-center text-gray-300">
-                  <ImageOff className="mx-auto h-14 w-14" />
-                  <p className="mt-3 text-xs">Image à venir</p>
-                </div>
-              </div>
+            {/* Le décalage n'est PAS décoratif : la barre de navigation est
+                `fixed`, et elle fait 118 px en haut de page, 80 px une fois
+                réduite au défilement (mesuré). Un `top-6` collerait la galerie
+                à 24 px du haut du viewport, donc SOUS la barre. On reprend la
+                valeur déjà en place ailleurs dans le site — `ProductFilter.jsx`,
+                seul autre collant qui avait rencontré le problème — plutôt que
+                d'en inventer une deuxième. */}
+            <div className="lg:sticky lg:top-[108px]">
+              <ProductGallery product={product} />
             </div>
 
             <div className="space-y-6">
