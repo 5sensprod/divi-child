@@ -44,13 +44,17 @@ const Home = () => {
           siteDescription={siteData?.site_description}
         />
       </section>
-      {/* ─── Marques : toujours masquées sous `useAxeCatalog` ───────────────
-          `BrandCarousel` ne vit que par les LOGOS des marques, qui ne sont pas
-          exportés (§7 du contrat) : un carrousel de marques sans logo n'est pas
-          un carrousel. Il reviendra avec la session images. */}
-      {!API_CONFIG.useAxeCatalog && (
-        <BrandCarousel brands={brands} loading={loading.brands} />
-      )}
+      {/* ─── Marques ────────────────────────────────────────────────────────
+          `BrandCarousel` était masqué sous le drapeau faute de LOGOS exportés.
+          Le miroir d'images les publie depuis le 19 août 2026, et
+          `catalog.php?action=brands` les rend en URL complète : le composant
+          choisit donc sa source lui-même, comme `AnimatedStats`, et les props
+          ci-dessous ne servent plus qu'au chemin WooCommerce.
+
+          Il se masque toujours tout seul tant qu'aucune marque n'a de logo —
+          trois sur 288 au 20 août 2026 —, ce qui reste le comportement juste :
+          un carrousel d'images sans images n'est pas un carrousel. */}
+      <BrandCarousel brands={brands} loading={loading.brands} />
 
       {/* `AnimatedStats` vit dans les DEUX cas depuis le 13 août 2026 : il
           choisit lui-même sa source — `catalog.php?action=stats` sous le

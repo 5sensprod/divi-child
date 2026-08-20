@@ -108,6 +108,31 @@ export async function fetchCatalogStats() {
   return await callCatalog({ action: "stats" });
 }
 
+/**
+ * Les produits exportés le plus récemment.
+ *
+ * ATTENTION AU SENS : le serveur trie sur `exported_at`, qui date le dernier
+ * export CONTENANT le produit — et l'export est incrémental sur une empreinte
+ * qui couvre le stock et le prix. Une vente redate donc un produit. C'est
+ * « ce qui a bougé en dernier », pas « les nouveautés » : ne pas l'annoncer au
+ * visiteur comme une date de mise en vente.
+ */
+export async function fetchLatestProducts({ limit = 8 } = {}) {
+  return await callCatalog({ action: "latest", limit });
+}
+
+/**
+ * Les marques qui portent au moins un produit en ligne.
+ *
+ * `image` est l'URL COMPLÈTE du logo, composée par le serveur : on la pose
+ * telle quelle dans un `src`, on ne la préfixe jamais. Elle vaut `null` pour la
+ * quasi-totalité des marques — les logos partent un par un — et c'est le cas
+ * ordinaire, qu'un affichage doit savoir traverser sans trou visible.
+ */
+export async function fetchOnlineBrands() {
+  return await callCatalog({ action: "brands" });
+}
+
 /** Les catégories qui portent au moins un produit en ligne. */
 export async function fetchOnlineCategories() {
   return await callCatalog({ action: "categories" });

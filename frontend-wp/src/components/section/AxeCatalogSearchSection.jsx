@@ -13,45 +13,31 @@
 // recherche qui se comporteraient différemment sur un même site est exactement
 // ce qu'on évite ici.
 //
-// ─── AU REPOS : UN APERÇU, PAS DES « NOUVEAUTÉS » ─────────────────────────
-// Tant qu'on n'a rien tapé, la section montre huit produits sous le titre « Un
-// aperçu du catalogue ». Ce titre est exact, et c'est pour cela qu'il a été
-// choisi : **le catalogue ne sait pas dire quels produits sont les derniers.**
+// ─── AU REPOS : LES PRODUITS QUI ONT BOUGÉ EN DERNIER ─────────────────────
+// Tant qu'on n'a rien tapé, la section montre huit produits, par
+// `action=latest`. Elle montrait jusqu'au 20 août 2026 la catégorie la mieux
+// fournie — « Partitions », la même à chaque visite.
 //
-// Vérifié dans `catalog.php` : la mise en forme d'un produit ne rend aucune
-// date, et aucune action ne trie par date — seulement par nom ou par nombre de
-// produits. La seule colonne date du schéma est `exported_at`, réécrite à
-// chaque export (`products-sync.php`), donc sans rapport avec l'arrivée en
-// magasin. Trier par elle donnerait la queue du dernier lot envoyé, sous un
-// titre qui promettrait des nouveautés.
+// ─── CE QUE CE TRI DIT, ET CE QU'IL NE DIT PAS ────────────────────────────
+// Il porte sur `exported_at`, et **ce n'est PAS une date d'arrivée** : cette
+// donnée n'existe nulle part dans la chaîne, l'état des lieux est dans l'autre
+// dépôt (`I:\pockapp\frontend\modules\site\PocketSite-docs\13-dates-produits.md`).
+// `exported_at` date le dernier export CONTENANT le produit, et l'export est
+// incrémental sur une empreinte qui couvre le stock et le prix : une vente
+// redate un produit.
 //
-// Le jour où le serveur portera une vraie date de première parution, ce bloc
-// devient « Les derniers arrivés » et rien d'autre ne bouge. L'état des lieux
-// complet — ce que NeDB porte, ce que PocketBase peut porter, et les trois
-// chemins possibles — est dans l'autre dépôt, avec le reste de la migration :
-// `I:\pockapp\frontend\modules\site\PocketSite-docs\13-dates-produits.md`.
-//
-// ─── LA CATÉGORIE MONTRÉE EST LA MIEUX FOURNIE ────────────────────────────
-// La première de `action=categories`, qui trie par nombre de produits. Son slug
-// est lu dans la réponse, jamais deviné.
-//
-// Elle a d'abord été la DEUXIÈME, tant qu'`AxeCatalogSection` occupait le haut
-// de l'accueil avec la mieux fournie : deux grilles identiques se seraient
-// suivies. Cette section a été retirée le 13 août 2026, et l'aperçu est revenu
-// au premier choix — l'évitement n'avait plus d'objet.
-//
-// Pas d'images (§7 du contrat d'export) : la carte est celle de la page
-// catégorie, réutilisée telle quelle.
+// La liste est donc « ce qui a bougé en dernier » — des réassorts autant que
+// des nouveautés. Elle se renouvelle toute seule, ce qu'on lui demande, mais
+// le libellé ne doit rien promettre d'autre. Le jour où une vraie date de
+// première parution existe, seul l'`ORDER BY` du serveur change ; ni cet appel
+// ni cette mise en page ne bougent.
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search as SearchIcon, X } from "lucide-react";
 
 import { MIN_QUERY, useAxeSearch } from "../../hooks/useAxeSearch";
-import {
-  fetchCategoryWithProducts,
-  fetchOnlineCategories,
-} from "../../services/axeCatalog";
+import { fetchLatestProducts } from "../../services/axeCatalog";
 import { AxeProductCard } from "../../pages/axe/AxeCategoryPage";
 import Pagination from "../UI/Pagination";
 import Title from "../UI/Title";
@@ -60,46 +46,32 @@ const PER_PAGE = 12;
 const APERCU = 8;
 
 /**
- * Huit produits de la catégorie la mieux fournie.
+ * Les huit derniers produits exportés.
  *
- * Deux appels et non un : le premier sert à CHOISIR la catégorie sans en
- * inventer le slug, le second à la charger. Les deux réponses sont mises en
- * cache cinq minutes par le serveur (`Cache-Control`, `catalog.php`), donc le
- * coût réel est proche d'un seul aller-retour.
+ * UN appel, là où la version « catégorie la mieux fournie » en demandait deux :
+ * le serveur trie, il n'y a plus de catégorie à choisir avant de charger.
  *
  * Chargé UNE FOIS, au montage, et conservé. Le brancher sur « la recherche
  * est-elle au repos ? » paraissait plus économe et faisait l'inverse : entre
  * chaque frappe et le déclenchement de la recherche, l'état repassait au repos
- * et relançait les deux appels. Mesuré dans l'onglet réseau, pas déduit.
+ * et relançait l'appel. Mesuré dans l'onglet réseau, pas déduit.
  */
 function useApercu() {
-  const [state, setState] = useState({ products: [], category: null });
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchOnlineCategories()
+    fetchLatestProducts({ limit: APERCU })
       .then((data) => {
-        const categories = data.categories || [];
-        const choisie = categories[0];
-        if (!choisie?.slug) return null;
-        return fetchCategoryWithProducts({
-          slug: choisie.slug,
-          limit: APERCU,
-        });
-      })
-      .then((data) => {
-        if (cancelled || !data) return;
-        setState({
-          products: (data.products || []).slice(0, APERCU),
-          category: data.category || null,
-        });
+        if (cancelled) return;
+        setProducts((data.products || []).slice(0, APERCU));
       })
       .catch(() => {
         // Muet : l'aperçu est un agrément. Une bannière d'erreur au repos, sur
         // une page d'accueil qui s'est affichée correctement par ailleurs,
         // inquiéterait sans rien apprendre. La recherche, elle, dit ses erreurs.
-        if (!cancelled) setState({ products: [], category: null });
+        if (!cancelled) setProducts([]);
       });
 
     return () => {
@@ -107,7 +79,7 @@ function useApercu() {
     };
   }, []);
 
-  return state;
+  return products;
 }
 
 const AxeCatalogSearchSection = () => {
@@ -193,20 +165,17 @@ const AxeCatalogSearchSection = () => {
               </p>
             )}
 
-            {apercu.products.length > 0 && (
+            {apercu.length > 0 && (
               <>
+                {/* « Dernières mises à jour », et non « Nouveautés » : le tri
+                    porte sur la date d'export, qu'une vente rafraîchit. Le
+                    libellé dit ce que la donnée permet de dire. */}
                 <p className="mb-6 text-center text-sm text-gray-600">
-                  Un aperçu du catalogue
-                  {apercu.category?.name && (
-                    <span className="text-gray-500">
-                      {" "}
-                      — {apercu.category.name}
-                    </span>
-                  )}
+                  Dernières mises à jour du catalogue
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                  {apercu.products.map((product) => (
+                  {apercu.map((product) => (
                     <AxeProductCard key={product.id} product={product} />
                   ))}
                 </div>

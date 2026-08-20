@@ -1,15 +1,62 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { API_CONFIG } from "../../utils/constants";
 
 const BrandCarousel = ({ brands = [], loading = false }) => {
   const { getThemeColors, theme } = useTheme();
   const colors = getThemeColors(theme);
 
-  const brandsWithImage = brands
+  // Sous `useAxeCatalog`, les marques ne viennent plus des props — donc plus du
+  // `WordPressContext`, donc plus de WooCommerce : le composant va les chercher
+  // lui-même dans notre catalogue. L'import est dynamique pour la même raison
+  // que dans `AnimatedStats` : sous le drapeau, `woocommerce` n'est pas chargé.
+  const [axeBrands, setAxeBrands] = useState(null);
+
+  useEffect(() => {
+    if (!API_CONFIG.useAxeCatalog) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { fetchOnlineBrands } = await import("../../services/axeCatalog");
+        const payload = await fetchOnlineBrands();
+        if (cancelled) return;
+        // Mise à la forme que ce composant attendait déjà de WooCommerce, pour
+        // que tout ce qui suit ignore d'où viennent les marques. `image` est
+        // reprise TELLE QUELLE : c'est une URL complète, composée par le
+        // serveur, jamais à préfixer.
+        setAxeBrands(
+          (payload.brands || []).map((brand) => ({
+            id: brand.id,
+            name: brand.name,
+            image: brand.image,
+            imageAlt: brand.name,
+            count: brand.product_count,
+          })),
+        );
+      } catch (error) {
+        console.error("Erreur marques catalogue:", error);
+        // Liste vide, donc carrousel absent : le repli d'un carrousel de logos
+        // ne peut pas être des logos inventés.
+        if (!cancelled) setAxeBrands([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const source = API_CONFIG.useAxeCatalog ? (axeBrands ?? []) : brands;
+  // Le filtre est le point dur, et il ne bouge pas : au 20 août 2026, trois
+  // marques sur 288 ont leur logo en ligne. Une marque sans logo n'a rien à
+  // montrer ici — c'est un carrousel d'images, pas une liste de noms.
+  const brandsWithImage = source
     .filter((b) => b.image && b.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  if (loading || brandsWithImage.length === 0) return null;
+  const stillLoading = API_CONFIG.useAxeCatalog ? axeBrands === null : loading;
+  if (stillLoading || brandsWithImage.length === 0) return null;
 
   const doubled = [...brandsWithImage, ...brandsWithImage];
 
