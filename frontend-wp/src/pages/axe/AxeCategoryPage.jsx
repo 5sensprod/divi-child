@@ -33,6 +33,7 @@ import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import AxeProductImage from "../../components/Product/AxeProductImage";
+import WishlistButton from "../../components/UI/WishlistButton";
 import AxeProductFilter, {
   DEFAULT_AXE_FILTERS,
   applyAxeFilters,
@@ -282,41 +283,63 @@ const AxeCategoryPage = () => {
  * lui apprendre une seconde forme, alors qu'il est déjà consommé par plusieurs
  * écrans qui n'ont rien demandé.
  */
-export const AxeProductCard = ({ product }) => (
-  <Link
-    to={`/produit/${product.slug || product.id}`}
-    className="flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-lg"
-  >
-    {/* Le cadre existe avec ou sans image : rien ne bouge entre les deux. */}
-    <div className="flex aspect-square items-center justify-center bg-gray-50">
-      <AxeProductImage src={product.image} alt={product.title} />
-    </div>
-    <div className="flex flex-1 flex-col gap-1 p-4">
-      <h3
-        className="line-clamp-2 text-sm font-semibold leading-tight text-gray-800"
-        title={product.title}
-      >
-        {product.title}
-      </h3>
-      {product.brand && (
-        <span className="text-xs text-gray-500">{product.brand.name}</span>
-      )}
-      <div className="mt-auto flex items-center justify-between pt-3">
-        <span className="text-base font-bold text-gray-900">
-          {formatPrice(product.price_ttc)}
-        </span>
-        {product.stock > 0 ? (
-          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-            En stock
+export const AxeProductCard = ({ product }) => {
+  const url = `/produit/${product.slug || product.id}`;
+
+  return (
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm transition-all hover:shadow-md">
+      <Link to={url} className="block">
+        {/* Même hauteur d'image que la carte de référence : les grilles restent
+            alignées, qu'un produit ait déjà une image en ligne ou non. */}
+        <div className="flex h-52 items-center justify-center bg-white p-3">
+          <AxeProductImage src={product.image} alt={product.title} />
+        </div>
+      </Link>
+
+      <div className="flex flex-1 flex-col p-4">
+        <div className="mb-2 flex min-h-5 items-center gap-2">
+          {product.brand && (
+            <span className="rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
+              {product.brand.name}
+            </span>
+          )}
+        </div>
+
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <Link to={url} title={product.title} className="min-h-12 flex-1">
+            <h3 className="line-clamp-2 text-base font-semibold leading-6 text-gray-900 transition-colors hover:text-sky-600 sm:text-lg">
+              {product.title}
+            </h3>
+          </Link>
+          <WishlistButton
+            product={product}
+            iconSize={28}
+            className="flex-shrink-0 rounded-full p-1 text-gray-400 hover:bg-gray-100"
+          />
+        </div>
+
+        <div className="mt-auto flex items-center justify-between gap-2">
+          <span className="text-xl font-bold text-gray-900">
+            {formatPrice(product.price_ttc)}
           </span>
-        ) : (
-          <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800">
-            Réappro
+          <span
+            className={`text-xs font-medium ${
+              product.stock > 0 ? "text-emerald-600" : "text-orange-600"
+            }`}
+          >
+            {product.stock > 0 ? "En stock" : "Réappro"}
           </span>
-        )}
+        </div>
+
+        <Link
+          to={url}
+          className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-base font-medium text-white shadow-sm transition hover:from-fuchsia-500 hover:to-sky-400"
+        >
+          Voir le produit
+        </Link>
       </div>
-    </div>
-  </Link>
-);
+    </article>
+  );
+};
 
 export default AxeCategoryPage;

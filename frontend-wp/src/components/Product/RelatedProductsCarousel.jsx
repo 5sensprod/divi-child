@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getProductsByCategory } from "../../services/woocommerce";
 import { formatPrice } from "../../utils/format";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import WishlistButton from "../UI/WishlistButton";
 
 // ✅ IMAGE PAR DÉFAUT
 const FALLBACK_IMAGE =
@@ -244,9 +245,16 @@ const RelatedProductsCarousel = ({ currentProductId, categoryId }) => {
                     />
 
                     <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
-                        {product.name}
-                      </h3>
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <h3 className="line-clamp-2 text-sm font-semibold text-gray-900">
+                          {product.name}
+                        </h3>
+                        <WishlistButton
+                          product={product}
+                          iconSize={20}
+                          className="-mr-1 -mt-1 flex-shrink-0 rounded-full p-1.5 hover:bg-pink-50"
+                        />
+                      </div>
                       <div className="flex items-center justify-between">
                         {promo ? (
                           <div className="flex flex-col">

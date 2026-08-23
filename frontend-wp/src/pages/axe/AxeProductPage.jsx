@@ -12,11 +12,9 @@
 // qu'on ne veut pas.
 //
 // ─── Ce qui n'y est PAS, et pourquoi ──────────────────────────────────────
-//   • pas de bouton favori (voir plus bas) ni d'ajout au panier ;
-//     `WishlistButton` attend la forme WooCommerce (`images[]`,
-//     `regular_price`, identifiant numérique) ; lui passer notre objet
-//     écrirait des favoris de travers dans le stockage local. Et le site est
-//     une vitrine : il ne vend pas.
+//   • pas d'ajout au panier : le site est une vitrine et ne vend pas. Le
+//     bouton favori, lui, accepte désormais les deux formes de produit et est
+//     donc présent comme sur les cartes du catalogue.
 //
 // ─── Ce qui y est ENTRÉ depuis ────────────────────────────────────────────
 // Les produits liés, écartés ici tant que la règle n'était pas décidée. Elle
@@ -56,6 +54,7 @@ import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import StockBadge from "../../components/Product/StockBadge";
 import { ProductPageBodySkeleton } from "../../components/UI/LoadingSkeleton";
+import WishlistButton from "../../components/UI/WishlistButton";
 import AxeRelatedProducts from "../../components/Product/AxeRelatedProducts";
 
 /**
@@ -339,9 +338,16 @@ const AxeProductPage = () => {
             <div className="space-y-6">
               <div className="rounded-lg bg-white p-6 shadow-md">
                 <div className="mb-4 border-b border-gray-200 pb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {product.title}
-                  </h2>
+                  <div className="flex items-start justify-between gap-4">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {product.title}
+                    </h2>
+                    <WishlistButton
+                      product={product}
+                      iconSize={30}
+                      className="flex-shrink-0 rounded-full p-2 hover:bg-gray-100"
+                    />
+                  </div>
                 </div>
 
                 <div className="mb-4 flex items-baseline gap-3">

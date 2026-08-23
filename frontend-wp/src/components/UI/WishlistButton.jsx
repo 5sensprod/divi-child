@@ -1,13 +1,15 @@
 import { Heart } from "lucide-react";
 import { useWishlist } from "../../context/WishlistContext";
 
-const WishlistButton = ({ product, className = "" }) => {
+const WishlistButton = ({ product, className = "", iconSize = 24 }) => {
   const { isInWishlist, toggleWishlist } = useWishlist();
-  const isFavorite = isInWishlist(product.id);
+  const isFavorite = product?.id != null && isInWishlist(product.id);
 
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (product?.id == null) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
 
@@ -28,11 +30,15 @@ const WishlistButton = ({ product, className = "" }) => {
     <button
       type="button"
       onClick={handleClick}
+      disabled={product?.id == null}
       className={`group relative flex items-center justify-center transition-all ${className}`}
       aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+      aria-pressed={isFavorite}
+      title={isFavorite ? "Je n’aime plus" : "J’aime"}
     >
       <Heart
-        className={`w-6 h-6 transition-all ${
+        size={iconSize}
+        className={`transition-all ${
           isFavorite
             ? "fill-pink-500 text-pink-500 scale-110"
             : "text-gray-400 group-hover:text-pink-500 group-hover:scale-110"

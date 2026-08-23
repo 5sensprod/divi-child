@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart, X } from "lucide-react";
 import { useWishlist } from "../../context/WishlistContext";
 import { formatPrice } from "../../utils/format";
+import AxeProductImage from "../Product/AxeProductImage";
 
 const HeaderWishlistButton = () => {
   const navigate = useNavigate();
@@ -30,6 +31,11 @@ const HeaderWishlistButton = () => {
     navigate(`/produit/${slug}`);
     setIsOpen(false);
   };
+
+  const productName = (product) => product.name || product.title || "Produit";
+  const productImage = (product) => product.images?.[0]?.src || product.image;
+  const productPrice = (product) =>
+    product.price_ttc ?? product.price ?? product.regular_price;
 
   // ✅ Vérifie si un produit est en solde + calcule le pourcentage
   const getPromoInfo = (product) => {
@@ -89,17 +95,19 @@ const HeaderWishlistButton = () => {
                     className="flex gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
                   >
                     <div className="relative flex-shrink-0">
-                      <img
-                        src={
-                          product.images?.[0]?.src || "/placeholder-product.jpg"
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleProductClick(product.slug || product.id)
                         }
-                        alt={product.name}
-                        className="w-16 h-16 object-cover rounded cursor-pointer"
-                        onClick={() => handleProductClick(product.slug)}
-                        onError={(e) =>
-                          (e.target.src = "/placeholder-product.jpg")
-                        }
-                      />
+                        className="flex h-16 w-16 items-center justify-center overflow-hidden rounded bg-gray-50"
+                        aria-label={`Voir ${productName(product)}`}
+                      >
+                        <AxeProductImage
+                          src={productImage(product)}
+                          alt={productName(product)}
+                        />
+                      </button>
                       {hasPromo && (
                         <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
                           -{discountPercent}%
@@ -109,9 +117,11 @@ const HeaderWishlistButton = () => {
                     <div className="flex-1 min-w-0">
                       <h4
                         className="text-sm font-medium text-gray-900 line-clamp-2 cursor-pointer hover:text-pink-600 transition-colors"
-                        onClick={() => handleProductClick(product.slug)}
+                        onClick={() =>
+                          handleProductClick(product.slug || product.id)
+                        }
                       >
-                        {product.name}
+                        {productName(product)}
                       </h4>
 
                       <div className="flex items-center gap-2 flex-wrap mt-1">
@@ -129,9 +139,7 @@ const HeaderWishlistButton = () => {
                           </>
                         ) : (
                           <span className="text-sm font-bold text-pink-600">
-                            {formatPrice(
-                              product.price || product.regular_price,
-                            )}
+                            {formatPrice(productPrice(product))}
                           </span>
                         )}
                       </div>
