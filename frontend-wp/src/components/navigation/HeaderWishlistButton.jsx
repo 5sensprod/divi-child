@@ -57,7 +57,7 @@ const HeaderWishlistButton = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-white/90 hover:text-pink-300 transition-colors"
+        className="relative p-1.5 text-white/90 hover:text-pink-300 transition-colors xl:p-2"
         aria-label="Favoris"
       >
         <Heart className="w-5 h-5" />

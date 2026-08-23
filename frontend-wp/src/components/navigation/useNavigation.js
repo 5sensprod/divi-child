@@ -2,17 +2,35 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { API_CONFIG } from "../../utils/constants";
-
-// `useWordPress()` n'est plus consommé ici : le menu ne lit plus les catégories
-// WooCommerce (voir le bloc sur l'injection retirée, plus bas). Cet import
-// supprimé est la preuve concrète que la navigation ne dépend plus du
-// catalogue — elle ne rend plus que ce que `menu.json` contient.
+import { fetchOnlineCategories } from "../../services/axeCatalog";
 
 export const useNavigation = (menuItems = []) => {
   const location = useLocation();
+  const [catalogCategories, setCatalogCategories] = useState([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState(new Set());
+
+  // Le menu publié garde la main sur ses entrées et leur ordre. Notre
+  // catalogue complète automatiquement chaque catégorie avec les enfants qui
+  // n'ont pas été ajoutés manuellement dans PocketApp.
+  useEffect(() => {
+    if (!API_CONFIG.useAxeCatalog) return;
+
+    let cancelled = false;
+
+    fetchOnlineCategories()
+      .then((data) => {
+        if (!cancelled) setCatalogCategories(data.categories || []);
+      })
+      .catch((error) => {
+        console.warn("Sous-catégories du menu indisponibles :", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Gestion du scroll avec optimisation
   useEffect(() => {
@@ -98,39 +116,63 @@ export const useNavigation = (menuItems = []) => {
       return url;
     };
 
-    // ─── L'injection des sous-catégories WooCommerce a été RETIRÉE ─────────
-    //
-    // `buildCategoryChildren` greffait ici, au moment du rendu, les
-    // sous-catégories lues chez WooCommerce sous toute entrée pointant vers une
-    // catégorie racine. Le menu affiché n'était donc pas celui qui avait été
-    // publié : sept entrées apparaissaient sous « Guitares classiques » sans
-    // figurer dans `menu.json`.
-    //
-    // Retiré le 10 août 2026, volontairement, pour que le fichier publié par
-    // PocketApp soit la SEULE source du menu. Trois conséquences voulues :
-    // plus aucun appel à WordPress ni WooCommerce pour afficher le menu, les
-    // sous-entrées redeviennent maîtrisables depuis PocketApp (ordre,
-    // visibilité, libellé), et le menu affiché redevient exactement le menu
-    // publié — donc diagnosticable en lisant le seul fichier.
-    //
-    // Le prix, assumé : le menu ne suit plus le catalogue tout seul. Une
-    // nouvelle sous-catégorie n'apparaîtra que si on l'ajoute dans PocketApp et
-    // qu'on republie. C'est l'échange demandé — l'indépendance contre
-    // l'automatisme.
-    //
-    // Contexte complet : bloc « Le menu affiché n'est pas seulement le menu
-    // publié » de docs/DECISIONS.md, dans le dépôt PocketApp.
+    const categorySlugFromUrl = (url) => {
+      const match = `${url || ""}`.match(
+        /\/categorie-produit\/(?:.*\/)?([^/]+)\/?$/,
+      );
+      return match?.[1] || null;
+    };
+
+    const buildCatalogChildren = (parentCategory, parentMenuId) =>
+      catalogCategories
+        .filter(
+          (category) => String(category.parent) === String(parentCategory.id),
+        )
+        .map((category) => {
+          const reactUrl = `/categorie-produit/${category.slug}`;
+          const id = `axe-cat-${category.id}`;
+
+          return {
+            id,
+            title: category.name,
+            url: reactUrl,
+            parent: parentMenuId,
+            isReactRoute: true,
+            reactUrl,
+            isActive: location.pathname === reactUrl,
+            children: buildCatalogChildren(category, id),
+          };
+        });
 
     // Construction récursive de l'arbre
-    const buildMenuTree = (parentId = "0") => {
+    const buildMenuTree = (parentId = "0", parentShowsCatalogChildren = true) => {
       return menuItems
         .filter((item) => item.parent === parentId.toString())
         .map((item) => {
           const isReact = isReactRoute(item.url);
           const reactUrl = isReact ? convertToReactUrl(item.url) : item.url;
+          const showsCatalogChildren =
+            parentShowsCatalogChildren && item.showCatalogChildren !== false;
 
-          // Les enfants viennent du menu publié, et de nulle part ailleurs.
-          const children = buildMenuTree(item.id);
+          let children = buildMenuTree(item.id, showsCatalogChildren);
+          const categorySlug = categorySlugFromUrl(item.url);
+          const category = categorySlug
+            ? catalogCategories.find(
+                (candidate) => candidate.slug === categorySlug,
+              )
+            : null;
+
+          if (category && showsCatalogChildren) {
+            const publishedSlugs = new Set(
+              children.map((child) => categorySlugFromUrl(child.url)),
+            );
+            const missingChildren = buildCatalogChildren(category, item.id)
+              .filter(
+                (child) => !publishedSlugs.has(categorySlugFromUrl(child.url)),
+              );
+
+            children = [...children, ...missingChildren];
+          }
 
           return {
             ...item,
@@ -143,7 +185,7 @@ export const useNavigation = (menuItems = []) => {
     };
 
     return buildMenuTree();
-  }, [menuItems, location.pathname]);
+  }, [menuItems, catalogCategories, location.pathname]);
 
   // Actions
   const toggleDropdown = (itemId) => {

@@ -29,6 +29,7 @@ const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
 
   const childrenWithKids = item.children.filter((c) => c.children?.length > 0);
   const childrenWithoutKids = item.children.filter((c) => !c.children?.length);
+  const hasNestedChildren = childrenWithKids.length > 0;
   const displayedChild = activeChild ?? childrenWithKids[0] ?? null;
 
   const isCategory = (i) =>
@@ -64,12 +65,22 @@ const MegaMenu = ({ item, isOpen, onToggle, onClose }) => {
 
       {isOpen && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-2xl z-dropdown animate-slide-down flex overflow-hidden"
+          className="absolute left-0 top-full mt-2 bg-gray-900/95 backdrop-blur-md border border-white/10 rounded-lg shadow-2xl z-dropdown animate-slide-down flex overflow-hidden"
           onMouseLeave={handleMenuMouseLeave}
-          style={{ minWidth: "600px", maxWidth: "900px" }}
+          style={
+            hasNestedChildren
+              ? { minWidth: "600px", maxWidth: "900px" }
+              : { width: "288px", maxWidth: "calc(100vw - 32px)" }
+          }
         >
           {/* COLONNE GAUCHE */}
-          <div className="w-56 flex-shrink-0 border-r border-white/10 py-3">
+          <div
+            className={`flex-shrink-0 py-3 ${
+              hasNestedChildren
+                ? "w-56 border-r border-white/10"
+                : "w-full"
+            }`}
+          >
             {isCategory(item) && (
               <div className="px-3 pb-2 mb-2 border-b border-white/10">
                 <MenuLink

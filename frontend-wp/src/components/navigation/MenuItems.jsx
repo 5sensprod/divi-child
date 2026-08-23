@@ -234,7 +234,7 @@ export const MobileMenuItem = ({
 export const ActionButton = ({ icon: Icon, label, onClick }) => (
   <button
     onClick={onClick}
-    className="p-2 text-white/90 hover:text-pink-300 transition-colors"
+    className="p-1.5 text-white/90 hover:text-pink-300 transition-colors xl:p-2"
     aria-label={label}
   >
     <Icon size={20} />

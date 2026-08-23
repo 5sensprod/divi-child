@@ -28,12 +28,14 @@ import { ImageOff } from "lucide-react";
 
 const AxeProductImage = ({ src, alt = "", iconClassName = "h-8 w-8" }) => {
   const [broken, setBroken] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   // Le composant est réutilisé d'un produit à l'autre — une grille qui pagine,
   // un carrousel qui change de vignette. Sans ce reset, une image cassée
   // condamnerait la SUIVANTE, qui n'a rien fait de mal.
   useEffect(() => {
     setBroken(false);
+    setLoaded(false);
   }, [src]);
 
   if (!src || broken) {
@@ -41,12 +43,24 @@ const AxeProductImage = ({ src, alt = "", iconClassName = "h-8 w-8" }) => {
   }
 
   return (
-    <img
-      src={src}
-      alt={alt}
-      onError={() => setBroken(true)}
-      className="h-full w-full object-contain"
-    />
+    <div className="relative h-full w-full">
+      {!loaded && (
+        <div
+          className="absolute inset-0 animate-pulse rounded-xl bg-gray-100"
+          aria-hidden="true"
+        />
+      )}
+
+      <img
+        src={src}
+        alt={alt}
+        onLoad={() => setLoaded(true)}
+        onError={() => setBroken(true)}
+        className={`h-full w-full object-contain transition-opacity duration-300 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </div>
   );
 };
 

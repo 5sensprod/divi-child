@@ -263,7 +263,7 @@ html {
 
   /* Navigation styles */
   .nav-link {
-    @apply px-3 py-2 text-base font-light uppercase tracking-wide transition-colors duration-300;
+    @apply whitespace-nowrap px-2 py-2 text-sm font-light uppercase tracking-wide transition-colors duration-300 xl:px-2.5 xl:text-[15px] 2xl:px-3 2xl:text-base;
     font-family: "Coda", sans-serif;
   }
 

@@ -244,7 +244,8 @@ const AxeProductPage = () => {
   if (loading) {
     return (
       <div>
-        <section className="relative overflow-hidden page-content pt-36 pb-4 md:pt-48 md:pb-4">
+        <div className="h-[64px] lg:h-[76px]" aria-hidden="true" />
+        <section className="sticky top-[80px] z-[990] overflow-hidden py-3 lg:top-[94px]">
           <Background variant="ocean-night" opacity={1} animated={true} />
           <div className="container-divi relative z-20">
             <div className="flex justify-end">
@@ -312,7 +313,8 @@ const AxeProductPage = () => {
   return (
     <div>
       {/* Bandeau — fil d'Ariane uniquement, comme la page WooCommerce */}
-      <section className="relative overflow-hidden page-content pt-36 pb-4 md:pt-48 md:pb-4">
+      <div className="h-[64px] lg:h-[76px]" aria-hidden="true" />
+      <section className="sticky top-[80px] z-[990] overflow-hidden py-3 lg:top-[94px]">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-20">
           <div className="flex justify-end">
@@ -324,20 +326,15 @@ const AxeProductPage = () => {
       <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-6">
         <div className="container-divi">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
-            {/* Le décalage n'est PAS décoratif : la barre de navigation est
-                `fixed`, et elle fait 118 px en haut de page, 80 px une fois
-                réduite au défilement (mesuré). Un `top-6` collerait la galerie
-                à 24 px du haut du viewport, donc SOUS la barre. On reprend la
-                valeur déjà en place ailleurs dans le site — `ProductFilter.jsx`,
-                seul autre collant qui avait rencontré le problème — plutôt que
-                d'en inventer une deuxième. */}
-            <div className="lg:sticky lg:top-[108px]">
+            {/* La galerie reste sous les deux barres fixes : le header produit
+                (94 px), le fil d'Ariane, puis un léger espace de respiration. */}
+            <div className="lg:sticky lg:top-[154px]">
               <ProductGallery product={product} />
             </div>
 
             <div className="space-y-6">
-              <div className="rounded-lg bg-white p-6 shadow-md">
-                <div className="mb-4 border-b border-gray-200 pb-4">
+              <div className="rounded-lg bg-white p-5 shadow-md">
+                <div className="mb-4 border-b border-gray-200 pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <h2 className="text-2xl font-bold text-gray-900">
                       {product.title}
@@ -356,49 +353,35 @@ const AxeProductPage = () => {
                   </span>
                 </div>
 
-                {product.brand && (
-                  <div className="mb-4">
-                    <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                      Marque
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {/* Même pastille que la page WooCommerce, logo compris
-                          quand la marque en a un en ligne. */}
-                      <BrandBadge brand={product.brand} />
-                    </div>
-                  </div>
-                )}
+                <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
+                  {product.brand && (
+                    /* Même pastille que la page WooCommerce, logo compris
+                       quand la marque en a un en ligne. */
+                    <BrandBadge brand={product.brand} />
+                  )}
 
-                {categories.length > 0 && (
-                  <div className="mb-4">
-                    <h3 className="mb-2 text-sm font-semibold text-gray-700">
-                      Catégories
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {categories.map((category) => (
-                        <Link
-                          key={category.id}
-                          to={`/categorie-produit/${category.slug}`}
-                          className="rounded-full border border-gray-200 bg-gray-100 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
-                        >
-                          {category.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/categorie-produit/${category.slug}`}
+                      className="rounded-full border border-gray-200 bg-gray-100 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
 
-                <StockBadge
-                  {...stockProps(product.stock)}
-                  size="md"
-                  showQuantity={true}
-                />
+                  <StockBadge
+                    {...stockProps(product.stock)}
+                    size="md"
+                    showQuantity={true}
+                  />
 
-                {product.sku && (
-                  <p className="mt-4 text-sm text-gray-500">
-                    Référence : <span className="font-mono">{product.sku}</span>
-                  </p>
-                )}
+                  {product.sku && (
+                    <span className="text-sm text-gray-500">
+                      Réf. <span className="font-mono">{product.sku}</span>
+                    </span>
+                  )}
+                </div>
               </div>
 
               {product.description && (
@@ -413,6 +396,7 @@ const AxeProductPage = () => {
                   />
                 </div>
               )}
+
             </div>
           </div>
 

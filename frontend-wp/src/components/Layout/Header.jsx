@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useWordPress } from "../../context/WordPressContext";
 import { HEADER_CONFIG } from "../../config/components";
 import Navigation from "../navigation/Navigation";
@@ -7,9 +8,11 @@ import AxeSearch from "../Search/AxeSearch";
 import { API_CONFIG } from "../../utils/constants";
 
 const Header = () => {
+  const location = useLocation();
   const { siteData, menus, loading } = useWordPress();
   const [currentTheme, setCurrentTheme] = useState("neon");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const isProductPage = /^\/produit\/[^/]+\/?$/.test(location.pathname);
 
   // Gestionnaire pour ouvrir la modal de recherche
   const handleSearchOpen = () => {
@@ -38,10 +41,18 @@ const Header = () => {
   // Le menu est une donnée publiée, pas du code : on ne peut pas l'y retirer
   // depuis ici. On le filtre donc au passage, sinon l'entrée resterait cliquable
   // et mènerait à la page 404, la route ayant été retirée (`App.jsx`).
-  const menuItems = (menus?.items || []).filter(
-    (item) =>
-      !API_CONFIG.useAxeCatalog || !`${item.url}`.includes("/bons-plans"),
-  );
+  const menuItems = (menus?.items || [])
+    .filter(
+      (item) =>
+        !API_CONFIG.useAxeCatalog || !`${item.url}`.includes("/bons-plans"),
+    )
+    .map((item) => ({
+      ...item,
+      // `true` par défaut dans `useNavigation`. Accessoires conserve
+      // volontairement les seuls enfants définis dans le menu publié.
+      showCatalogChildren:
+        item.title?.trim().toLocaleLowerCase("fr") !== "accessoires",
+    }));
 
   return (
     <header className="relative">
@@ -51,6 +62,7 @@ const Header = () => {
           siteTitle={siteData?.site_title || HEADER_CONFIG.defaults.siteTitle}
           loading={loading.menus}
           currentTheme={currentTheme}
+          fixedCompact={isProductPage}
           onSearchClick={handleSearchOpen}
           {...HEADER_CONFIG.navigation}
         />

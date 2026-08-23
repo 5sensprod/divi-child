@@ -123,7 +123,8 @@ const ProductPage = () => {
   if (loading) {
     return (
       <div>
-        <section className="relative overflow-hidden page-content pt-36 pb-4 md:pt-48 md:pb-4">
+        <div className="h-[64px] lg:h-[76px]" aria-hidden="true" />
+        <section className="sticky top-[80px] z-[990] overflow-hidden py-3 lg:top-[94px]">
           <Background variant="ocean-night" opacity={1} animated={true} />
           <div className="container-divi relative z-20">
             <div className="flex justify-end">
@@ -175,7 +176,8 @@ const ProductPage = () => {
   return (
     <div>
       {/* Hero Section - Fil d'ariane uniquement */}
-      <section className="relative overflow-hidden page-content pt-36 pb-4 md:pt-48 md:pb-4">
+      <div className="h-[64px] lg:h-[76px]" aria-hidden="true" />
+      <section className="sticky top-[80px] z-[990] overflow-hidden py-3 lg:top-[94px]">
         <Background variant="ocean-night" opacity={1} animated={true} />
         <div className="container-divi relative z-20">
           <div className="flex justify-end">
@@ -192,11 +194,9 @@ const ProductPage = () => {
           >
             {/* GALERIE D'IMAGES */}
             {hasImages && (
-              // `top-[108px]`, pas `top-6` : la barre de navigation est
-              // `fixed` et fait 80 px une fois réduite au défilement (118 px
-              // en haut de page). À 24 px, la galerie se collait SOUS elle.
-              // Même valeur que `ProductFilter.jsx` et que la page Axe.
-              <div className="lg:sticky lg:top-[108px] flex flex-col gap-4">
+              // Le header produit et le fil d'Ariane restent fixes : la galerie
+              // se bloque juste sous les deux, sans passer derrière.
+              <div className="lg:sticky lg:top-[154px] flex flex-col gap-4">
                 {/* Image principale cliquable */}
                 <div
                   className="relative bg-white rounded-lg shadow-lg overflow-hidden cursor-zoom-in group"

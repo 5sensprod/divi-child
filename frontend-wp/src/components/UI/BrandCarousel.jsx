@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import { API_CONFIG } from "../../utils/constants";
+import { BrandCarouselSkeleton } from "./LoadingSkeleton";
 
 const BrandCarousel = ({ brands = [], loading = false }) => {
   const { getThemeColors, theme } = useTheme();
@@ -56,7 +57,8 @@ const BrandCarousel = ({ brands = [], loading = false }) => {
     .sort((a, b) => b.count - a.count);
 
   const stillLoading = API_CONFIG.useAxeCatalog ? axeBrands === null : loading;
-  if (stillLoading || brandsWithImage.length === 0) return null;
+  if (stillLoading) return <BrandCarouselSkeleton />;
+  if (brandsWithImage.length === 0) return null;
 
   const doubled = [...brandsWithImage, ...brandsWithImage];
 

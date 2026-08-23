@@ -79,6 +79,25 @@ export const CategorySkeleton = () => (
   </div>
 );
 
+// Occupe la même hauteur que le carrousel pendant le chargement initial.
+export const BrandCarouselSkeleton = () => (
+  <section
+    aria-hidden="true"
+    className="overflow-hidden border-y border-gray-100 bg-gray-50 py-4 animate-pulse"
+  >
+    <div className="mx-auto mb-3 h-5 w-52 rounded-full bg-gray-200" />
+    <div className="flex h-14 items-center justify-center gap-14 overflow-hidden px-8">
+      {[72, 96, 80, 112, 88, 104].map((width, index) => (
+        <div
+          key={index}
+          className="h-10 shrink-0 rounded-lg bg-gray-200"
+          style={{ width }}
+        />
+      ))}
+    </div>
+  </section>
+);
+
 // Skeleton pour le footer
 export const FooterSkeleton = () => (
   <div className="bg-gray-900 text-white py-12">

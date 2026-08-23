@@ -27,6 +27,7 @@ const Navigation = ({
   cartCount = HEADER_CONFIG.navigation.cartCount,
   scrollThreshold = HEADER_CONFIG.navigation.scrollThreshold,
   currentTheme = "neon",
+  fixedCompact = false,
   onSearchClick,
 }) => {
   const {
@@ -41,17 +42,22 @@ const Navigation = ({
   } = useNavigation(menuItems);
 
   const { navigation } = HEADER_CONFIG;
+  const compactHeader = fixedCompact || isScrolled;
 
   // Classes dynamiques optimisées
-  const navClasses = `fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${
-    isScrolled
+  const navStateClasses = fixedCompact
+    ? `${navigation.styles.background.scrolled} py-0`
+    : compactHeader
       ? `${navigation.styles.background.scrolled} ${navigation.styles.padding.scrolled}`
-      : `${navigation.styles.background.normal} ${navigation.styles.padding.normal}`
-  }`;
+      : `${navigation.styles.background.normal} ${navigation.styles.padding.normal}`;
 
-  const heightClasses = isScrolled
-    ? navigation.styles.height.scrolled
-    : navigation.styles.height.normal;
+  const navClasses = `fixed top-0 left-0 right-0 w-full z-navigation transition-all duration-300 ${navStateClasses}`;
+
+  const heightClasses = fixedCompact
+    ? "h-[80px] lg:h-[94px]"
+    : compactHeader
+      ? navigation.styles.height.scrolled
+      : navigation.styles.height.normal;
 
   return (
     <>
@@ -65,14 +71,15 @@ const Navigation = ({
               <MobileMenuButton
                 isOpen={mobileMenuOpen}
                 onClick={toggleMobileMenu}
-                isScrolled={isScrolled}
+                isScrolled={compactHeader}
               />
 
               <Link to="/" className="hidden lg:flex flex-shrink-0">
                 <AxeLogo
                   theme={currentTheme}
-                  isScrolled={isScrolled}
+                  isScrolled={compactHeader}
                   isMobile={false}
+                  width={fixedCompact ? 118 : undefined}
                   className="transition-all duration-500 hover:scale-105"
                   style={{ transformOrigin: "left center" }}
                 />
@@ -85,14 +92,15 @@ const Navigation = ({
               <Link to="/" className="lg:hidden block" aria-label="Accueil">
                 <AxeLogo
                   theme={currentTheme}
-                  isScrolled={isScrolled}
+                  isScrolled={compactHeader}
                   isMobile={true}
+                  width={fixedCompact ? 90 : undefined}
                   className="transition-all duration-500 hover:scale-105"
                 />
               </Link>
 
               {/* Menu desktop */}
-              <div className="hidden lg:flex items-center justify-center flex-1 space-x-1 xl:space-x-3 2xl:space-x-4 nav-dropdown-container">
+              <div className="hidden lg:flex items-center justify-center flex-1 space-x-0 xl:space-x-1 2xl:space-x-4 nav-dropdown-container">
                 {loading ? (
                   <MenuSkeleton />
                 ) : (
@@ -124,7 +132,7 @@ const Navigation = ({
             </div>
 
             {/* DROITE - Actions */}
-            <div className="flex items-center justify-end space-x-3">
+            <div className="flex items-center justify-end space-x-1 xl:space-x-3">
               {showSearch && (
                 <ActionButton
                   icon={Search}
