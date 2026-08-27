@@ -32,6 +32,7 @@ import { Search as SearchIcon, X } from "lucide-react";
 import { formatPrice } from "../../utils/format";
 import { MIN_QUERY, useAxeSearch } from "../../hooks/useAxeSearch";
 import AxeProductImage from "../Product/AxeProductImage";
+import AxeSaleBadge from "../Product/AxeSaleBadge";
 import Modal from "../UI/Modal";
 import Pagination from "../UI/Pagination";
 import { SearchListSkeleton } from "./SearchSkeletons";
@@ -212,6 +213,8 @@ const AxeSearchResult = ({ product, onNavigate }) => (
         {product.sku && (
           <p className="font-mono text-xs text-gray-400">{product.sku}</p>
         )}
+        {/* `search` porte `sale_state` comme les autres actions. */}
+        <AxeSaleBadge state={product.sale_state} />
       </div>
       {product.stock > 0 && (
         <p className="mt-1 text-xs text-green-600">✓ En stock</p>

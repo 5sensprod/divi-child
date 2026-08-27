@@ -33,6 +33,7 @@ import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import AxeProductImage from "../../components/Product/AxeProductImage";
+import AxeSaleBadge from "../../components/Product/AxeSaleBadge";
 import WishlistButton from "../../components/UI/WishlistButton";
 import AxeProductFilter, {
   DEFAULT_AXE_FILTERS,
@@ -297,12 +298,15 @@ export const AxeProductCard = ({ product }) => {
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
-        <div className="mb-2 flex min-h-5 items-center gap-2">
+        <div className="mb-2 flex min-h-5 flex-wrap items-center gap-2">
           {product.brand && (
             <span className="rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
               {product.brand.name}
             </span>
           )}
+          {/* Pastille seule : `sale_state` ne porte aucun prix, donc pas de
+              prix barré ni de pourcentage — voir AxeSaleBadge. */}
+          <AxeSaleBadge state={product.sale_state} />
         </div>
 
         <div className="mb-4 flex items-start justify-between gap-3">

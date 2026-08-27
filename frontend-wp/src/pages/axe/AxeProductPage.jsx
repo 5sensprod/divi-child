@@ -53,6 +53,7 @@ import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import StockBadge from "../../components/Product/StockBadge";
+import AxeSaleBadge from "../../components/Product/AxeSaleBadge";
 import { ProductPageBodySkeleton } from "../../components/UI/LoadingSkeleton";
 import WishlistButton from "../../components/UI/WishlistButton";
 import AxeRelatedProducts from "../../components/Product/AxeRelatedProducts";
@@ -347,10 +348,14 @@ const AxeProductPage = () => {
                   </div>
                 </div>
 
-                <div className="mb-4 flex items-baseline gap-3">
+                <div className="mb-4 flex flex-wrap items-baseline gap-3">
                   <span className="text-3xl font-bold text-gray-900">
                     {formatPrice(product.price_ttc)}
                   </span>
+                  {/* `price_ttc` EST le prix de vente, soldé ou non. La
+                      pastille se pose à côté, elle ne barre rien : aucun prix
+                      d'avant ne voyage dans la réponse. */}
+                  <AxeSaleBadge state={product.sale_state} size="md" />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">

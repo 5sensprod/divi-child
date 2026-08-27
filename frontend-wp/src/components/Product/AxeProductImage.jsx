@@ -23,12 +23,13 @@
 // (déploiement à moitié, rang effacé du disque). On repasse à l'icône plutôt
 // que de laisser l'image cassée du navigateur. Même geste que `BrandBadge`.
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ImageOff } from "lucide-react";
 
 const AxeProductImage = ({ src, alt = "", iconClassName = "h-8 w-8" }) => {
   const [broken, setBroken] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const imageRef = useRef(null);
 
   // Le composant est réutilisé d'un produit à l'autre — une grille qui pagine,
   // un carrousel qui change de vignette. Sans ce reset, une image cassée
@@ -36,6 +37,13 @@ const AxeProductImage = ({ src, alt = "", iconClassName = "h-8 w-8" }) => {
   useEffect(() => {
     setBroken(false);
     setLoaded(false);
+
+    // Une image déjà présente dans le cache HTTP peut terminer avant que
+    // l'effet de reset ne s'exécute. `complete` évite alors de la laisser
+    // définitivement transparente après son `onLoad`.
+    if (imageRef.current?.complete && imageRef.current.naturalWidth > 0) {
+      setLoaded(true);
+    }
   }, [src]);
 
   if (!src || broken) {
@@ -52,6 +60,7 @@ const AxeProductImage = ({ src, alt = "", iconClassName = "h-8 w-8" }) => {
       )}
 
       <img
+        ref={imageRef}
         src={src}
         alt={alt}
         onLoad={() => setLoaded(true)}

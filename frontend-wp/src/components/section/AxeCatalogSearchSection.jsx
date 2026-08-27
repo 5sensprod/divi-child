@@ -33,7 +33,6 @@
 // ni cette mise en page ne bougent.
 
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { Search as SearchIcon, X } from "lucide-react";
 
 import { MIN_QUERY, useAxeSearch } from "../../hooks/useAxeSearch";
@@ -41,6 +40,7 @@ import { fetchLatestProducts } from "../../services/axeCatalog";
 import { AxeProductCard } from "../../pages/axe/AxeCategoryPage";
 import Pagination from "../UI/Pagination";
 import Title from "../UI/Title";
+import CatalogBrowsePrompt from "./CatalogBrowsePrompt";
 
 const PER_PAGE = 12;
 const APERCU = 8;
@@ -115,6 +115,8 @@ const AxeCatalogSearchSection = () => {
           </Title>
         </div>
 
+        <CatalogBrowsePrompt className="mb-8" />
+
         <div className="mx-auto mb-8 max-w-2xl">
           <div className="flex items-center rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-colors hover:border-blue-300 focus-within:border-blue-400">
             <SearchIcon className="ml-4 text-gray-400" size={20} />
@@ -180,13 +182,6 @@ const AxeCatalogSearchSection = () => {
                   ))}
                 </div>
 
-                <p className="mt-6 text-center text-sm text-gray-500">
-                  Cherchez un produit ci-dessus, ou{" "}
-                  <Link to="/shop" className="text-blue-600 hover:underline">
-                    parcourez les rayons
-                  </Link>
-                  .
-                </p>
               </>
             )}
           </>
@@ -227,6 +222,8 @@ const AxeCatalogSearchSection = () => {
             )}
           </>
         )}
+
+        <CatalogBrowsePrompt className="mt-10 border-t border-gray-200 pt-8" />
       </div>
     </section>
   );

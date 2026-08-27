@@ -11,6 +11,8 @@ import HeroSlider from "../components/UI/HeroSlider";
 import BrandCarousel from "../components/UI/BrandCarousel";
 import PromoProductsSection from "../components/Product/PromoProductsSection";
 import AxeCatalogSearchSection from "../components/section/AxeCatalogSearchSection";
+import CatalogBrowsePrompt from "../components/section/CatalogBrowsePrompt";
+import FeaturedCategoriesSection from "../components/section/FeaturedCategoriesSection";
 import { API_CONFIG } from "../utils/constants";
 
 const Home = () => {
@@ -61,6 +63,10 @@ const Home = () => {
           drapeau, WooCommerce sinon. Il ne compte donc plus le volume d'un
           catalogue que le site ne montre pas, ce qui l'avait fait masquer. */}
       <AnimatedStats products={products} categories={categories} />
+
+      {/* Sélection éditoriale de PocketApp : seules les catégories marquées
+          « Mise en avant » apparaissent, avec leur photo miroir si elle existe. */}
+      {API_CONFIG.useAxeCatalog && <FeaturedCategoriesSection />}
 
       {/* `AxeCatalogSection` — la section « Directement de notre catalogue »,
           qui montrait les produits d'une catégorie — a été RETIRÉE de l'accueil
@@ -127,6 +133,8 @@ const Home = () => {
               </Title>
             </div>
 
+            <CatalogBrowsePrompt className="mb-8" />
+
             <ProductFilter
               ref={productFilterRef}
               initialProducts={products.slice(0, 8)}
@@ -134,6 +142,8 @@ const Home = () => {
               showTitle={false}
               className="mb-12"
             />
+
+            <CatalogBrowsePrompt className="border-t border-gray-200 pt-8" />
           </div>
         </section>
       )}

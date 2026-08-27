@@ -139,6 +139,17 @@ export async function fetchOnlineCategories() {
 }
 
 /**
+ * Les catégories explicitement choisies dans PocketApp pour l'accueil.
+ *
+ * Ce point de lecture garde aussi les rayons parents : ils peuvent n'avoir
+ * aucun produit directement rattaché, alors que leur page agrège toute leur
+ * descendance.
+ */
+export async function fetchFeaturedCategories() {
+  return await callCatalog({ action: "featured-categories" });
+}
+
+/**
  * Recherche plein texte, paginée.
  *
  * Porte sur `name`, `sku` et `slug` — PAS sur la description, qui est du HTML :

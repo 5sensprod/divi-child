@@ -23,6 +23,7 @@ import { PackageSearch } from "lucide-react";
 import { fetchCategoryWithProducts } from "../../services/axeCatalog";
 import { formatPrice } from "../../utils/format";
 import AxeProductImage from "../Product/AxeProductImage";
+import AxeSaleBadge from "../Product/AxeSaleBadge";
 
 const AxeCatalogSection = ({
   slug,
@@ -147,6 +148,11 @@ const AxeCatalogSection = ({
                     {product.brand.name}
                   </span>
                 )}
+
+                {/* `sale_state` vaut "" pour la quasi-totalité du catalogue :
+                    la pastille ne rend alors rien, et la carte ne réserve
+                    aucune place — la grille reste alignée. */}
+                <AxeSaleBadge state={product.sale_state} className="self-start" />
 
                 <div className="mt-auto flex items-center justify-between pt-3">
                   <span className="text-base font-bold text-gray-900">

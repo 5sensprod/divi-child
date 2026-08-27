@@ -97,7 +97,7 @@ export const HEADER_CONFIG = {
         "transition-all duration-300 hover:scale-95 shadow-lg hover:shadow-xl",
       shadow: "none",
       text: "Boutique",
-      href: "/#ProduitsVedettes",
+      href: "/shop",
     },
 
     slides: [
@@ -112,7 +112,7 @@ export const HEADER_CONFIG = {
         title: "ACHETEZ, RÉPAREZ, RÉGLEZ VOTRE MATÉRIEL",
         description:
           "Vente d'instruments neufs et d'occasion, réparations expertes et réglages de précision. Notre atelier redonne vie à votre matériel avec le savoir-faire de vrais passionnés.",
-        image: "/assets/images/bassiste_.png",
+        image: "/assets/images/bassiste__1_.webp",
         theme: "neon",
       },
       {
