@@ -9,11 +9,6 @@ export const HEADER_CONFIG = {
     cartCount: 5,
     scrollThreshold: 100,
 
-    soldes: {
-      label: "Bon plan",
-      url: "/bons-plans",
-    },
-
     // Logos responsive
     logo: {
       desktop: { normal: 180, scrolled: 130 }, // au lieu de 220 / 140

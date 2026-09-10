@@ -63,9 +63,9 @@ import AxeRelatedProducts from "../../components/Product/AxeRelatedProducts";
  *
  * On le traduit ici plutôt que d'ajouter un champ au contrat : le statut est
  * *calculable* à partir du stock, et le modèle cible a tranché que ce qui est
- * calculable ne se stocke pas. `manageStock` à `true` avec une quantité nulle
- * donne « En cours de réappro » plutôt que « Rupture de stock », ce qui est le
- * comportement de la page WooCommerce (`StockBadge.jsx:18`).
+ * calculable ne se stocke pas. Un stock nul ou négatif donne « Réappro » :
+ * cette vitrine ne vend pas, et `StockBadge` n'y affiche plus jamais
+ * « Rupture de stock ».
  */
 function stockProps(stock) {
   return {
@@ -395,7 +395,7 @@ const AxeProductPage = () => {
                     Description
                   </h2>
                   <div
-                    className="prose prose-sm max-w-none text-gray-700"
+                    className="axe-rte max-w-none text-gray-700"
                     // Voir l'avertissement en tête de fichier.
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />

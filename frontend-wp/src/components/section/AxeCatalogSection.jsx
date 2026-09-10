@@ -163,9 +163,9 @@ const AxeCatalogSection = ({
                       En stock
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <span className="flex items-center gap-1 text-xs font-medium text-orange-600">
                       <PackageSearch className="h-3 w-3" />
-                      Sur commande
+                      Réappro
                     </span>
                   )}
                 </div>

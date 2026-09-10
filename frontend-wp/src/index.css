@@ -1284,3 +1284,82 @@ a:focus-visible {
 .page-content {
   @apply pt-[150px] lg:pt-[200px];
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE TEXTE RICHE DU CATALOGUE — descriptions produits et catégories
+   ═══════════════════════════════════════════════════════════════════════════
+   Ces descriptions arrivent en HTML depuis notre propre base (catalog.php) et
+   sont injectées telles quelles. Elles portaient `prose prose-sm`, mais
+   `@tailwindcss/typography` N'EST PAS INSTALLÉ (`plugins: []` dans
+   tailwind.config.js) : ces deux classes ne généraient aucune règle. Le
+   preflight de Tailwind, lui, s'applique bien — il ramène les `h2` à la taille
+   du texte, retire les puces des `ul` et laisse les `table` sans bordure. Le
+   HTML arrivait donc intact et s'affichait en bloc gris uniforme.
+
+   On écrit les règles ici plutôt que d'ajouter le plugin : le mutualisé
+   n'exécute rien, le build est celui qui existe, et ces styles reprennent
+   ceux déjà validés côté PocketApp (`components/ui/html-content.tsx`), pour
+   que l'aperçu au comptoir et la page publique disent la même chose.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.axe-rte {
+  /* Un tableau large ne doit pas élargir la page sur mobile. */
+  @apply overflow-x-auto text-[15px] leading-relaxed;
+}
+
+.axe-rte p {
+  @apply my-3;
+}
+
+.axe-rte h1 {
+  @apply mb-3 mt-6 text-2xl font-bold text-gray-900;
+}
+
+.axe-rte h2 {
+  @apply mb-2 mt-6 text-xl font-semibold text-gray-900;
+}
+
+.axe-rte h3 {
+  @apply mb-2 mt-4 text-lg font-semibold text-gray-900;
+}
+
+.axe-rte ul {
+  @apply my-3 list-disc pl-6;
+}
+
+.axe-rte ol {
+  @apply my-3 list-decimal pl-6;
+}
+
+.axe-rte li {
+  @apply my-1;
+}
+
+.axe-rte a {
+  @apply text-blue-600 underline;
+}
+
+.axe-rte strong,
+.axe-rte b {
+  @apply font-semibold text-gray-900;
+}
+
+.axe-rte blockquote {
+  @apply my-3 border-l-2 border-gray-300 pl-3 italic;
+}
+
+.axe-rte table {
+  @apply my-4 w-full border-collapse text-left;
+}
+
+.axe-rte th,
+.axe-rte td {
+  @apply border border-gray-200 px-3 py-2 align-top;
+}
+
+.axe-rte th {
+  @apply bg-gray-50 font-semibold text-gray-900;
+}
+
+.axe-rte img {
+  @apply my-3 h-auto max-w-full rounded;
+}

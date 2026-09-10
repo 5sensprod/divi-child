@@ -1,5 +1,4 @@
 // Utilitaires pour la gestion du cache
-import { API_CONFIG } from "./constants";
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures
 const SEARCH_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes pour la recherche
 
@@ -120,33 +119,23 @@ export const cacheUtils = {
 };
 
 export const CACHE_KEYS = {
-  MENU: "axemusique_menu",
-  // Menu publié par PocketApp — clé DISTINCTE de MENU, et c'est le mécanisme
-  // d'invalidation à la bascule (ticket 8) : changer de source change de clé,
-  // donc le cache de l'autre source n'est jamais resservi. Revenir en arrière
-  // retrouve le sien. Aucune purge à écrire.
+  // Menu publié par PocketApp — seule source du menu (`services/menu.js`).
   MENU_PUBLISHED: "axemusique_menu_published",
-  CATEGORIES: "axemusique_categories",
-  SITE_DATA: "axemusique_site_data",
-  PRODUCTS: "axemusique_products",
   // Nouveaux keys pour la recherche
   SEARCH_PREFIX: "axemusique_search_", // Préfixe pour les recherches
   RECENT_SEARCHES: "axemusique_recent_searches", // Historique des recherches
   POPULAR_PRODUCTS: "axemusique_popular_products", // Produits populaires pour suggestions
 };
 
-/**
- * Clé de cache du menu de la source ACTIVE (ticket 8).
- *
- * Un seul endroit décide, pour que personne n'écrive `CACHE_KEYS.MENU` en dur
- * et ne réintroduise le menu WordPress dans un site basculé.
- */
-export const activeMenuCacheKey = () =>
-  API_CONFIG.usePublishedMenu ? CACHE_KEYS.MENU_PUBLISHED : CACHE_KEYS.MENU;
-
 // Constantes pour les durées de cache
 export const CACHE_DURATIONS = {
   DEFAULT: CACHE_DURATION,
+  // Menu publié par PocketApp : 5 minutes, et non 24 h. Le fichier pèse
+  // quelques Ko et est déjà demandé en `no-store` (published-menu.js) ; avec
+  // 24 h, une publication restait invisible une journée pour tout visiteur
+  // déjà venu — constaté le 10 septembre 2026. Vérifié À LA LECTURE
+  // (`getWithTTL`) : une copie écrite sous l'ancienne règle expire d'elle-même.
+  MENU_PUBLISHED: 5 * 60 * 1000,
   SEARCH: SEARCH_CACHE_DURATION,
   POPULAR_PRODUCTS: 60 * 60 * 1000, // 1 heure
   RECENT_SEARCHES: 7 * 24 * 60 * 60 * 1000, // 7 jours

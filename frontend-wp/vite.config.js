@@ -8,18 +8,12 @@ export default defineConfig({
     host: true,
     port: 5174,
     proxy: {
-      "/wp-json": {
-        target: "https://axemusique.shop",
-        changeOrigin: true,
-        secure: true,
-      },
-      // Menu publié par PocketApp (ticket 8).
+      // Menu publié par PocketApp (`/data/menu.json`).
       //
-      // NÉCESSAIRE EN DÉVELOPPEMENT SEULEMENT, et pas par confort : le fichier
-      // est servi par Apache SANS en-tête `Access-Control-Allow-Origin`, là où
-      // `/wp-json` en renvoie un. Sans ce proxy, le navigateur bloque la requête
-      // depuis localhost — l'ancienne source se charge, la nouvelle non, et le
-      // symptôme ressemble à un bogue du code de bascule.
+      // NÉCESSAIRE EN DÉVELOPPEMENT SEULEMENT : le fichier est servi par Apache
+      // SANS en-tête `Access-Control-Allow-Origin`. Sans ce proxy, le navigateur
+      // bloque la requête depuis localhost et le site affiche le menu de
+      // secours.
       //
       // En production, le site et le fichier sont sur la MÊME ORIGINE : aucune
       // vérification CORS n'a lieu et ce proxy n'existe pas. C'est pourquoi on

@@ -13,12 +13,15 @@ const StockBadge = ({
   let badge;
 
   if (manageStock) {
-    // stock_quantity === 0 → en cours de réappro, sinon rupture franche
-    const isReappro =
-      stockStatus === "outofstock" &&
-      stockQuantity !== null &&
-      stockQuantity === 0;
-
+    // ─── PAS DE « RUPTURE » SUR CETTE VITRINE ──────────────────────────────
+    // Le site ne vend pas : un stock à zéro n'y ferme aucune commande, il dit
+    // seulement que l'article n'est pas en rayon à l'instant. « Rupture de
+    // stock » décourage une visite au magasin que « Réappro » invite. Le
+    // libellé est aussi celui des cartes de grille (`AxeProductCard`), pour
+    // qu'une même fiche ne change pas de mot selon l'écran d'où on la regarde.
+    //
+    // ⚠️ La condition portait `stockQuantity === 0`, et un stock NÉGATIF —
+    // ordinaire en caisse — retombait donc sur « Rupture de stock ».
     const standardBadges = {
       instock: {
         bgColor: "bg-green-100",
@@ -26,24 +29,17 @@ const StockBadge = ({
         dotColor: "bg-green-500",
         label: "En stock",
       },
-      outofstock: isReappro
-        ? {
-            bgColor: "bg-orange-100",
-            textColor: "text-orange-800",
-            dotColor: "bg-orange-500",
-            label: "En cours de réappro",
-          }
-        : {
-            bgColor: "bg-red-100",
-            textColor: "text-red-800",
-            dotColor: "bg-red-500",
-            label: "Rupture de stock",
-          },
+      outofstock: {
+        bgColor: "bg-orange-100",
+        textColor: "text-orange-800",
+        dotColor: "bg-orange-500",
+        label: "Réappro",
+      },
       onbackorder: {
         bgColor: "bg-orange-100",
         textColor: "text-orange-800",
         dotColor: "bg-orange-500",
-        label: "En cours de réappro",
+        label: "Réappro",
       },
     };
     badge = standardBadges[stockStatus] || standardBadges.outofstock;

@@ -1,7 +1,7 @@
 // src/components/UI/AnimatedStats.jsx
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "../../context/ThemeContext";
-import { API_CONFIG } from "../../utils/constants";
+import { fetchCatalogStats } from "../../services/axeCatalog";
 
 const useIntersectionObserver = (threshold = 0.1) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -93,13 +93,12 @@ const AnimatedNumber = ({
   );
 };
 
-const AnimatedStats = ({ products = [], categories = [] }) => {
+const AnimatedStats = () => {
   const [ref, isVisible] = useIntersectionObserver(0.1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [totalBrands, setTotalBrands] = useState(0);
-  // Sous `useAxeCatalog`, un échec fait disparaître le bandeau plutôt que
-  // d'afficher un chiffre de repli : un nombre inventé est pire qu'un bandeau
-  // absent.
+  // Un échec fait disparaître le bandeau plutôt que d'afficher un chiffre de
+  // repli : un nombre inventé est pire qu'un bandeau absent.
   const [failed, setFailed] = useState(false);
 
   const { getThemeColors, getThemeBackground, theme } = useTheme();
@@ -114,38 +113,13 @@ const AnimatedStats = ({ products = [], categories = [] }) => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      // Deux sources, jamais les deux à la fois. Les imports sont dynamiques :
-      // sous le drapeau, `woocommerce` n'est donc pas seulement inutilisé, il
-      // n'est pas chargé — c'est ce qui fait disparaître les appels `wp-json`
-      // de la page d'accueil.
-      if (API_CONFIG.useAxeCatalog) {
-        try {
-          const { fetchCatalogStats } = await import(
-            "../../services/axeCatalog"
-          );
-          const stats = await fetchCatalogStats();
-          setTotalProducts(stats.products);
-          setTotalBrands(stats.brands);
-        } catch (error) {
-          console.error("Erreur stats catalogue:", error);
-          setFailed(true);
-        }
-        return;
-      }
-
       try {
-        const { getTotalProductsCount, getBrands } =
-          await import("../../services/woocommerce");
-        const [total, brands] = await Promise.all([
-          getTotalProductsCount(),
-          getBrands(),
-        ]);
-        setTotalProducts(total);
-        setTotalBrands(brands.length);
+        const stats = await fetchCatalogStats();
+        setTotalProducts(stats.products);
+        setTotalBrands(stats.brands);
       } catch (error) {
-        console.error("Erreur stats:", error);
-        setTotalProducts(products.length || 1000);
-        setTotalBrands(50);
+        console.error("Erreur stats catalogue:", error);
+        setFailed(true);
       }
     };
     fetchStats();

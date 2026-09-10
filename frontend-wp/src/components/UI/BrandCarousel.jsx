@@ -1,31 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
-import { API_CONFIG } from "../../utils/constants";
+import { fetchOnlineBrands } from "../../services/axeCatalog";
 import { BrandCarouselSkeleton } from "./LoadingSkeleton";
 
-const BrandCarousel = ({ brands = [], loading = false }) => {
+const BrandCarousel = () => {
   const { getThemeColors, theme } = useTheme();
   const colors = getThemeColors(theme);
 
-  // Sous `useAxeCatalog`, les marques ne viennent plus des props — donc plus du
-  // `WordPressContext`, donc plus de WooCommerce : le composant va les chercher
-  // lui-même dans notre catalogue. L'import est dynamique pour la même raison
-  // que dans `AnimatedStats` : sous le drapeau, `woocommerce` n'est pas chargé.
+  // Les marques viennent de notre catalogue (`catalog.php?action=brands`).
+  // `null` tant qu'elles ne sont pas lues.
   const [axeBrands, setAxeBrands] = useState(null);
 
   useEffect(() => {
-    if (!API_CONFIG.useAxeCatalog) return;
-
     let cancelled = false;
     (async () => {
       try {
-        const { fetchOnlineBrands } = await import("../../services/axeCatalog");
         const payload = await fetchOnlineBrands();
         if (cancelled) return;
-        // Mise à la forme que ce composant attendait déjà de WooCommerce, pour
-        // que tout ce qui suit ignore d'où viennent les marques. `image` est
-        // reprise TELLE QUELLE : c'est une URL complète, composée par le
-        // serveur, jamais à préfixer.
+        // `image` est reprise TELLE QUELLE : c'est une URL complète, composée
+        // par le serveur, jamais à préfixer.
         setAxeBrands(
           (payload.brands || []).map((brand) => ({
             id: brand.id,
@@ -48,16 +41,13 @@ const BrandCarousel = ({ brands = [], loading = false }) => {
     };
   }, []);
 
-  const source = API_CONFIG.useAxeCatalog ? (axeBrands ?? []) : brands;
-  // Le filtre est le point dur, et il ne bouge pas : au 20 août 2026, trois
-  // marques sur 288 ont leur logo en ligne. Une marque sans logo n'a rien à
-  // montrer ici — c'est un carrousel d'images, pas une liste de noms.
-  const brandsWithImage = source
+  // Une marque sans logo n'a rien à montrer ici — c'est un carrousel d'images,
+  // pas une liste de noms.
+  const brandsWithImage = (axeBrands ?? [])
     .filter((b) => b.image && b.count > 0)
     .sort((a, b) => b.count - a.count);
 
-  const stillLoading = API_CONFIG.useAxeCatalog ? axeBrands === null : loading;
-  if (stillLoading) return <BrandCarouselSkeleton />;
+  if (axeBrands === null) return <BrandCarouselSkeleton />;
   if (brandsWithImage.length === 0) return null;
 
   const doubled = [...brandsWithImage, ...brandsWithImage];

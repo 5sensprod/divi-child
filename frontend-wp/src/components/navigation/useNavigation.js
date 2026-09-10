@@ -1,7 +1,6 @@
 // src/components/navigation/useNavigation.js
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { API_CONFIG } from "../../utils/constants";
 import { fetchOnlineCategories } from "../../services/axeCatalog";
 
 export const useNavigation = (menuItems = []) => {
@@ -15,8 +14,6 @@ export const useNavigation = (menuItems = []) => {
   // catalogue complète automatiquement chaque catégorie avec les enfants qui
   // n'ont pas été ajoutés manuellement dans PocketApp.
   useEffect(() => {
-    if (!API_CONFIG.useAxeCatalog) return;
-
     let cancelled = false;
 
     fetchOnlineCategories()
@@ -82,19 +79,12 @@ export const useNavigation = (menuItems = []) => {
 
     const isReactRoute = (url) => {
       if (!url || url === "/" || url === "" || url === "#") return true;
-      if (API_CONFIG.useReactCategories) {
-        return url.includes("/categorie-produit/") || url.includes("/shop");
-      }
-      const reactRoutes = ["/contact", "/about", "/mentions-legales"];
-      return reactRoutes.some((route) => url.includes(route));
+      return url.includes("/categorie-produit/") || url.includes("/shop");
     };
 
     const convertToReactUrl = (url) => {
       if (!url || url === "/" || url === "" || url === "#") return "/";
-      if (
-        API_CONFIG.useReactCategories &&
-        url.includes("/categorie-produit/")
-      ) {
+      if (url.includes("/categorie-produit/")) {
         // Le CHEMIN COMPLET est conservé, y compris une hiérarchie
         // `parent/enfant`.
         //
