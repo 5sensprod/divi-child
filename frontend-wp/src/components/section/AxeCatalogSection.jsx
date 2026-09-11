@@ -21,7 +21,7 @@ import React, { useEffect, useState } from "react";
 import { PackageSearch } from "lucide-react";
 
 import { fetchCategoryWithProducts } from "../../services/axeCatalog";
-import { formatPrice } from "../../utils/format";
+import AxePrice from "../Product/AxePrice";
 import AxeProductImage from "../Product/AxeProductImage";
 import AxeSaleBadge from "../Product/AxeSaleBadge";
 
@@ -154,10 +154,8 @@ const AxeCatalogSection = ({
                     aucune place — la grille reste alignée. */}
                 <AxeSaleBadge state={product.sale_state} className="self-start" />
 
-                <div className="mt-auto flex items-center justify-between pt-3">
-                  <span className="text-base font-bold text-gray-900">
-                    {formatPrice(product.price_ttc)}
-                  </span>
+                <div className="mt-auto flex items-end justify-between gap-2 pt-3">
+                  <AxePrice product={product} size="sm" />
                   {product.stock > 0 ? (
                     <span className="text-xs font-medium text-emerald-600">
                       En stock

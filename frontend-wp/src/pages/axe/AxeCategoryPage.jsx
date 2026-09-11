@@ -28,12 +28,12 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { fetchCategoryPage } from "../../services/axeCatalog";
-import { formatPrice } from "../../utils/format";
 import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import AxeProductImage from "../../components/Product/AxeProductImage";
 import AxeSaleBadge from "../../components/Product/AxeSaleBadge";
+import AxePrice from "../../components/Product/AxePrice";
 import WishlistButton from "../../components/UI/WishlistButton";
 import AxeProductFilter, {
   DEFAULT_AXE_FILTERS,
@@ -216,6 +216,7 @@ const AxeCategoryPage = () => {
               filters={filters}
               onChange={setFilters}
               resultCount={visibleProducts.length}
+              hasMultiplePages={lastPage > 1}
             />
           )}
 
@@ -304,8 +305,8 @@ export const AxeProductCard = ({ product }) => {
               {product.brand.name}
             </span>
           )}
-          {/* Pastille seule : `sale_state` ne porte aucun prix, donc pas de
-              prix barré ni de pourcentage — voir AxeSaleBadge. */}
+          {/* La pastille dit l'opération ; le prix barré, lui, est rendu par
+              AxePrice plus bas, à partir de `promo`. */}
           <AxeSaleBadge state={product.sale_state} />
         </div>
 
@@ -322,10 +323,8 @@ export const AxeProductCard = ({ product }) => {
           />
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2">
-          <span className="text-xl font-bold text-gray-900">
-            {formatPrice(product.price_ttc)}
-          </span>
+        <div className="mt-auto flex items-end justify-between gap-2">
+          <AxePrice product={product} size="md" />
           <span
             className={`text-xs font-medium ${
               product.stock > 0 ? "text-emerald-600" : "text-orange-600"

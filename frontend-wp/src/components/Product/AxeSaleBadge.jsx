@@ -14,11 +14,13 @@
 //   "promo"  → en promotion.
 //
 // ─── ELLE NE PORTE AUCUN PRIX ─────────────────────────────────────────────
-// `sale_state` ne transporte ni pourcentage, ni prix d'avant, ni montant de
-// remise, et rien ailleurs dans la réponse ne les porte non plus. `price_ttc`
-// est le prix de vente, tel quel, soldé ou non — il ne se recalcule pas.
-// Donc : PAS de prix barré, PAS de « -20 % », PAS de « au lieu de ». Les
-// fabriquer reviendrait à inventer un tarif affiché en vitrine.
+// La pastille dit l'opération, rien de plus. Le prix barré existe depuis le
+// 11 septembre 2026, mais il vient d'un AUTRE champ, `product.promo`, et c'est
+// `AxePrice` qui l'affiche. Une fiche peut porter la pastille sans prix barré :
+// soldée avant cette date, elle n'a pas de prix promo.
+//
+// Hors de sa période, le serveur rend `sale_state` à "" : une promo finie perd
+// sa pastille d'elle-même, sans rien comparer ici.
 //
 // Elle ne dit rien non plus de la publication : `catalog.php` ne sert que les
 // produits `published`. Les deux notions ne se croisent pas.

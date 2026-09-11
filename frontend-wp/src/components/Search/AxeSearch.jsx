@@ -29,8 +29,8 @@ import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Search as SearchIcon, X } from "lucide-react";
 
-import { formatPrice } from "../../utils/format";
 import { MIN_QUERY, useAxeSearch } from "../../hooks/useAxeSearch";
+import AxePrice from "../Product/AxePrice";
 import AxeProductImage from "../Product/AxeProductImage";
 import AxeSaleBadge from "../Product/AxeSaleBadge";
 import Modal from "../UI/Modal";
@@ -204,9 +204,7 @@ const AxeSearchResult = ({ product, onNavigate }) => (
         {product.title}
       </h3>
       <div className="flex flex-wrap items-center gap-3">
-        <p className="text-lg font-bold text-blue-600">
-          {formatPrice(product.price_ttc)}
-        </p>
+        <AxePrice product={product} size="sm" priceClassName="text-blue-600" />
         {product.brand && (
           <p className="text-sm text-gray-500">{product.brand.name}</p>
         )}

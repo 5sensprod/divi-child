@@ -173,13 +173,10 @@ export const StockBadgeSkeleton = ({ size = "md", className = "" }) => {
   );
 };
 
-// `top-[108px]` suit la galerie qu'il remplace (`ProductPage.jsx`) : un
-// squelette qui se colle ailleurs que le contenu ferait sauter la page au
-// moment où les données arrivent.
 export const ProductGallerySkeleton = ({ thumbnailCount = 6 }) => (
   <div
     aria-hidden="true"
-    className="lg:sticky lg:top-[108px] flex flex-col gap-4 animate-pulse"
+    className="flex flex-col gap-4 animate-pulse"
   >
     <div className="relative h-[400px] rounded-lg bg-white shadow-lg overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
@@ -289,16 +286,14 @@ export const ProductPageBodySkeleton = () => (
   <section className="py-6 bg-gradient-to-br from-gray-50 to-gray-100">
     <div className="container-divi">
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 lg:items-start">
-        <ProductGallerySkeleton />
-        <div className="space-y-6">
+        <div className="space-y-6 lg:sticky lg:top-[154px]">
           <ProductInformationSkeleton />
-          <ProductDescriptionSkeleton />
-          <ProductTagsSkeleton />
+          <ProductGallerySkeleton />
+        </div>
+        <div className="space-y-6">
+          <ProductDescriptionSkeleton lines={10} />
         </div>
       </div>
-
-      <ProductLongDescriptionSkeleton />
-      <ProductAttributesSkeleton />
     </div>
   </section>
 );

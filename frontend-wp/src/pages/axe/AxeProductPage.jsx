@@ -48,12 +48,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ImageOff } from "lucide-react";
 
 import { fetchProductBySlug } from "../../services/axeCatalog";
-import { formatPrice } from "../../utils/format";
 import Background from "../../components/UI/Background";
 import Breadcrumb from "../../components/UI/Breadcrumb";
 import Title from "../../components/UI/Title";
 import StockBadge from "../../components/Product/StockBadge";
 import AxeSaleBadge from "../../components/Product/AxeSaleBadge";
+import AxePrice from "../../components/Product/AxePrice";
 import { ProductPageBodySkeleton } from "../../components/UI/LoadingSkeleton";
 import WishlistButton from "../../components/UI/WishlistButton";
 import AxeRelatedProducts from "../../components/Product/AxeRelatedProducts";
@@ -213,6 +213,69 @@ function ProductGallery({ product }) {
   );
 }
 
+/**
+ * Désignation commerciale du produit.
+ *
+ * Ce bloc précède volontairement la galerie dans la colonne gauche : le nom,
+ * le prix et les informations essentielles introduisent ainsi directement le
+ * visuel auquel ils se rapportent.
+ */
+function ProductDesignation({ product, categories }) {
+  return (
+    <div className="rounded-lg bg-white p-5 shadow-md">
+      <div className="mb-4 border-b border-gray-200 pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {product.title}
+          </h2>
+          <WishlistButton
+            product={product}
+            iconSize={30}
+            className="flex-shrink-0 rounded-full p-2 hover:bg-gray-100"
+          />
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-baseline gap-3">
+        {/* Prix barré et prix promo, ligne Stock B : voir AxePrice. La
+            période est jugée par le serveur, rien n'est daté ici. */}
+        <AxePrice product={product} size="lg" />
+        <AxeSaleBadge state={product.sale_state} size="md" />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
+        {product.brand && (
+          /* Même pastille que la page WooCommerce, logo compris
+             quand la marque en a un en ligne. */
+          <BrandBadge brand={product.brand} />
+        )}
+
+        {categories.map((category) => (
+          <Link
+            key={category.id}
+            to={`/categorie-produit/${category.slug}`}
+            className="rounded-full border border-gray-200 bg-gray-100 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
+          >
+            {category.name}
+          </Link>
+        ))}
+
+        <StockBadge
+          {...stockProps(product.stock)}
+          size="md"
+          showQuantity={true}
+        />
+
+        {product.sku && (
+          <span className="text-sm text-gray-500">
+            Réf. <span className="font-mono">{product.sku}</span>
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const AxeProductPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -327,67 +390,28 @@ const AxeProductPage = () => {
       <section className="bg-gradient-to-br from-gray-50 to-gray-100 py-6">
         <div className="container-divi">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
-            {/* La galerie reste sous les deux barres fixes : le header produit
-                (94 px), le fil d'Ariane, puis un léger espace de respiration. */}
-            <div className="lg:sticky lg:top-[154px]">
+            {/* Avec une description, toute la colonne reste sticky avec la
+                désignation comme point haut. Sans description, on retrouve
+                le gabarit historique : galerie à gauche, désignation à
+                droite. */}
+            <div className="space-y-6 lg:sticky lg:top-[154px]">
+              {product.description && (
+                <ProductDesignation
+                  product={product}
+                  categories={categories}
+                />
+              )}
+
               <ProductGallery product={product} />
             </div>
 
             <div className="space-y-6">
-              <div className="rounded-lg bg-white p-5 shadow-md">
-                <div className="mb-4 border-b border-gray-200 pb-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      {product.title}
-                    </h2>
-                    <WishlistButton
-                      product={product}
-                      iconSize={30}
-                      className="flex-shrink-0 rounded-full p-2 hover:bg-gray-100"
-                    />
-                  </div>
-                </div>
-
-                <div className="mb-4 flex flex-wrap items-baseline gap-3">
-                  <span className="text-3xl font-bold text-gray-900">
-                    {formatPrice(product.price_ttc)}
-                  </span>
-                  {/* `price_ttc` EST le prix de vente, soldé ou non. La
-                      pastille se pose à côté, elle ne barre rien : aucun prix
-                      d'avant ne voyage dans la réponse. */}
-                  <AxeSaleBadge state={product.sale_state} size="md" />
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
-                  {product.brand && (
-                    /* Même pastille que la page WooCommerce, logo compris
-                       quand la marque en a un en ligne. */
-                    <BrandBadge brand={product.brand} />
-                  )}
-
-                  {categories.map((category) => (
-                    <Link
-                      key={category.id}
-                      to={`/categorie-produit/${category.slug}`}
-                      className="rounded-full border border-gray-200 bg-gray-100 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-
-                  <StockBadge
-                    {...stockProps(product.stock)}
-                    size="md"
-                    showQuantity={true}
-                  />
-
-                  {product.sku && (
-                    <span className="text-sm text-gray-500">
-                      Réf. <span className="font-mono">{product.sku}</span>
-                    </span>
-                  )}
-                </div>
-              </div>
+              {!product.description && (
+                <ProductDesignation
+                  product={product}
+                  categories={categories}
+                />
+              )}
 
               {product.description && (
                 <div className="rounded-lg bg-white p-6 shadow-md">

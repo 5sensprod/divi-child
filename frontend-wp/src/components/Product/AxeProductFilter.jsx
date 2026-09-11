@@ -64,7 +64,13 @@ function brandsOf(products) {
     .sort((a, b) => a.name.localeCompare(b.name, "fr"));
 }
 
-const AxeProductFilter = ({ products, filters, onChange, resultCount }) => {
+const AxeProductFilter = ({
+  products,
+  filters,
+  onChange,
+  resultCount,
+  hasMultiplePages = false,
+}) => {
   const brands = brandsOf(products);
   const hasStockVariety =
     products.some((product) => product.stock > 0) &&
@@ -144,12 +150,17 @@ const AxeProductFilter = ({ products, filters, onChange, resultCount }) => {
         )}
       </div>
 
-      {/* La portée, dite sans détour. Voir l'en-tête du fichier. */}
-      <p className="mt-3 text-xs text-gray-500">
-        {isActive
-          ? `${resultCount} produit${resultCount > 1 ? "s" : ""} parmi les ${products.length} de cette page.`
-          : `Filtre parmi les ${products.length} produits de cette page, pas sur la catégorie entière.`}
-      </p>
+      {/* La précision sur la page courante n'est utile que lorsque la
+          catégorie est réellement répartie sur plusieurs pages. */}
+      {(isActive || hasMultiplePages) && (
+        <p className="mt-3 text-xs text-gray-500">
+          {isActive
+            ? hasMultiplePages
+              ? `${resultCount} produit${resultCount > 1 ? "s" : ""} parmi les ${products.length} de cette page.`
+              : `${resultCount} produit${resultCount > 1 ? "s" : ""} sur ${products.length}.`
+            : `Filtre parmi les ${products.length} produits de cette page, pas sur la catégorie entière.`}
+        </p>
+      )}
     </div>
   );
 };
