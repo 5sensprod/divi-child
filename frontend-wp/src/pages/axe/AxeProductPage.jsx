@@ -38,6 +38,11 @@
 // `BrandBadge` plus bas. Le champ est null pour la quasi-totalité des marques,
 // et c'est le cas NORMAL : trois marques sur 288 sont synchronisées à ce jour.
 //
+// ─── LIENS ET VIDÉOS — 15 septembre 2026 ─────────────────────────────────
+// `catalog.php` rend `product.links` sur la fiche seulement, comme `gallery` :
+// une liste ordonnée de pages web et de vidéos YouTube, saisie dans PocketApp.
+// Voir `AxeProductLinks.jsx`, qui n'affiche rien quand la liste est vide.
+//
 // La description est rendue en HTML brut, comme celle de WooCommerce. Elle
 // vient de notre propre base, alimentée par notre propre export ; le jour où
 // elle deviendra saisissable par un tiers, ce `dangerouslySetInnerHTML` devra
@@ -57,6 +62,7 @@ import AxePrice from "../../components/Product/AxePrice";
 import { ProductPageBodySkeleton } from "../../components/UI/LoadingSkeleton";
 import WishlistButton from "../../components/UI/WishlistButton";
 import AxeRelatedProducts from "../../components/Product/AxeRelatedProducts";
+import AxeProductLinks from "../../components/Product/AxeProductLinks";
 
 /**
  * Notre export ne porte pas `stock_status` — seulement un entier.
@@ -426,6 +432,9 @@ const AxeProductPage = () => {
                 </div>
               )}
 
+              {/* Liens et vidéos — sous la description, et RIEN quand il n'y
+                  en a pas : la quasi-totalité des fiches n'en porte aucun. */}
+              <AxeProductLinks links={product.links} />
             </div>
           </div>
 
